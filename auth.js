@@ -83,6 +83,22 @@ const D=window.EMData={
   const now=new Date().toISOString();
   await call("/rest/v1/site_state?on_conflict=key",{method:"POST",headers:Object.assign(hdr(tok),{Prefer:"resolution=merge-duplicates,return=minimal"}),body:JSON.stringify({key,value:str,updated_at:now,updated_by:API.user()})});
   D._ver[key]=now;sv("em_ver",D._ver)},
+ /* showcase videos live in a Supabase Storage bucket called "showcase" (public to read, admin-only to write) */
+ url:p=>CFG.url+"/storage/v1/object/public/showcase/"+p,
+ async upload(path,file,onp){
+  const tok=await API.token();if(!tok||!API.isAdmin())throw new Error("Only the admin can upload.");
+  const ct={mp4:"video/mp4",webm:"video/webm",gif:"image/gif"}[(path.split(".").pop()||"").toLowerCase()]||file.type||"application/octet-stream";
+  return new Promise((res,rej)=>{const x=new XMLHttpRequest();x.open("POST",CFG.url+"/storage/v1/object/showcase/"+path);
+   x.setRequestHeader("apikey",CFG.anonKey);x.setRequestHeader("Authorization","Bearer "+tok);x.setRequestHeader("Content-Type",ct);x.setRequestHeader("x-upsert","true");
+   x.upload.onprogress=e=>{if(e.lengthComputable&&onp)onp(Math.round(e.loaded/e.total*100))};
+   x.onerror=()=>rej(new Error("Can't reach the server. Check your connection."));
+   x.onload=()=>{if(x.status>=200&&x.status<300)return res(D.url(path));let m="Server error "+x.status;try{const j=JSON.parse(x.responseText);m=j.message||j.error||m}catch(e){}
+    if(/bucket/i.test(m)&&/not found/i.test(m))m="The showcase storage isn't set up yet. Run supabase-setup-3.sql in Supabase (see SETUP.md).";
+    if(x.status===413)m="That file is too big for the server (limit 50 MB).";rej(new Error(m))};
+   x.send(file)})},
+ async remove(path){
+  const tok=await API.token();if(!tok||!API.isAdmin())return;
+  await fetch(CFG.url+"/storage/v1/object/showcase/"+path,{method:"DELETE",headers:{apikey:CFG.anonKey,Authorization:"Bearer "+tok}})},
  /* first time the admin opens the live site: upload what is already saved in this browser so nothing is lost */
  async seed(meta){
   if(!API.isAdmin()||ld("em_seeded",false))return;

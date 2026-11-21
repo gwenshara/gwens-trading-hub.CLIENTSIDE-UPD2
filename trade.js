@@ -4,6 +4,8 @@ const ld=(k,d)=>{try{const v=JSON.parse(localStorage.getItem(k));return v==null?
 const sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 /* items added with the Add Item tool on the Catalog page */
 ld("em_custom",[]).forEach(c=>{if(TD.items.some(i=>i.n===c.n))return;TD.items.push({n:c.n,t:c.t,p:c.p,r:!!c.r,u:!!c.u});if(c.img)TD.thumbs[c.n]={a:c.img};if(c.stars)TD.stars[c.n]=c.stars});
+/* icon images the admin changed (saved on the server, copied here by the sync below) */
+Object.entries(ld("em_images",{})).forEach(([n,u])=>{if(u)TD.thumbs[n]={a:u}});
 /* prices edited on the Catalog page (same browser) override the base data */
 const OVR=ld("ovr",{});
 const items=TD.items.map(i=>{const o=OVR[i.n]||{};return{...i,p:o.p!==undefined?o.p:i.p}});
@@ -110,5 +112,5 @@ $("#feed").onclick=async e=>{const c=e.target.closest("[data-chk]"),d=e.target.c
 api.redraw();tab(location.hash==="#hub"?"hub":"chk");
 
 /* catalog edits made by the admin on the server: store them, then reload once so prices/stars/new items are current */
-if(window.EMData&&EMData.enabled())EMData.onChange((k,v)=>{try{if(k==="overrides"){localStorage.setItem("ovr",v);localStorage.setItem("ovr_saved",v)}else if(k==="custom")localStorage.setItem("em_custom",v)}catch(e){}
+if(window.EMData&&EMData.enabled())EMData.onChange((k,v)=>{try{if(k==="overrides"){localStorage.setItem("ovr",v);localStorage.setItem("ovr_saved",v)}else if(k==="custom")localStorage.setItem("em_custom",v);else if(k==="images")localStorage.setItem("em_images",v)}catch(e){}
  try{const x=+sessionStorage.getItem("em_rl")||0;if(Date.now()-x>8000){sessionStorage.setItem("em_rl",Date.now());setTimeout(()=>location.reload(),50)}}catch(e){}});
