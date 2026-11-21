@@ -11,7 +11,7 @@ const OVR=ld("ovr",{});
 const items=TD.items.map(i=>{const o=OVR[i.n]||{};return{...i,p:o.p!==undefined?o.p:i.p}});
 const by=n=>items.find(i=>i.n===n);
 const trend=n=>{const o=OVR[n];if(o&&o.d!==undefined)return o.d==="none"?null:o.d;return TD.TR[n]||null};
-const TL={up:"Increasing",down:"Receding",flat:"Stabilizing",fluct:"Fluctuating"};
+const TL={up:"Increasing",down:"Receding",flat:"Stabilizing",fluct:"Fluctuating",infl:"Inflated"};
 const stars=i=>{const o=OVR[i.n];return o&&o.s!==undefined?o.s:(TD.stars[i.n]||0)},plus=i=>/\+/.test(i.p);
 const val=i=>{const m=String(i.p).match(/([\d.]+)\s*(k?)(?:\s*-\s*([\d.]+)\s*(k?))?/);if(!m)return null;
  const a=parseFloat(m[1]),k=m[2]==="k";if(m[3]){const f=(k||m[4]==="k")?1000:1;return(a+parseFloat(m[3]))/2*f}return a*(k?1000:1)};
