@@ -20,3 +20,7 @@ Ads can only be read, posted and deleted by logged-in people; you can delete any
 Edits and the log are readable by everyone (even logged out) and writable only by the admin. Press Save in the bar at the bottom to publish edits; visitors see them within about 20 seconds, or instantly on refresh.
 The first time you open the live site as admin, whatever is already saved in your browser (edits, added items, log) is uploaded automatically.
 Still stored per browser: My List / wishlist / recently viewed.
+
+## Fun Fact tab and Members page (no new SQL needed)
+- Fun facts: as admin, open an item, press Edit, write one fact per line in "Fun facts", press Apply. They are saved for everyone right away (stored in the same `site_state` table as your other edits, key `facts`). The item card shows them in the new Fun Fact tab.
+- Members page (members.html, replaces the Scammers menu entry): shows everyone who has an account, only to logged-in visitors. Click a name for their profile (member number, join date, trade ads posted, latest ads).
