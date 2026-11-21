@@ -1,0 +1,10 @@
+.lg-h{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:18px 0 6px}
+.lg-h h2{margin:0;flex:1;font:800 22px Montserrat,sans-serif}
+.lg-h input{background:var(--b3);color:var(--text);border:1px solid var(--bl);border-radius:8px;padding:9px 12px;font:600 13px Montserrat,sans-serif;min-width:220px}
+.lg-h button{background:#c93a3a;color:#fff;border:0;border-radius:8px;padding:9px 14px;font:700 13px Montserrat,sans-serif;cursor:pointer}
+.lg-n{color:var(--mute);font-size:13px;margin:0 0 14px}
+.lg-d{font:700 12px Montserrat,sans-serif;color:var(--mute);text-transform:uppercase;letter-spacing:.06em;margin:18px 0 6px}
+.lg-e{display:flex;gap:12px;align-items:baseline;background:var(--b3);border:1px solid var(--bl);border-radius:10px;padding:10px 14px;margin-bottom:6px;font:500 14px Montserrat,sans-serif}
+.lg-e time{color:var(--mute);font-size:12px;flex:none;min-width:48px}
+.lg-e b{font-weight:800}.lg-e .it{font-weight:700;color:var(--accent)}
+.lg-empty{color:var(--mute);text-align:center;padding:40px 0;font:600 14px Montserrat,sans-serif}
