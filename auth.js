@@ -136,8 +136,10 @@ function build(){
  const host=document.querySelector(".emnav");if(!host)return;
  const box=document.createElement("div");box.className="em-auth";host.appendChild(box);
  const modal=document.createElement("div");modal.className="em-mo";modal.hidden=true;document.body.appendChild(modal);
+ const avKey=()=>"em_av_"+API.uid(),cached=()=>{try{return localStorage.getItem(avKey())||""}catch(e){return""}};
+ const pfp=u=>{const c=cached(),n=u.replace(/[<>&"]/g,"");return c?'<span class="em-pfp"><img src="'+c.replace(/"/g,"")+'" alt=""></span>':'<span class="em-pfp" style="background:'+((h=>"hsl("+h+",55%,45%)")([...n.toLowerCase()].reduce((h,ch)=>(h*31+ch.charCodeAt(0))%360,0)))+'">'+n.charAt(0)+'</span>'};
  const paint=()=>{const u=API.user();
-  box.innerHTML='<div class="em-row">'+(u?`<button id="em-me">👤 ${u.replace(/[<>&"]/g,"")}${API.isAdmin()?' <i class="em-ad">ADMIN</i>':""} ▾</button><div class="em-menu" hidden><button id="em-out">Log out</button></div>`:'<button id="em-in">👤 Log in</button>')+'</div>'};
+  box.innerHTML='<div class="em-row">'+(u?`<button id="em-me">${pfp(u)} ${u.replace(/[<>&"]/g,"")}${API.isAdmin()?' <i class="em-ad">ADMIN</i>':""} ▾</button><div class="em-menu" hidden><button id="em-vp">View profile</button><button id="em-out">Log out</button></div>`:'<button id="em-in">👤 Log in</button>')+'</div>'};
  let mode="in";
  const form=()=>{modal.innerHTML=`<div class="em-box" role="dialog" aria-modal="true"><div class="em-tabs"><button data-m="in" class="${mode==="in"?"on":""}">Sign in</button><button data-m="up" class="${mode==="up"?"on":""}">Sign up</button></div>
   <input id="em-u" placeholder="Username" autocomplete="username" maxlength="20"><input id="em-p" type="password" placeholder="Password" autocomplete="${mode==="in"?"current-password":"new-password"}">
@@ -148,6 +150,7 @@ function build(){
  box.addEventListener("click",e=>{
   if(e.target.closest("#em-in")){mode="in";modal.hidden=false;form()}
   else if(e.target.closest("#em-me")){const m=box.querySelector(".em-menu");m.hidden=!m.hidden}
+  else if(e.target.closest("#em-vp")){location.href="profile.html"}
   else if(e.target.closest("#em-out")){API.signOut();location.reload()}});
  modal.addEventListener("click",e=>{const t=e.target;
   if(t===modal||t.closest("#em-x"))modal.hidden=true;
@@ -155,6 +158,7 @@ function build(){
   else if(t.id==="em-go")go()});
  modal.addEventListener("keydown",e=>{if(e.key==="Enter")go();if(e.key==="Escape")modal.hidden=true});
  document.addEventListener("click",e=>{const m=box.querySelector(".em-menu");if(m&&!e.target.closest(".em-auth"))m.hidden=true});
- paint()}
+ paint();
+ if(API.user()){API.rest("profiles?id=eq."+encodeURIComponent(API.uid())+"&select=avatar").then(r=>{const a=(r&&r[0]&&r[0].avatar)||"";if(a!==cached()){try{if(a)localStorage.setItem(avKey(),a);else localStorage.removeItem(avKey())}catch(e){}paint()}}).catch(()=>{})}}
 document.addEventListener("DOMContentLoaded",build);
 })();

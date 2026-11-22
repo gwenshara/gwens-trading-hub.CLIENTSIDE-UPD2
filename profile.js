@@ -32,7 +32,7 @@ async function load(){
    if(P.__old)$("#pf-hint").textContent="Pictures can't be saved yet: run supabase-setup-4.sql in Supabase first."}
  }catch(e){msg("Couldn't load the profile: "+e.message)}}
 async function save(fields,st){const s=$("#pf-st");s.style.color="";s.textContent="Saving…";
- try{await EMAuth.rest("profiles?id=eq."+encodeURIComponent(EMAuth.uid()),"PATCH",fields,{Prefer:"return=minimal"});Object.assign(P,fields);paint();s.style.color="#3bb26b";s.textContent=st||"Saved!";setTimeout(()=>{s.textContent=""},3000);return true}
+ try{await EMAuth.rest("profiles?id=eq."+encodeURIComponent(EMAuth.uid()),"PATCH",fields,{Prefer:"return=minimal"});Object.assign(P,fields);if("avatar"in fields){try{localStorage.setItem("em_av_"+EMAuth.uid(),fields.avatar)}catch(e){}}paint();s.style.color="#3bb26b";s.textContent=st||"Saved!";setTimeout(()=>{s.textContent=""},3000);return true}
  catch(e){s.style.color="#ff6b6b";s.textContent="Couldn't save: "+e.message+" (did you run supabase-setup-4.sql?)";return false}}
 async function pick(inp,key,w,h){const f=inp.files[0];inp.value="";if(!f)return;
  try{const u=await shrink(f,w,h);await save({[key]:u})}catch(e){const s=$("#pf-st");s.style.color="#ff6b6b";s.textContent=e.message}}

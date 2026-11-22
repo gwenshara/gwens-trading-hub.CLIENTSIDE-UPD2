@@ -42,3 +42,5 @@ body .wrap.cat{max-width:none;padding:0 0 40px;display:flex;flex-direction:colum
 .em-err{color:#ff6b6b;font-size:13px;min-height:16px}
 @media(max-width:760px){.em-auth{position:static;align-self:flex-start}}
 .em-row{position:relative}
+.em-pfp{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;overflow:hidden;vertical-align:middle;margin-right:4px;color:#fff;font:800 12px Montserrat,sans-serif;text-transform:uppercase;background:#2a2a30}.em-pfp img{width:100%;height:100%;object-fit:cover;display:block}
+.em-auth .em-row>button{display:inline-flex;align-items:center;gap:4px}
