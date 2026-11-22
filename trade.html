@@ -29,9 +29,10 @@
  <div class="post">
   <h2>Post a trade ad</h2>
   <input id="h-user" maxlength="30" placeholder="Your username" autocomplete="off">
-  <div class="cols">
-   <div class="col" data-side="ha"><h3>I'm offering</h3></div>
-   <div class="col" data-side="hb"><h3>I'm looking for</h3></div>
+   <div class="ptabs" role="tablist"><button type="button" data-pt="ha" class="on">Add to Offer <i id="cn-ha"></i></button><button type="button" data-pt="hb">Add to Request <i id="cn-hb"></i></button></div>
+  <div class="cols one">
+   <div class="col" data-side="ha"><h3>I'm offering<small>what you give</small></h3></div>
+   <div class="col" data-side="hb" hidden><h3>I'm looking for<small>what you want to receive</small></h3><div class="tagrow" id="h-tags"></div></div>
   </div>
   <textarea id="h-note" maxlength="140" placeholder="Note (optional) – e.g. “offers welcome”, “DM me in game”"></textarea>
   <div class="row"><button id="h-post" class="pri">Post ad</button><span id="h-msg"></span></div>

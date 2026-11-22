@@ -723,7 +723,7 @@ function render(){
   return `<div class="card ${i.t}" data-open="${i.id}" tabindex="0" role="button" aria-label="${esc(i.n)}">${tagsHTML(i)}${i.u?'<span class="un" title="Untradable">🛡️</span>':""}${SET.trend?trd(i.n,""):""}
   <button class="fav ${favs.has(i.id)?"on":""}" data-f="${i.id}" aria-label="Favorite ${esc(i.n)}">♥</button>
   ${title?"":`<div class="nm ${i.n.length>20?"long":""}">${esc(i.n)}</div>`}
-  <div class="${title&&!TPIC(i.n)?"ttl img":"img"}">${TPIC(i.n)||(title?esc(i.n):emo(i.n,i.t))}</div>
+  <div class="${title&&!TPIC(i.n)?"ttl img":"img"}"${ptT(i)}>${TPIC(i.n)||(title?esc(i.n):emo(i.n,i.t))}</div>
   ${onlyList&&favs.has(i.id)?qtyHTML(i.id):""}<div class="price${dc(i)}"${ptT(i)}><b></b>${esc(i.p)}${bang(i)}</div></div>`}).join(""):(onlyList&&!favs.size?`<div class="empty emp"><h3>Nothing saved yet</h3><p>Tap the \u2665 on any item to keep it here.<br>Your list is saved on this device.</p><button id="emptyBrowse" class="eb">Browse items</button><div class="et">Tip: you can also press \u2661 Save inside an item\u2019s info card.</div></div>`:`<div class="empty">No items match. Clear a filter or change your search.</div>`);
  document.querySelectorAll("[data-type]").forEach(c=>c.classList.toggle("on",typeOn.has(c.dataset.type)));
  document.querySelectorAll("[data-stat]").forEach(c=>c.classList.toggle("on",statOn.has(c.dataset.stat)));
@@ -794,7 +794,7 @@ function openM(id){
  <div class="tabs" role="tablist"><button class="tab on" data-tab="main" role="tab">Main Info</button><button class="tab" data-tab="show" role="tab">Showcase</button><button class="tab" data-tab="fact" role="tab">Fun Fact</button></div>
  <div class="mc"><div class="mv" id="mv">
  <div class="tp"><div class="tl">${i.t==="t"&&!PIC(i.n)?"":`<h2>${esc(i.n)}</h2>`}${inf.aka?`<div class="ak">AKA ${esc(inf.aka)}</div>`:""}${inf.copies?`<div class="cp">${esc(inf.copies)}</div>`:""}</div>${SET.trend?trd(i.n,"mid"):""}<div class="pr"><div class="pv${dc(i)}"${ptC(i)}><b></b>${esc(i.p)}${bang(i)}</div>${stars}</div></div>
- <div class="mi">${art}${inf.credit?`<span class="cr">${esc(inf.credit)}</span>`:""}</div>
+ <div class="mi"${ptT(i)}>${art}${inf.credit?`<span class="cr">${esc(inf.credit)}</span>`:""}</div>
  ${lines}${chips?`<div class="pcs">${chips}</div>`:""}${inf.odds?`<div class="pcs"><span class="pc od">${esc(inf.odds)}</span></div>`:""}${inf.exp?`<div class="xp">[EXPIRED] "${esc(inf.exp)}"</div>`:""}
  <div class="ft"><span class="fl">${badge}<button id="mf" aria-label="Save to My List">${favs.has(id)?"\u2665":"\u2661"}</button>${favs.has(id)?qtyHTML(id):""}</span>${EDIT?'<button id="edb">\u270f Edit</button>':""}<button id="more">\u21aa More Info</button></div>
  </div><div class="sv" id="sv" hidden><h2>${esc(i.n)}</h2>${VID[i.n]?(/^data:image|\.gif(\?|$)/i.test(VID[i.n])?`<img class="vid" src="${VID[i.n]}" alt="${esc(i.n)} showcase">`:`<video class="vid" id="vid" src="${VID[i.n]}" loop playsinline controls preload="metadata"></video>`):'<div class="nv">Showcase coming soon</div>'}</div><div class="fv" id="fv" hidden>${factHTML(i)}</div></div>
