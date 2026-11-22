@@ -1,6 +1,6 @@
 .emnav{display:flex;flex-direction:column;align-items:center;gap:6px;margin:6px 0 18px}
-.emnav .logo{display:block;height:92px;width:auto}
-.logo-w{position:relative;aspect-ratio:340/174;z-index:3;transition:transform .45s cubic-bezier(.2,.8,.25,1);transform-origin:50% 55%}
+.emnav .logo{display:block;height:128px;width:auto}
+.logo-w{position:relative;aspect-ratio:607/359;z-index:3;transition:transform .45s cubic-bezier(.2,.8,.25,1);transform-origin:50% 55%}
 .logo-w img{position:absolute;inset:0;width:100%;height:100%;display:block}
 .logo-c{transition:opacity .6s ease}
 .emnav a:hover .logo-w,.emnav a:focus-visible .logo-w{transform:scale(1.22)}
