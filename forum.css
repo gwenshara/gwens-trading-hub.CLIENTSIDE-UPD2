@@ -1,0 +1,21 @@
+/* ===== Forum hub + section pages ===== */
+.fh{background-color:#1a1a1c;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96'%3E%3Cpath d='M20 -6 q22 16 0 32 t0 32 t0 32 t0 32' fill='none' stroke='%23101011' stroke-width='8' stroke-linecap='round'/%3E%3Cpath d='M68 -6 q22 16 0 32 t0 32 t0 32 t0 32' fill='none' stroke='%23101011' stroke-width='8' stroke-linecap='round'/%3E%3C/svg%3E");border-bottom:1px solid #2c2c31;text-align:center;padding:44px 16px 34px;color:#a9b3c6}
+.fh p{margin:14px auto 0;max-width:720px;font:500 16px Inter,"Segoe UI",system-ui,sans-serif;color:#aab4c8}
+.fh .crumb{display:inline-block;margin-bottom:14px;font:700 13px Montserrat,sans-serif;color:#aab4c8;text-decoration:none;border:1px solid #3a3a42;border-radius:999px;padding:6px 14px;background:#232326}
+.fh .crumb:hover{border-color:var(--accent);color:#fff}
+.ft{position:relative;display:block;max-width:100%;margin:0;font:400 clamp(38px,7vw,76px)/1.05 Bangers,"Luckiest Guy",Impact,"Arial Black",sans-serif;letter-spacing:2px;text-transform:uppercase}
+.ft .fs{position:absolute;left:0;top:0;width:100%;color:#14140f;-webkit-text-stroke:9px #14140f}
+.ft .ff{position:relative;display:block;color:transparent;background:linear-gradient(180deg,#9ed36b 15%,#e4d96b 100%);-webkit-background-clip:text;background-clip:text}
+.fw{max-width:1180px;margin:0 auto;padding:30px 16px 60px}
+.fg{display:grid;grid-template-columns:repeat(2,1fr);gap:22px}
+.fc{--c:#7aa7ff;display:flex;flex-direction:column;justify-content:center;gap:14px;min-height:280px;padding:32px 34px;border-radius:20px;background:var(--b3);border:2px solid var(--bl);color:var(--text);text-decoration:none;position:relative;overflow:hidden;transition:border-color .15s,transform .15s}
+.fc:hover,.fc:focus-visible{border-color:var(--c);transform:translateY(-3px);outline:none}
+.fc .ico{width:76px;height:76px;border-radius:20px;display:grid;place-items:center;background:color-mix(in srgb,var(--c) 18%,transparent);border:2px solid var(--c);color:var(--c)}
+.fc .ico svg{width:42px;height:42px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.fc h2{margin:0;font:800 30px Montserrat,sans-serif}
+.fc p{margin:0;font:500 16px/1.5 Inter,"Segoe UI",system-ui,sans-serif;color:var(--mute);max-width:46ch}
+.fc .go{margin-top:auto;font:700 14px Montserrat,sans-serif;color:var(--c)}
+.fsoon{max-width:760px;margin:10px auto 0;text-align:center;background:var(--b3);border:2px dashed var(--bl);border-radius:20px;padding:56px 24px}
+.fsoon h2{margin:0 0 10px;font:800 26px Montserrat,sans-serif;color:var(--text)}
+.fsoon p{margin:0;color:var(--mute);font:500 16px/1.6 Inter,"Segoe UI",system-ui,sans-serif}
+@media(max-width:760px){.fg{grid-template-columns:1fr}.fc{min-height:220px;padding:26px 22px}.fc h2{font-size:26px}}
