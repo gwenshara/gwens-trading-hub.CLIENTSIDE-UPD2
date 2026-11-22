@@ -18,6 +18,7 @@ const thumb=n=>{const i=by(n),t=TD.thumbs[n]||{};let h="✨";
 const starTxt=n=>n?"★".repeat(n)+"☆".repeat(5-n)+" ("+n+")":"none";
 const curOf=(kind,n)=>{const i=by(n);if(!i)return"";return kind==="price"?String(i.p):kind==="stars"?(stars(i)?String(stars(i)):"0"):(trend(n)||"none")};
 const showVal=(kind,v)=>kind==="price"?esc(v||"?"):kind==="stars"?(+v?starTxt(+v):"no stars"):(TL[v]||"No trend");
+const UP='<svg class="vt-ar" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20V5M5 12l7-7 7 7"/></svg>',DN='<svg class="vt-ar" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v15M5 12l7 7 7-7"/></svg>';
 const KIND={price:"Price",demand:"Demand",stars:"Stars"};
 /* ---- server ---- */
 const hdr=async()=>{const h={apikey:CFG.anonKey,"Content-Type":"application/json"};let t=null;try{t=await EMAuth.token()}catch(e){}
@@ -52,8 +53,8 @@ function card(p){
  <div class="vt-top">${thumb(p.item)}<div class="vt-ti"><h3>${esc(p.item)}</h3><span>by <b>${esc(p.username)}</b> · ${ago(Date.parse(p.created_at))}</span></div><span class="vt-st">${open?"Open":"Closed"}</span></div>
  <div class="vt-chg"><b>${KIND[p.kind]}</b><em>${showVal(p.kind,p.current_val)}</em><span class="ar">➜</span><span class="to">${showVal(p.kind,p.proposed)}</span></div>
  ${p.note?`<p class="vt-note">${esc(p.note)}</p>`:""}
- <div class="vt-res"><div class="vt-rb"><i class="a" style="width:${pa}%"></i><i class="d" style="width:${pd}%"></i></div><div class="vt-rn"><span class="a">👍 ${t.a} agree${tot?" · "+pa+"%":""}</span><span>${tot} vote${tot===1?"":"s"}</span><span class="d">${t.d} disagree 👎</span></div></div>
- <div class="vt-act"><button class="va ${t.my==="agree"?"on":""}" data-v="agree" ${open?"":"disabled"}>👍 Agree</button><button class="vd ${t.my==="disagree"?"on":""}" data-v="disagree" ${open?"":"disabled"}>👎 Disagree</button><button class="ghost" data-cm>💬 ${cm.length} comment${cm.length===1?"":"s"}</button><span class="gap"></span>${can?`<button class="ghost" data-close>${open?"Close poll":"Reopen"}</button><button class="ghost danger" data-del>Delete</button>`:""}</div>
+ <div class="vt-res"><div class="vt-rb"><i class="a" style="width:${pa}%"></i><i class="d" style="width:${pd}%"></i></div><div class="vt-rn"><span class="a">${UP}${t.a} agree${tot?" · "+pa+"%":""}</span><span>${tot} vote${tot===1?"":"s"}</span><span class="d">${t.d} disagree${DN}</span></div></div>
+ <div class="vt-act"><button class="va ${t.my==="agree"?"on":""}" data-v="agree" ${open?"":"disabled"}>${UP}Agree</button><button class="vd ${t.my==="disagree"?"on":""}" data-v="disagree" ${open?"":"disabled"}>${DN}Disagree</button><button class="ghost" data-cm>💬 ${cm.length} comment${cm.length===1?"":"s"}</button><span class="gap"></span>${can?`<button class="ghost" data-close>${open?"Close poll":"Reopen"}</button><button class="ghost danger" data-del>Delete</button>`:""}</div>
  <div class="vt-msg"></div>
  ${openCm[p.id]?`<div class="vt-cm">${cm.map(c=>`<div class="vt-c">${ADMIN||c.user_id===UID?`<button data-dc="${esc(c.id)}" aria-label="Delete comment">✕</button>`:""}<b>${esc(c.username)}</b>${esc(c.text)}<small>${ago(Date.parse(c.created_at))}</small></div>`).join("")||'<div class="vt-c" style="color:var(--mute)">No comments yet.</div>'}
  <div class="vt-cf"><input maxlength="300" placeholder="${ME?"Write a comment…":"Log in (top left) to comment"}" ${ME?"":"disabled"}><button data-cs ${ME?"":"disabled"}>Send</button></div></div>`:""}

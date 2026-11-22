@@ -14,7 +14,7 @@
 .fc .ico svg{width:42px;height:42px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .fc h2,.fsoon h2,.vt-grad{margin:0;font:800 30px Montserrat,sans-serif;background:linear-gradient(180deg,#c77dff,#4d9bff);-webkit-background-clip:text;background-clip:text;color:transparent;width:fit-content}
 .fc p{margin:0;font:500 16px/1.5 Inter,"Segoe UI",system-ui,sans-serif;color:var(--mute);max-width:46ch}
-.fc .go{margin-top:auto;font:700 14px Montserrat,sans-serif;color:#8f8cff}
+.fc .go{margin-top:auto;font:700 14px Montserrat,sans-serif;background:linear-gradient(180deg,#c77dff,#4d9bff);-webkit-background-clip:text;background-clip:text;color:transparent;width:fit-content}
 .fsoon{max-width:760px;margin:10px auto 0;text-align:center;background:var(--b3);border:2px dashed var(--bl);border-radius:20px;padding:56px 24px}
 .fsoon h2{margin:0 0 10px;font-size:26px}
 .fsoon p{margin:0;color:var(--mute);font:500 16px/1.6 Inter,"Segoe UI",system-ui,sans-serif}
