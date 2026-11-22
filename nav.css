@@ -53,3 +53,8 @@ body .wrap.cat{max-width:none;padding:0 0 40px;display:flex;flex-direction:colum
 /* logo v5: only EM and WIKI float; face and clouds stay still. Face sits above the right cloud with its chin ~5px from the tip of the "I" in WIKI */
 .logo-w .logo-f{z-index:1;transform:translate(-.15%,12.1%)}
 .logo-w .logo-em,.logo-w .logo-wk{z-index:2;will-change:transform}
+/* logo v6: back cloud behind EM (centered on it), left cloud in front of EM, right cloud in front of the face */
+.logo-w>img:nth-child(1){z-index:0;transform:translate(0,-22%)}
+.logo-w>img:nth-child(3){z-index:3}
+.logo-w .logo-em,.logo-w .logo-wk{z-index:2}
+.logo-w>img:nth-child(6){z-index:4}
