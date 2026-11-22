@@ -79,3 +79,6 @@ body .wrap.cat{max-width:none;padding:0 0 40px;display:flex;flex-direction:colum
 /* logo v10: clouds more transparent */
 .logo-w>img:nth-child(1){opacity:.6}
 .logo-w>img:nth-child(3),.logo-w>img:nth-child(6),.logo-w::before,.logo-w::after{opacity:.4}
+/* logo v11: clouds a bit less transparent */
+.logo-w>img:nth-child(1){opacity:.75}
+.logo-w>img:nth-child(3),.logo-w>img:nth-child(6),.logo-w::before,.logo-w::after{opacity:.55}
