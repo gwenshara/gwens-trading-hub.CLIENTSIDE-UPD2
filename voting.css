@@ -1,0 +1,91 @@
+/* ===== Value Voting ===== */
+.vt{max-width:1180px;margin:0 auto;padding:26px 16px 70px;display:grid;grid-template-columns:270px 1fr;gap:22px;align-items:start}
+.vt-side{position:sticky;top:12px;display:flex;flex-direction:column;gap:14px}
+.vt-new{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:18px 16px;border:0;border-radius:16px;font:800 17px Montserrat,sans-serif;color:#fff;background:linear-gradient(180deg,#b06bff,#4d8dff);box-shadow:0 6px 20px #6a5cff55;cursor:pointer;transition:transform .15s,filter .15s}
+.vt-new:hover{transform:translateY(-2px);filter:brightness(1.08)}
+.vt-new svg{width:22px;height:22px;stroke:#fff;fill:none;stroke-width:2.6;stroke-linecap:round}
+.vt-box{background:var(--b3,#26262a);border:1px solid var(--bl,#3a3a42);border-radius:16px;padding:16px}
+.vt-box h3{margin:0 0 10px;font:800 13px Montserrat,sans-serif;text-transform:uppercase;letter-spacing:.06em;color:var(--mute)}
+.vt-f{display:flex;flex-direction:column;gap:6px}
+.vt-f button{text-align:left;padding:9px 12px;border-radius:10px;font:700 14px Montserrat,sans-serif;background:transparent;border:1px solid transparent;color:var(--text)}
+.vt-f button:hover{background:#ffffff0a}
+.vt-f button.on{background:linear-gradient(180deg,#b06bff33,#4d8dff33);border-color:#7c7bff}
+.vt-f button i{float:right;font-style:normal;color:var(--mute);font-weight:600}
+.vt-tip{font:500 13px/1.5 Inter,"Segoe UI",system-ui,sans-serif;color:var(--mute);margin:0}
+.vt-main{min-width:0}
+.vt-bar{display:flex;gap:10px;margin-bottom:16px}
+.vt-search{flex:1;position:relative}
+.vt-search input{padding:14px 16px 14px 44px;border-radius:14px;font-size:15px;border:2px solid var(--bl,#3a3a42)}
+.vt-search input:focus{outline:none;border-color:#7c7bff}
+.vt-search svg{position:absolute;left:15px;top:50%;transform:translateY(-50%);width:19px;height:19px;stroke:var(--mute);fill:none;stroke-width:2.4;stroke-linecap:round}
+.vt-bar select{border-radius:14px;padding:0 14px;background:var(--b3,#26262a);border:2px solid var(--bl,#3a3a42);color:var(--text);font:700 14px Montserrat,sans-serif}
+.vt-list{display:flex;flex-direction:column;gap:16px}
+.vt-empty{text-align:center;padding:46px 20px;border:2px dashed var(--bl,#3a3a42);border-radius:18px;color:var(--mute);font:500 15px/1.6 Inter,"Segoe UI",system-ui,sans-serif}
+.vt-card{background:var(--b3,#26262a);border:2px solid var(--bl,#3a3a42);border-radius:18px;padding:18px 20px;transition:border-color .15s}
+.vt-card:hover{border-color:#5a5aa8}
+.vt-card.closed{opacity:.72}
+.vt-top{display:flex;gap:14px;align-items:center}
+.vt-top .th{width:62px;height:62px;border-radius:14px}
+.vt-ti{flex:1;min-width:0}
+.vt-ti h3{margin:0;font:800 20px Montserrat,sans-serif;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vt-ti span{color:var(--mute);font-size:13px}
+.vt-st{font:800 11px Montserrat,sans-serif;text-transform:uppercase;letter-spacing:.05em;padding:4px 10px;border-radius:999px;border:1px solid #5cff5c88;color:#5cff5c}
+.vt-card.closed .vt-st{border-color:#8888;color:#aaa}
+.vt-chg{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:14px 0 4px;padding:12px 14px;border-radius:12px;background:#0000002e}
+.vt-chg b{font:800 12px Montserrat,sans-serif;text-transform:uppercase;letter-spacing:.05em;padding:4px 10px;border-radius:8px;background:linear-gradient(180deg,#b06bff,#4d8dff);color:#fff}
+.vt-chg em{font-style:normal;font:700 17px Montserrat,sans-serif}
+.vt-chg .ar{color:#9b9bff;font-weight:800}
+.vt-chg .to{background:linear-gradient(180deg,#c77dff,#4d9bff);-webkit-background-clip:text;background-clip:text;color:transparent;font:800 20px Montserrat,sans-serif}
+.vt-note{margin:10px 0 0;font:500 15px/1.55 Inter,"Segoe UI",system-ui,sans-serif;white-space:pre-wrap;word-break:break-word}
+.vt-res{margin-top:14px}
+.vt-rb{display:flex;height:12px;border-radius:99px;overflow:hidden;background:#ffffff14}
+.vt-rb i{display:block;height:100%;transition:width .3s}
+.vt-rb .a{background:#4cd964}.vt-rb .d{background:#ff6b6b}
+.vt-rn{display:flex;justify-content:space-between;margin-top:6px;font:700 13px Montserrat,sans-serif}
+.vt-rn .a{color:#4cd964}.vt-rn .d{color:#ff6b6b}.vt-rn span:nth-child(2){color:var(--mute);font-weight:600}
+.vt-act{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.vt-act button{font:700 14px Montserrat,sans-serif;padding:10px 16px;border-radius:10px}
+.vt-act .va.on{background:#4cd96426;border-color:#4cd964;color:#4cd964}
+.vt-act .vd.on{background:#ff6b6b26;border-color:#ff6b6b;color:#ff6b6b}
+.vt-act .gap{flex:1}
+.vt-act .ghost{background:transparent;color:var(--mute)}
+.vt-act .danger:hover{border-color:#ff6b6b;color:#ff6b6b}
+.vt-cm{margin-top:14px;border-top:1px solid var(--bl,#3a3a42);padding-top:12px}
+.vt-c{padding:9px 0;border-bottom:1px solid #ffffff0d;font:500 14px/1.5 Inter,"Segoe UI",system-ui,sans-serif;word-break:break-word}
+.vt-c b{font-weight:800;margin-right:6px}.vt-c small{color:var(--mute);margin-left:6px}
+.vt-c button{float:right;padding:0 8px;background:none;border:0;color:var(--mute);font-size:16px}
+.vt-c button:hover{color:#ff6b6b}
+.vt-cf{display:flex;gap:8px;margin-top:10px}.vt-cf input{flex:1}
+.vt-cf button{font-weight:700;background:linear-gradient(180deg,#b06bff,#4d8dff);border:0;color:#fff}
+.vt-msg{font:600 13px Montserrat,sans-serif;color:#ff6b6b;min-height:18px;margin-top:6px}
+.vt-msg.ok{color:#5cff5c}
+/* modal */
+.vt-ov{position:fixed;inset:0;background:#000a;z-index:60;display:grid;place-items:center;padding:14px;overflow:auto}
+.vt-ov[hidden]{display:none}
+.vt-md{width:100%;max-width:560px;background:var(--b3,#26262a);border:2px solid #5a5aa8;border-radius:20px;padding:22px;position:relative;max-height:94vh;overflow:auto}
+.vt-md h2{margin:0 0 14px;font:800 24px Montserrat,sans-serif;background:linear-gradient(180deg,#c77dff,#4d9bff);-webkit-background-clip:text;background-clip:text;color:transparent;width:fit-content}
+.vt-x{position:absolute;right:14px;top:12px;padding:4px 10px;background:none;border:0;font-size:20px;color:var(--mute)}
+.vt-md label{display:block;margin:14px 0 6px;font:800 12px Montserrat,sans-serif;text-transform:uppercase;letter-spacing:.06em;color:var(--mute)}
+.vt-pick{position:relative}
+.vt-sel{display:flex;gap:12px;align-items:center;padding:8px;border:2px solid #7c7bff;border-radius:12px;background:#0000002e;margin-bottom:8px}
+.vt-sel .th{width:48px;height:48px}
+.vt-sel b{flex:1}.vt-sel button{padding:4px 10px}
+.vt-rs{position:absolute;left:0;right:0;z-index:5;background:var(--b3,#26262a);border:1px solid #7c7bff;border-radius:10px;max-height:260px;overflow:auto;box-shadow:0 8px 24px #000a}
+.vt-rs button{display:flex;width:100%;gap:10px;align-items:center;border:0;border-radius:0;text-align:left;background:none;padding:7px 10px}
+.vt-rs button:hover{background:#7c7bff22}
+.vt-rs .th{width:36px;height:36px;font-size:18px}
+.vt-rs span.s{display:flex;flex-direction:column;line-height:1.25}.vt-rs small{color:var(--mute)}
+.vt-kinds{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.vt-kinds button{padding:12px 6px;font:800 14px Montserrat,sans-serif;border-radius:12px}
+.vt-kinds button.on{background:linear-gradient(180deg,#b06bff,#4d8dff);border-color:transparent;color:#fff}
+.vt-cur{font:600 14px Montserrat,sans-serif;color:var(--mute);margin:10px 0 0}.vt-cur b{color:var(--text)}
+.vt-stars{display:flex;gap:6px}
+.vt-stars button{font-size:28px;line-height:1;padding:6px 8px;background:none;border:0;color:#555}
+.vt-stars button.on{color:#ffc933}
+.vt-dem{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.vt-dem button{padding:10px;font:700 13px Montserrat,sans-serif;border-radius:10px}
+.vt-dem button.on{background:#7c7bff33;border-color:#7c7bff}
+.vt-sub{display:flex;gap:10px;align-items:center;margin-top:16px}
+.vt-sub .go{padding:14px 24px;font:800 15px Montserrat,sans-serif;border:0;border-radius:12px;background:linear-gradient(180deg,#b06bff,#4d8dff);color:#fff}
+.vt-sub .go:disabled{opacity:.55}
+@media(max-width:860px){.vt{grid-template-columns:1fr}.vt-side{position:static}.vt-bar{flex-wrap:wrap}.vt-bar select{padding:12px}}
