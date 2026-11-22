@@ -76,3 +76,6 @@ body .wrap.cat{max-width:none;padding:0 0 40px;display:flex;flex-direction:colum
 /* logo v9: clouds more clearly see-through (front clouds are two stacked copies, so each copy is lower) */
 .logo-w>img:nth-child(1){opacity:.85}
 .logo-w>img:nth-child(3),.logo-w>img:nth-child(6),.logo-w::before,.logo-w::after{opacity:.66}
+/* logo v10: clouds more transparent */
+.logo-w>img:nth-child(1){opacity:.6}
+.logo-w>img:nth-child(3),.logo-w>img:nth-child(6),.logo-w::before,.logo-w::after{opacity:.4}
