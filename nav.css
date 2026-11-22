@@ -68,3 +68,8 @@ body .wrap.cat{max-width:none;padding:0 0 40px;display:flex;flex-direction:colum
 /* logo v7b: right cloud covers the face but stays under the WIKI text */
 .logo-w>img:nth-child(3),.logo-w::before{z-index:2}
 .logo-w .logo-em,.logo-w .logo-wk{z-index:3}
+/* logo v8: right cloud a hair to the left, clouds slightly see-through, whole logo leans right on hover */
+.logo-w>img:nth-child(3),.logo-w::before{transform:translate(-1.5%,0)}
+.logo-w>img:nth-child(1){opacity:.88}
+.logo-w>img:nth-child(3),.logo-w>img:nth-child(6),.logo-w::before,.logo-w::after{opacity:.85}
+.emnav a:hover .logo-w,.emnav a:focus-visible .logo-w{transform:scale(1.22) rotate(4deg)}
