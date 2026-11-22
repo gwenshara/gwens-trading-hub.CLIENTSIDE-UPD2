@@ -7,3 +7,7 @@ alter table public.ads add constraint ads_looking_check check (jsonb_typeof(look
 -- longer message on ads (300 characters)
 alter table public.ads drop constraint if exists ads_note_check;
 alter table public.ads add constraint ads_note_check check (char_length(note) <= 300);
+-- make sure deleting ads works: own ads for everyone, any ad for the admin
+grant select, insert, delete on public.ads to authenticated;
+drop policy if exists "ads delete" on public.ads;
+create policy "ads delete" on public.ads for delete to authenticated using (user_id = auth.uid() or public.is_admin());

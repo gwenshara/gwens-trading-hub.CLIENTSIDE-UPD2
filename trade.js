@@ -97,7 +97,7 @@ const row=r=>({id:r.id,uid:r.user_id,u:r.username,a:r.offering||[],b:r.looking||
 const Ads={
  async all(){return(await EMAuth.rest("ads?select=*&order=created_at.desc&limit=200")).map(row)},
  async add(a){await EMAuth.rest("ads","POST",{user_id:EMAuth.uid(),username:ME,offering:a.a,looking:a.b,...(a.c&&a.c.length?{need:a.c}:{}),note:a.note},{Prefer:"return=minimal"})},
- async del(id){await EMAuth.rest("ads?id=eq."+encodeURIComponent(id),"DELETE")}};
+ async del(id){const r=await EMAuth.rest("ads?id=eq."+encodeURIComponent(id),"DELETE",null,{Prefer:"return=representation"});if(!Array.isArray(r)||!r.length)throw new Error("the server refused it. You can only delete your own ads. If this is your ad, run supabase-setup-3.sql again.")}};
 const lock=$("#h-lock");
 if(!ME){$("#h-app").hidden=true;lock.hidden=false;lock.textContent=EMAuth.configured?"Log in (top left) to see and post trade ads.":"The accounts server isn't set up yet, see SETUP.md."}
 else{$("#h-user").value=ME;$("#h-user").readOnly=true}
@@ -119,7 +119,7 @@ const tot=L=>L.reduce((t,e)=>{const i=by(e.n);return i?t+line(i,e.q):t},0);
 function paintFeed(){const q=$("#h-q").value.trim().toLowerCase(),L=ADS.filter(a=>!q||a.u.toLowerCase().includes(q)||[...a.a,...a.b].some(e=>e.n.toLowerCase().includes(q)));
  const can=a=>EMAuth.isAdmin()||a.uid===EMAuth.uid();
  $("#feed").innerHTML=L.length?L.map(a=>{const A=tot(a.a),B=tot(a.b);
-  return`<div class="ad"><div class="ad-h"><b>${esc(a.u)}</b><span>${ago(a.t)}</span></div><div class="cols"><div><div class="lab">Offering · ${fmt(A)}</div>${mini(a.a)}</div><div><div class="lab">Looking for · ${fmt(B)}</div>${tagsHTML(a.c)}${mini(a.b)}</div></div>${a.note?`<p>${esc(a.note)}</p>`:""}<div class="act"><button data-chk="${esc(a.id)}">⚖ Check this trade</button>${can(a)?`<button data-del="${esc(a.id)}">Delete</button>`:""}</div></div>`}).join(""):'<div class="em">No ads yet. Post the first one above.</div>'}
+  return`<div class="ad"><div class="ad-h"><b>${esc(a.u)}</b><span>${ago(a.t)}</span></div><div class="cols"><div><div class="lab">Offering · ${fmt(A)}</div>${mini(a.a)}</div><div><div class="lab">Looking for · ${fmt(B)}</div>${tagsHTML(a.c)}${mini(a.b)}</div></div>${a.note?`<p>${esc(a.note)}</p>`:""}<div class="act"><button data-chk="${esc(a.id)}">⚖ Check this trade</button>${can(a)?`<button data-del="${esc(a.id)}">${a.uid===EMAuth.uid()?"Delete my ad":"Delete ad (admin)"}</button>`:""}</div></div>`}).join(""):'<div class="em">No ads yet. Post the first one above.</div>'}
 async function feed(){if(!ME)return;
  try{ADS=await Ads.all();paintFeed()}catch(e){$("#feed").innerHTML='<div class="em">Couldn\'t load ads: '+esc(e.message)+'</div>'}}
 $("#h-q").oninput=paintFeed;

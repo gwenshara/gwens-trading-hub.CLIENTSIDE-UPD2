@@ -680,8 +680,8 @@ const isGN=i=>{const o=OVR[i.n];return o&&o.gn!==undefined?o.gn:baseGN(i)};
 const baseExo=i=>EXO.has(i.n)||(cnum(i.n)!=null&&cnum(i.n)<=100);
 const isExo=i=>{const o=OVR[i.n];return o&&o.x!==undefined?o.x:baseExo(i)};
 const trend=n=>{const o=OVR[n];if(o&&o.d!==undefined)return o.d==="none"?null:o.d;return TR[n]||null};
-const STAR0={},CR0={};
-const applyOvr=()=>items.forEach(i=>{const o=OVR[i.n]||{};{const inf=INFO[i.n]||(INFO[i.n]={lines:[]});if(!(i.n in STAR0))STAR0[i.n]=inf.stars||0;const st=o.s!==undefined?o.s:STAR0[i.n];if(st)inf.stars=st;else delete inf.stars;if(!(i.n in CR0))CR0[i.n]=inf.credit||"";const cr=o.cr!==undefined?o.cr:CR0[i.n];if(cr)inf.credit=cr;else delete inf.credit}i.p=o.p!==undefined?o.p:i.p0;i.v=num(i.p);i.r=o.r!==undefined?o.r:i.r0});
+const STAR0={},CR0={},CP0={};
+const applyOvr=()=>items.forEach(i=>{const o=OVR[i.n]||{};{const inf=INFO[i.n]||(INFO[i.n]={lines:[]});if(!(i.n in STAR0))STAR0[i.n]=inf.stars||0;const st=o.s!==undefined?o.s:STAR0[i.n];if(st)inf.stars=st;else delete inf.stars;if(!(i.n in CR0))CR0[i.n]=inf.credit||"";const cr=o.cr!==undefined?o.cr:CR0[i.n];if(cr)inf.credit=cr;else delete inf.credit;if(!(i.n in CP0))CP0[i.n]=inf.copies||"";const cp=o.cp!==undefined?o.cp:CP0[i.n];if(cp)inf.copies=cp;else delete inf.copies}i.p=o.p!==undefined?o.p:i.p0;i.v=num(i.p);i.r=o.r!==undefined?o.r:i.r0});
 
 /* ===== custom items (Add Item tool) ===== */
 let CUSTOM=[];try{CUSTOM=JSON.parse(localStorage.getItem("em_custom")||"[]")}catch(e){}
@@ -806,6 +806,7 @@ function openM(id){
  <label class="ck"><input type="checkbox" id="ed-g"${isGN(i)?" checked":""}> Gamenight</label>
  <label>Item demand<select id="ed-d">${[["none","None"],["up","Increasing"],["down","Receding"],["flat","Stabilizing"],["fluct","Fluctuating"],["infl","Inflated"]].map(o=>`<option value="${o[0]}"${(trend(i.n)||"none")===o[0]?" selected":""}>${o[1]}</option>`).join("")}</select></label>
  <label>Credit (faint name shown on the card)<input type="text" id="ed-cr" maxlength="40" placeholder="Leave empty for no credit" value="${esc((INFO[i.n]||{}).credit||"")}"></label>
+ <label>Copies (number shown on the card, e.g. x107)<input type="text" id="ed-cp" maxlength="12" placeholder="Leave empty for no copies" value="${esc((INFO[i.n]||{}).copies||"")}"></label>
  <label>Fun facts (one per line, saved for everyone when you press Apply)<textarea id="ed-f" rows="4" maxlength="1500" placeholder="Write a fun fact about this item">${esc((FACTS[i.n]||[]).join("\n"))}</textarea></label>
  <label>Stars (demand)<select id="ed-st">${[0,1,2,3,4,5].map(k=>`<option value="${k}"${((INFO[i.n]||{}).stars||0)===k?" selected":""}>${k?k+" star"+(k>1?"s":""):"None"}</option>`).join("")}</select></label>
  <div class="edn" id="ed-note">${CANDB?"Apply, then press Save in the bar at the bottom to keep it for everyone.":"Apply, then press Save in the bar at the bottom. It is kept on this device only."}</div>
@@ -863,7 +864,7 @@ const _r=render;render=function(){_r();updDM();const x=$("#exp");if(x)x.hidden=!
 function saveEd(){
  const i=items[openId],n=i.n,old=OVR[n]||{},o={};
  const p=$("#ed-p").value.trim(),x=$("#ed-x").checked,r=$("#ed-r").checked,c=$("#ed-c").checked,gn=$("#ed-g").checked,d=$("#ed-d").value;
- if(p&&p!==i.p0)o.p=p;if(r!==i.r0)o.r=r;if(x!==baseExo(i))o.x=x;if(c!==baseCode(i))o.c=c;if(gn!==baseGN(i))o.gn=gn;if(d!==(TR[n]||"none"))o.d=d;{const st=+$("#ed-st").value;if(st!==(STAR0[n]||0))o.s=st}{const cr=$("#ed-cr").value.trim();if(cr!==(CR0[n]||""))o.cr=cr}
+ if(p&&p!==i.p0)o.p=p;if(r!==i.r0)o.r=r;if(x!==baseExo(i))o.x=x;if(c!==baseCode(i))o.c=c;if(gn!==baseGN(i))o.gn=gn;if(d!==(TR[n]||"none"))o.d=d;{const st=+$("#ed-st").value;if(st!==(STAR0[n]||0))o.s=st}{const cr=$("#ed-cr").value.trim();if(cr!==(CR0[n]||""))o.cr=cr}{const cp=$("#ed-cp").value.trim();if(cp!==(CP0[n]||""))o.cp=cp}
  if(Object.keys(o).length){
   const strip=q=>JSON.stringify(Object.fromEntries(Object.entries(q).filter(([k])=>k!=="t"&&k!=="pt")));
   const now=Date.now();
@@ -1066,7 +1067,7 @@ function openImp(){
 impB.addEventListener("click",openImp);
 const _rs=render;render=function(){_rs();impB.hidden=!EDIT;updSB()};
 /* ===== update log hooks ===== */
-const snapI=i=>({p:i.p,r:i.r,x:isExo(i),c:isCode(i),g:isGN(i),d:trend(i.n)||"none",s:(INFO[i.n]||{}).stars||0,cr:(INFO[i.n]||{}).credit||""});
+const snapI=i=>({p:i.p,r:i.r,x:isExo(i),c:isCode(i),g:isGN(i),d:trend(i.n)||"none",s:(INFO[i.n]||{}).stars||0,cr:(INFO[i.n]||{}).credit||"",cp:(INFO[i.n]||{}).copies||""});
 const DL={none:"no demand arrow",up:"Increasing",down:"Receding",flat:"Stabilizing",fluct:"Fluctuating",infl:"Inflated"};
 function logDiff(n,b,a){
  if(b.p!==a.p)EMLog.add(n,"changed the price from "+b.p+" to "+a.p+" on");
@@ -1076,6 +1077,7 @@ function logDiff(n,b,a){
  if(b.g!==a.g)EMLog.add(n,(a.g?"added Gamenight to":"removed Gamenight from"));
  if(b.d!==a.d)EMLog.add(n,"changed the item demand to "+DL[a.d]+" on");
  if(b.cr!==a.cr)EMLog.add(n,a.cr?(b.cr?"changed the credit to "+a.cr+" on":"added the credit "+a.cr+" to"):"removed the credit from");
+ if(b.cp!==a.cp)EMLog.add(n,a.cp?(b.cp?"changed the copies from "+b.cp+" to "+a.cp+" on":"set the copies to "+a.cp+" on"):"removed the copies from");
  if(b.s!==a.s)EMLog.add(n,"changed the stars from "+(b.s||"none")+" to "+(a.s||"none")+" on");
 }
 const _saveEd2=saveEd;saveEd=function(){const i=items[openId],n=i.n,b=snapI(i);_saveEd2();logDiff(n,b,snapI(items[openId]))};
