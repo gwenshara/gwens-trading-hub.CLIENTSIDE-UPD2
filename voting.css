@@ -63,7 +63,7 @@
 .vt-ov{position:fixed;inset:0;background:#000a;z-index:60;display:grid;place-items:center;padding:14px;overflow:auto}
 .vt-ov[hidden]{display:none}
 .vt-md{width:100%;max-width:560px;background:var(--b3,#26262a);border:2px solid #4f74c4;border-radius:20px;padding:22px;position:relative;max-height:94vh;overflow:auto}
-.vt-md h2{margin:0 0 14px;font:800 24px Montserrat,sans-serif;background:linear-gradient(180deg,#c77dff,#4d9bff);-webkit-background-clip:text;background-clip:text;color:transparent;width:fit-content}
+.vt-md h2{margin:0 0 14px;font:800 24px Montserrat,sans-serif;color:#7aa7ff}
 .vt-x{position:absolute;right:14px;top:12px;padding:4px 10px;background:none;border:0;font-size:20px;color:var(--mute)}
 .vt-md label{display:block;margin:14px 0 6px;font:800 12px Montserrat,sans-serif;text-transform:uppercase;letter-spacing:.06em;color:var(--mute)}
 .vt-pick{position:relative}
