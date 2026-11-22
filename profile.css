@@ -14,3 +14,4 @@
 .pf-link{background:none;border:0;padding:0;margin-top:10px;color:var(--accent);font-weight:700;cursor:pointer}
 .pf-hint{color:var(--mute);font-size:12px}
 @media(max-width:560px){.pf-ban{height:130px}.pf-av{width:96px;height:96px;font-size:42px}.pf-head{margin-top:-40px;gap:12px;padding:0 12px}.pf-id h2{font-size:21px}}
+.pf-head{pointer-events:none}.pf-head>*{pointer-events:auto}.pf-head .pf-id{pointer-events:none}.pf-id *{pointer-events:auto}
