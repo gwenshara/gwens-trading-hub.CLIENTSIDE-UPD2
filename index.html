@@ -146,7 +146,7 @@ button:hover,select:hover{border-color:var(--accent)}
 .card{position:relative}.card:hover,.card:focus-within{z-index:5}
 .tr{position:absolute;right:2px;bottom:4px;width:26px;height:20px;display:grid;place-items:center;z-index:3;outline:none}
 .tr img,.m .tr img{width:100%;height:auto;max-width:100%;max-height:100%}.tr.flat img,.m .tr.flat img,.tr.fluct img,.m .tr.fluct img{filter:drop-shadow(0 0 1px #fff) drop-shadow(0 0 1px #fff) drop-shadow(0 0 2px #fff)}.tr.up,.tr.down{width:26px;height:30px}
-.tr.fluct{width:28px;height:28px}.m .tr.big.fluct{width:58px;height:58px}.m .tr.mid.fluct{width:40px;height:40px}.tr.infl{width:28px;height:28px}.m .tr.big.infl{width:56px;height:56px}.m .tr.mid.infl{width:38px;height:38px}.tr.flat{width:32px;height:26px}.m .tr.big.flat{width:70px;height:58px}.m .tr.mid.flat{width:46px;height:38px}
+.tr.fluct{width:25px;height:25px}.m .tr.big.fluct{width:52px;height:52px}.m .tr.mid.fluct{width:36px;height:36px}.price.dg,.m .pv.dg{color:#4cff6a}.price.dg b,.m .pv.dg b{border-color:#4cff6a}.price.dr,.m .pv.dr{color:#ff4b3e}.price.dr b,.m .pv.dr b{border-color:#ff4b3e}.tr.infl{width:28px;height:28px}.m .tr.big.infl{width:56px;height:56px}.m .tr.mid.infl{width:38px;height:38px}.tr.flat{width:32px;height:26px}.m .tr.big.flat{width:70px;height:58px}.m .tr.mid.flat{width:46px;height:38px}
 .tr::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 5px);right:0;background:#000e;color:#fff;font:700 11px Nunito,sans-serif;padding:3px 8px;border-radius:6px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .12s;-webkit-text-stroke:0}
 .tr:hover::after,.tr:focus-visible::after{opacity:1}
 .m .tr.big{right:-4px;bottom:-6px;width:70px;height:54px}.m .tr.big.up,.m .tr.big.down{width:58px;height:66px}.m .tr.big::after{font-size:14px;padding:4px 10px;bottom:calc(100% + 6px)}
@@ -427,7 +427,7 @@ button:hover,select:hover{border-color:var(--accent)}
   <input id="q" type="search" placeholder="Search items…" aria-label="Search items">
   <div class="dd"><button id="ddb" aria-haspopup="listbox" aria-expanded="false"><span id="ddl">Sort: Category</span><span aria-hidden="true">▾</span></button><div class="ddp" id="ddp" role="listbox" hidden></div><input type="hidden" id="sort" value="cat"></div>
   <button id="lists" class="lst" aria-pressed="false">♥ My List<span id="lcount">0</span></button>
-  <button id="exp" hidden title="Copy all your edits as text">\ud83d\udccb Edits</button><div class="st"><button id="setb" aria-haspopup="true" aria-expanded="false" title="Settings">⚙ Settings</button><div class="stp" id="stp" hidden><div class="stt">Show on items</div><label class="ck2"><input type="checkbox" data-s="ret"> Retired tags</label><label class="ck2"><input type="checkbox" data-s="exo"> Exotic tags</label><label class="ck2"><input type="checkbox" data-s="code"> Code tags</label><label class="ck2"><input type="checkbox" data-s="trend"> Demand icons</label></div></div><button id="theme" aria-label="Toggle theme">🌓</button>
+  <button id="exp" hidden title="Copy all your edits as text">\ud83d\udccb Edits</button><div class="st"><button id="setb" aria-haspopup="true" aria-expanded="false" title="Settings">⚙ Settings</button><div class="stp" id="stp" hidden><div class="stt">Show on items</div><label class="ck2"><input type="checkbox" data-s="ret"> Retired tags</label><label class="ck2"><input type="checkbox" data-s="exo"> Exotic tags</label><label class="ck2"><input type="checkbox" data-s="code"> Code tags</label><label class="ck2"><input type="checkbox" data-s="trend"> Item demand (arrows and colors)</label><label class="ck2"><input type="checkbox" data-s="qty"> Inventory amounts (x1, x2…)</label></div></div><button id="theme" aria-label="Toggle theme">🌓</button>
  </div>
  <div class="car" id="car" role="tablist" aria-label="Item type"></div>
  <div class="chips" id="chips"></div>
@@ -660,7 +660,7 @@ const saveFavs=()=>{try{localStorage.setItem(EMAuth.listKey("favs"),JSON.stringi
 let QTY={};try{QTY=JSON.parse(localStorage.getItem(EMAuth.listKey("favq"))||"{}")}catch(e){}
 const saveQty=()=>{try{localStorage.setItem(EMAuth.listKey("favq"),JSON.stringify(QTY))}catch(e){}};
 const getQ=id=>Math.max(1,Math.min(99,+QTY[id]||1));
-const qtyHTML=id=>`<div class="qty"><button type="button" data-q="-1" data-qid="${id}" aria-label="Decrease quantity">\u2212</button><span>x${getQ(id)}</span><button type="button" data-q="1" data-qid="${id}" aria-label="Increase quantity">+</button></div>`;
+const qtyHTML=id=>SET.qty===false?"":`<div class="qty"><button type="button" data-q="-1" data-qid="${id}" aria-label="Decrease quantity">\u2212</button><span>x${getQ(id)}</span><button type="button" data-q="1" data-qid="${id}" aria-label="Increase quantity">+</button></div>`;
 const syncQ=()=>{const fl=document.querySelector(".m .fl");if(!fl||openId==null)return;const q=fl.querySelector(".qty");if(favs.has(openId)){if(!q)fl.insertAdjacentHTML("beforeend",qtyHTML(openId));else q.querySelector("span").textContent="x"+getQ(openId)}else if(q)q.remove()};
 document.addEventListener("click",e=>{const b=e.target.closest("[data-q]");if(!b)return;e.stopImmediatePropagation();e.preventDefault();const id=+b.dataset.qid;QTY[id]=Math.max(1,Math.min(99,getQ(id)+(+b.dataset.q)));saveQty();render();syncQ()},true);
 document.addEventListener("click",e=>{if(e.target.id==="mf")setTimeout(syncQ,0)});
@@ -707,7 +707,8 @@ const S={cat:catS,
  col:(a,b)=>RAIN[a.t]-RAIN[b.t]||b.v-a.v,
  ch:cop(-1),cl:cop(1)};
 const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const SET=Object.assign({ret:true,exo:true,code:true,trend:true},(()=>{try{return JSON.parse(localStorage.getItem("set")||"{}")}catch(e){return{}}})());
+const SET=Object.assign({ret:true,exo:true,code:true,trend:true,qty:true},(()=>{try{return JSON.parse(localStorage.getItem("set")||"{}")}catch(e){return{}}})());
+const dc=i=>{const d=SET.trend?trend(i.n):null;return d==="up"?" dg":(d==="down"||d==="infl")?" dr":""};
 const tagsHTML=i=>{let n=0,h="";if(SET.ret&&i.r){h+='<span class="ret">RETIRED</span>';n++}if(SET.exo&&isExo(i)){h+=`<span class="exo${n?" b":""}">EXOTIC</span>`;n++}if(SET.code&&isCode(i)){h+=`<span class="cd" style="top:${22+15*n}px">CODE</span>`}return h};
 function render(){
  const q=$("#q").value.toLowerCase();
@@ -720,7 +721,7 @@ function render(){
   <button class="fav ${favs.has(i.id)?"on":""}" data-f="${i.id}" aria-label="Favorite ${esc(i.n)}">♥</button>
   ${title?"":`<div class="nm ${i.n.length>20?"long":""}">${esc(i.n)}</div>`}
   <div class="${title&&!TPIC(i.n)?"ttl img":"img"}">${TPIC(i.n)||(title?esc(i.n):emo(i.n,i.t))}</div>
-  ${onlyList&&favs.has(i.id)?qtyHTML(i.id):""}<div class="price"><b></b>${esc(i.p)}</div></div>`}).join(""):(onlyList&&!favs.size?`<div class="empty emp"><h3>Nothing saved yet</h3><p>Tap the \u2665 on any item to keep it here.<br>Your list is saved on this device.</p><button id="emptyBrowse" class="eb">Browse items</button><div class="et">Tip: you can also press \u2661 Save inside an item\u2019s info card.</div></div>`:`<div class="empty">No items match. Clear a filter or change your search.</div>`);
+  ${onlyList&&favs.has(i.id)?qtyHTML(i.id):""}<div class="price${dc(i)}"><b></b>${esc(i.p)}</div></div>`}).join(""):(onlyList&&!favs.size?`<div class="empty emp"><h3>Nothing saved yet</h3><p>Tap the \u2665 on any item to keep it here.<br>Your list is saved on this device.</p><button id="emptyBrowse" class="eb">Browse items</button><div class="et">Tip: you can also press \u2661 Save inside an item\u2019s info card.</div></div>`:`<div class="empty">No items match. Clear a filter or change your search.</div>`);
  document.querySelectorAll("[data-type]").forEach(c=>c.classList.toggle("on",typeOn.has(c.dataset.type)));
  document.querySelectorAll("[data-stat]").forEach(c=>c.classList.toggle("on",statOn.has(c.dataset.stat)));
  if(typeof kickVids==="function")kickVids();
@@ -789,7 +790,7 @@ function openM(id){
  m.innerHTML=`<button class="x" id="mx" aria-label="Close">\u2715</button>
  <div class="tabs" role="tablist"><button class="tab on" data-tab="main" role="tab">Main Info</button><button class="tab" data-tab="show" role="tab">Showcase</button><button class="tab" data-tab="fact" role="tab">Fun Fact</button></div>
  <div class="mc"><div class="mv" id="mv">
- <div class="tp"><div class="tl">${i.t==="t"&&!PIC(i.n)?"":`<h2>${esc(i.n)}</h2>`}${inf.aka?`<div class="ak">AKA ${esc(inf.aka)}</div>`:""}${inf.copies?`<div class="cp">${esc(inf.copies)}</div>`:""}</div>${SET.trend?trd(i.n,"mid"):""}<div class="pr"><div class="pv"><b></b>${esc(i.p)}</div>${stars}</div></div>
+ <div class="tp"><div class="tl">${i.t==="t"&&!PIC(i.n)?"":`<h2>${esc(i.n)}</h2>`}${inf.aka?`<div class="ak">AKA ${esc(inf.aka)}</div>`:""}${inf.copies?`<div class="cp">${esc(inf.copies)}</div>`:""}</div>${SET.trend?trd(i.n,"mid"):""}<div class="pr"><div class="pv${dc(i)}"><b></b>${esc(i.p)}</div>${stars}</div></div>
  <div class="mi">${art}${inf.credit?`<span class="cr">${esc(inf.credit)}</span>`:""}</div>
  ${lines}${chips?`<div class="pcs">${chips}</div>`:""}${inf.odds?`<div class="pcs"><span class="pc od">${esc(inf.odds)}</span></div>`:""}${inf.exp?`<div class="xp">[EXPIRED] "${esc(inf.exp)}"</div>`:""}
  <div class="ft"><span class="fl">${badge}<button id="mf" aria-label="Save to My List">${favs.has(id)?"\u2665":"\u2661"}</button>${favs.has(id)?qtyHTML(id):""}</span>${EDIT?'<button id="edb">\u270f Edit</button>':""}<button id="more">\u21aa More Info</button></div>
@@ -1152,7 +1153,7 @@ const spc=n=>String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g,"\u202f");
 const HRT='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.4-9.3C1.4 8 3.2 4.8 6.4 4.8c2 0 3.7 1.1 5.6 3.3 1.9-2.2 3.6-3.3 5.6-3.3 3.2 0 5 3.2 3.8 6.4-1.9 4.7-9.4 9.3-9.4 9.3z"/></svg>';
 let mlKeep=new Set();
 const mlTile=(i,q)=>{const title=i.t==="t",pic=TPIC(i.n),on=favs.has(i.id);
- return `<div class="mlt${on?"":" off"}" data-mlo="${i.id}" tabindex="0" role="button" aria-label="${esc(i.n)}"><button class="mlh2${on?" on":""}" data-f="${i.id}" aria-label="${on?"Remove from":"Add to"} My List: ${esc(i.n)}" aria-pressed="${on}">${HRT}</button>${q>1?`<span class="mq">x${q}</span>`:""}${title?"":`<div class="mn">${esc(i.n)}</div>`}<div class="${title&&!pic?"ttl img":"img"}">${pic||(title?esc(i.n):emo(i.n,i.t))}</div><div class="price"><b></b>${esc(i.p)}</div></div>`};
+ return `<div class="mlt${on?"":" off"}" data-mlo="${i.id}" tabindex="0" role="button" aria-label="${esc(i.n)}"><button class="mlh2${on?" on":""}" data-f="${i.id}" aria-label="${on?"Remove from":"Add to"} My List: ${esc(i.n)}" aria-pressed="${on}">${HRT}</button>${q>1&&SET.qty!==false?`<span class="mq">x${q}</span>`:""}${title?"":`<div class="mn">${esc(i.n)}</div>`}<div class="${title&&!pic?"ttl img":"img"}">${pic||(title?esc(i.n):emo(i.n,i.t))}</div><div class="price"><b></b>${esc(i.p)}</div></div>`};
 function drawML(){
  const ws=mlm.querySelector(".mlw"),wt=ws?ws.scrollTop:0,bt=mlm.querySelector(".mlb"),bs=bt?bt.scrollTop:0;
  const ids=[...new Set([...mlKeep,...favs])].filter(id=>items[id]),rc=getRecent();
