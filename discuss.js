@@ -261,15 +261,15 @@ async function openMM(){
  o.addEventListener("click",e=>{const b=e.target.closest("[data-pickmm]");if(b&&!b.disabled)sendMM(b.dataset.pickmm)});
  let L=[];
  try{try{L=await EMAuth.rest("profiles?select=id,username,avatar,status,last_seen,roles,mm_status&roles=cs.%7Bofficial_middleman%7D&limit=60")}
-  catch(e0){L=await EMAuth.rest("profiles?select=id,username,avatar,status,last_seen,roles&roles=cs.%7Bofficial_middleman%7D&limit=60");L.forEach(x=>x.mm_status="ready")}}
+  catch(e0){L=await EMAuth.rest("profiles?select=id,username,avatar,status,last_seen,roles&roles=cs.%7Bofficial_middleman%7D&limit=60");L.forEach(x=>x.mm_status=null)}}
  catch(e){if(ov===o){const g=o.querySelector("#mm-g");if(g)g.innerHTML='<div class="dm-none" style="grid-column:1/-1">'+(setup(e)||/roles/i.test(e.message)?"Run supabase-setup-12.sql and supabase-setup-13.sql in Supabase first.":"Couldn\'t load the middlemen: "+esc(e.message))+"</div>"}return}
  if(ov!==o)return;
  L=L.filter(x=>x.id!==UID&&!(cur&&x.id===cur.id));
  L.forEach(m=>{prof[m.id]=Object.assign(prof[m.id]||{},m)});
- const PR=window.EMPresence,M=PR?PR.MMST:null,g=o.querySelector("#mm-g");if(!g)return;
- L.sort((a,b)=>{const r={ready:0,slow:1,cannot:2};return(r[a.mm_status||"cannot"]-r[b.mm_status||"cannot"])||a.username.localeCompare(b.username)});
- g.innerHTML=L.length?L.map(m=>{const a=m.mm_status||"cannot",ok=a!=="cannot",s=PR?PR.eff(m):"offline";
-  return'<button type="button" class="mm-sq'+(ok?"":" off")+'" data-pickmm="'+esc(m.username)+'"'+(ok?"":" disabled")+'>'+av(m.id,m.username)+'<b>'+esc(m.username)+'</b>'+(PR?'<em class="mm-on"><i class="em-dot" style="background:'+PR.STATUS[s].c+'"></i>'+PR.STATUS[s].n+'</em><em class="mm-av" style="color:'+M[a].c+'">'+M[a].n+'</em>':"")+"</button>"}).join(""):'<div class="dm-none" style="grid-column:1/-1">No official middleman yet.</div>'}
+ const PR=window.EMPresence,M={ready:{n:"Ready to MM",c:"#3bb26b"},slow:{n:"Able to MM, might take a while to answer",c:"#f0b232"},cannot:{n:"Cannot MM",c:"#e5484d"}},g=o.querySelector("#mm-g");if(!g)return;
+ L.sort((a,b)=>{const r={ready:0,slow:1,cannot:2};return((r[a.mm_status]==null?0:r[a.mm_status])-(r[b.mm_status]==null?0:r[b.mm_status]))||a.username.localeCompare(b.username)});
+ g.innerHTML=L.length?L.map(m=>{const a=m.mm_status,ok=a!=="cannot",s=PR?PR.eff(m):"offline";
+  return'<button type="button" class="mm-sq'+(ok?"":" off")+'" data-pickmm="'+esc(m.username)+'"'+(ok?"":" disabled")+'>'+av(m.id,m.username)+'<b>'+esc(m.username)+'</b>'+(PR&&PR.STATUS[s]?'<em class="mm-on"><i class="em-dot" style="background:'+PR.STATUS[s].c+'"></i>'+PR.STATUS[s].n+'</em>':"")+(a&&M[a]?'<em class="mm-av" style="color:'+M[a].c+'">'+M[a].n+'</em>':"")+"</button>"}).join(""):'<div class="dm-none" style="grid-column:1/-1">No official middleman yet.</div>'}
 async function sendMM(n){
  closeOv();if(!cur)return;$("#dm-err").textContent="";
  try{await post({kind:"mm",text:"",payload:{mm:n,s:false,r:false}})}
