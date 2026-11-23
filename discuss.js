@@ -50,8 +50,8 @@ const isFr=id=>!!(window.EMSocial&&EMSocial.loaded&&EMSocial.rel(id).kind==="fri
 const frTag=id=>isFr(id)?'<i class="dm-fr">Friend</i>':"";
 const pname=id=>(prof[id]&&prof[id].username)||"";
 let ALL=[],CONV=[],cur=null,MSGS=[],draft=null,q="",people=[],lastSig="",pendImg=null,tk=0,NEW8=true;
-const BASE="id,sender_id,recipient_id,sender_name,recipient_name,text,created_at",EXT=BASE+",kind,iname:payload->>n",EXT9=EXT+",edited_at,mm:payload->>mm,ms:payload->>s,mr:payload->>r,md:payload->>done";
-let COLS=EXT9,NEW9=true,NOTIF=[],notifOk=true;
+const BASE="id,sender_id,recipient_id,sender_name,recipient_name,text,created_at",EXT=BASE+",kind,iname:payload->>n",EXT9=EXT+",edited_at,mm:payload->>mm,ms:payload->>s,mr:payload->>r,md:payload->>done",EXT10=EXT9+",channel";
+let COLS=EXT10,NEW10=true,TAB=ld("dm_tab","friends"),NEW9=true,NOTIF=[],notifOk=true;
 const MMS=["gwenshara","carfish","feranxer","asthernia"],NEED9="Run supabase-setup-9.sql in Supabase first.";
 const HK="dm_hid:"+UID,hid=ld(HK,{}),vis=a=>a.filter(x=>!hid[x.id]);
 let editing=null,pop=null;
@@ -62,6 +62,7 @@ const fmtT=t=>new Date(t).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"
 const day=t=>{const d=new Date(t),n=new Date(),y=new Date(Date.now()-864e5);const k=x=>x.toDateString();return k(d)===k(n)?"Today":k(d)===k(y)?"Yesterday":d.toLocaleDateString([],{day:"numeric",month:"long",year:"numeric"})};
 const short=t=>{const d=new Date(t);return d.toDateString()===new Date().toDateString()?fmtT(t):d.toLocaleDateString([],{day:"numeric",month:"short"})};
 const setup=e=>/does not exist|schema cache|Could not find the table/i.test(e.message);
+const NEED10="Run supabase-setup-10.sql in Supabase first.",key=(id,ch)=>ch==="trade"?id+"|trade":id,chOf=x=>x.channel==="trade"?"trade":"personal",isCur=(id,ch)=>!!(cur&&cur.id===id&&(cur.ch||"personal")===(ch||"personal"));
 const NEED8="Run supabase-setup-8.sql in Supabase first.";
 const SETUPMSG='<div class="dm-none"><b>Messages are not set up yet.</b><br>Run <code>supabase-setup-6.sql</code> once in the Supabase SQL Editor, then refresh.</div>';
 const sum=x=>x.kind==="mm"?"Middleman request: "+(x.mm||""):x.kind==="image"?(x.text?"Photo: "+x.text:"Photo"):x.kind==="item"?"Item: "+(x.iname||""):x.text;
@@ -69,17 +70,21 @@ async function loadProfiles(ids){ids=[...new Set(ids)].filter(i=>i&&!prof[i]);if
  try{const r=await EMAuth.rest("profiles?select=id,username,role,avatar&id=in.("+ids.slice(0,60).join(",")+")");r.forEach(p=>prof[p.id]=p);ids.forEach(i=>{if(!prof[i])prof[i]={}})}catch(e){ids.forEach(i=>{prof[i]={}})}}
 function build(){
  const m=new Map();
- ALL.forEach(x=>{const out=x.sender_id===UID,oid=out?x.recipient_id:x.sender_id,on=out?x.recipient_name:x.sender_name;
-  let c=m.get(oid);if(!c){c={id:oid,name:on,last:x,unread:0};m.set(oid,c)}
-  if(!out&&(!reads[oid]||x.created_at>reads[oid])&&!(cur&&cur.id===oid))c.unread++});
- if(draft&&!m.has(draft.id))m.set(draft.id,{id:draft.id,name:draft.name,last:null,unread:0});
+ ALL.forEach(x=>{const out=x.sender_id===UID,oid=out?x.recipient_id:x.sender_id,on=out?x.recipient_name:x.sender_name,ch=chOf(x),k=key(oid,ch);
+  let c=m.get(k);if(!c){c={key:k,id:oid,name:on,ch,last:x,unread:0};m.set(k,c)}
+  if(!out&&(!reads[k]||x.created_at>reads[k])&&!isCur(oid,ch))c.unread++});
+ if(draft){const k=key(draft.id,draft.ch);if(!m.has(k))m.set(k,{key:k,id:draft.id,name:draft.name,ch:draft.ch||"personal",last:null,unread:0})}
  CONV=[...m.values()]}
+function paintTabs(){const t=$("#dm-tabs");if(!t)return;
+ const tabOf=c=>c.ch==="trade"?"trade":isFr(c.id)?"friends":"others",n={friends:0,others:0,trade:0};CONV.forEach(c=>n[tabOf(c)]+=c.unread);
+ t.hidden=!!q.trim();
+ t.innerHTML=[["friends","Friends"],["others","People"],["trade","Trade"]].map(a=>'<button type="button" data-tab="'+a[0]+'" class="'+(TAB===a[0]?"on":"")+'">'+a[1]+(n[a[0]]?'<i>'+(n[a[0]]>99?"99+":n[a[0]])+"</i>":"")+"</button>").join("")}
 function paintList(){
  const s=q.trim().toLowerCase(),SO=window.EMSocial&&EMSocial.loaded&&!EMSocial.missing;
- const card=c=>`<button class="dm-c ${cur&&cur.id===c.id?"on":""}" data-id="${esc(c.id)}" data-n="${esc(c.name)}">${av(c.id,c.name)}<span class="dm-ct"><b><span>${esc(c.name)}</span>${adm(c.id)}${frTag(c.id)}</b><small>${c.last?(c.last.sender_id===UID?"You: ":"")+esc(sum(c.last)):"New conversation"}</small></span><span class="dm-ci">${c.last?"<time>"+short(c.last.created_at)+"</time>":""}${c.unread?'<span class="dm-un">'+(c.unread>99?"99+":c.unread)+"</span>":""}</span></button>`;
+ const card=c=>`<button class="dm-c ${isCur(c.id,c.ch)?"on":""}" data-id="${esc(c.id)}" data-ch="${c.ch}" data-n="${esc(c.name)}">${av(c.id,c.name)}<span class="dm-ct"><b><span>${esc(c.name)}</span>${adm(c.id)}${c.ch==="trade"?'<i class="dm-fr tr">Trade</i>':frTag(c.id)}</b><small>${c.last?(c.last.sender_id===UID?"You: ":"")+esc(sum(c.last)):"New conversation"}</small></span><span class="dm-ci">${c.last?"<time>"+short(c.last.created_at)+"</time>":""}${c.unread?'<span class="dm-un">'+(c.unread>99?"99+":c.unread)+"</span>":""}</span></button>`;
  const fcard=(id,n)=>`<button class="dm-c ${cur&&cur.id===id?"on":""}" data-id="${esc(id)}" data-n="${esc(n)}">${av(id,n)}<span class="dm-ct"><b><span>${esc(n)}</span>${adm(id)}<i class="dm-fr">Friend</i></b><small>Friend, say hi</small></span></button>`;
  const req=r=>{const n=pname(r.requester_id)||"Member";return`<div class="dm-req" data-rid="${esc(r.id)}">${av(r.requester_id,n)}<span class="dm-ct"><b><span>${esc(n)}</span></b><small>wants to be your friend</small></span><span class="dm-rb"><button data-racc type="button">Accept</button><button data-rdec type="button" class="sec">Decline</button></span></div>`};
- const reqs=SO?EMSocial.incoming():[],inConv=new Set(CONV.map(c=>c.id));
+ const reqs=SO?EMSocial.incoming():[],inConv=new Set(CONV.filter(c=>c.ch!=="trade").map(c=>c.id));
  let fr=SO?EMSocial.friends().filter(id=>!inConv.has(id)&&pname(id)).map(id=>({id,n:pname(id)})):[];
  let h="";
  if(NOTIF.length&&!s)h+='<div class="dm-sec">Middleman requests ('+NOTIF.length+')</div>'+NOTIF.map(n=>{const p=n.payload||{};return'<div class="dm-nt" data-nid="'+esc(n.id)+'"><b>'+esc(n.text)+'</b><small>'+esc(day(n.created_at)+", "+fmtT(n.created_at))+'</small><span class="dm-ntb">'+(p.a?'<button type="button" data-nmsg="'+esc(p.a)+'" data-nn="'+esc(p.an)+'">Message '+esc(p.an)+'</button>':"")+(p.b?'<button type="button" data-nmsg="'+esc(p.b)+'" data-nn="'+esc(p.bn)+'">Message '+esc(p.bn)+'</button>':"")+'<button type="button" class="sec" data-ndel>Dismiss</button></span></div>'}).join("");
@@ -93,9 +98,12 @@ function paintList(){
   if(!h)h='<div class="dm-none">Nobody found.</div>'}
  else{
   if(reqs.length)h+='<div class="dm-sec">Friend requests ('+reqs.length+')</div>'+reqs.map(req).join("");
-  if(CONV.length)h+=((reqs.length||fr.length)?'<div class="dm-sec">Conversations</div>':"")+CONV.map(card).join("");
-  if(fr.length)h+='<div class="dm-sec">Friends</div>'+fr.map(f=>fcard(f.id,f.n)).join("");
-  if(!h)h='<div class="dm-none">No conversations yet.<br>Search a member above to say hi.</div>'}
+  const tabOf=c=>c.ch==="trade"?"trade":isFr(c.id)?"friends":"others",tl=CONV.filter(c=>tabOf(c)===TAB);
+  if(reqs.length)h+='<div class="dm-sec">Friend requests ('+reqs.length+')</div>'+reqs.map(req).join("");
+  h+=tl.map(card).join("");
+  if(TAB==="friends")h+=fr.map(f=>fcard(f.id,f.n)).join("");
+  if(!tl.length&&!(TAB==="friends"&&fr.length))h+='<div class="dm-none">'+(TAB==="friends"?"No friends here yet.<br>Add friends from their profile or from a chat.":TAB==="others"?"No chats with people you haven't added.<br>Search a member above to say hi.":"No trade chats yet.<br>Press \u201cTalk to the trader\u201d on a trade ad.")+"</div>";
+  paintTabs()}
  $("#dm-list").innerHTML=h}
 function paintHead(){const h=$("#dm-ha");if(!h||!cur)return;
  let b='<a class="dm-hb" href="profile.html?u='+encodeURIComponent(cur.name)+'">Profile</a>';
@@ -117,9 +125,9 @@ function msgHtml(x){
 function paintChat(stick){
  const r=$("#dm-r");
  if(!cur){r.innerHTML='<div class="dm-empty"><div>'+ICON+'<h3>Your messages</h3>Pick a conversation on the left,<br>or search a member to start a new one.</div></div>';root.classList.remove("chat");return}
- if(!$("#dm-msgs")||r.dataset.id!==cur.id){
-  r.dataset.id=cur.id;pendImg=null;
-  r.innerHTML=`<div class="dm-rh"><button class="dm-back" id="dm-back" type="button">\u2039 Back</button>${av(cur.id,cur.name)}<b>${esc(cur.name)}</b>${adm(cur.id)}<span class="dm-ha" id="dm-ha"></span></div><div class="dm-msgs" id="dm-msgs"></div><div class="dm-err" id="dm-err"></div><div class="dm-pend" id="dm-pend" hidden></div><div class="dm-f"><div class="dm-pw"><button class="dm-plus" id="dm-plus" type="button" aria-label="Send a picture or an item">${PLUS}</button><div class="dm-menu" id="dm-menu" hidden><button type="button" data-add="img">Send a picture</button><button type="button" data-add="item">Send an item</button><button type="button" data-add="mm">Request a middleman</button></div></div><textarea id="dm-in" maxlength="1000" rows="1" placeholder="Message ${esc(cur.name)}\u2026"></textarea><button id="dm-send" type="button">Send</button></div><input type="file" id="dm-file" accept="image/*" hidden>`;stick=true;paintHead()}
+ if(!$("#dm-msgs")||r.dataset.id!==key(cur.id,cur.ch)){
+  r.dataset.id=key(cur.id,cur.ch);pendImg=null;
+  r.innerHTML=`<div class="dm-rh"><button class="dm-back" id="dm-back" type="button">\u2039 Back</button>${av(cur.id,cur.name)}<b>${esc(cur.name)}</b>${adm(cur.id)}${cur.ch==="trade"?'<i class="dm-fr tr">Trading chat</i>':""}<span class="dm-ha" id="dm-ha"></span></div><div class="dm-msgs" id="dm-msgs"></div><div class="dm-err" id="dm-err"></div><div class="dm-pend" id="dm-pend" hidden></div><div class="dm-f"><div class="dm-pw"><button class="dm-plus" id="dm-plus" type="button" aria-label="Send a picture or an item">${PLUS}</button><div class="dm-menu" id="dm-menu" hidden><button type="button" data-add="img">Send a picture</button><button type="button" data-add="item">Send an item</button><button type="button" data-add="mm">Request a middleman</button></div></div><textarea id="dm-in" maxlength="1000" rows="1" placeholder="Message ${esc(cur.name)}\u2026"></textarea><button id="dm-send" type="button">Send</button></div><input type="file" id="dm-file" accept="image/*" hidden>`;stick=true;paintHead()}
  const box=$("#dm-msgs"),near=box.scrollHeight-box.scrollTop-box.clientHeight<90;
  let h="",d="";MSGS.forEach(x=>{const k=day(x.created_at);if(k!==d){d=k;h+='<div class="dm-day">'+k+"</div>"}h+=msgHtml(x)});
  if(!MSGS.length)h='<div class="dm-none" style="margin:auto">No messages yet. Say hi</div>';
@@ -132,10 +140,11 @@ async function loadPics(){
    if(r&&r[0]&&r[0].img){IMG[x.id]=r[0].img;const el=document.querySelector('[data-pic="'+x.id+'"]');
     if(el){const im=document.createElement("img");im.className="dm-pic";im.dataset.pic=x.id;im.alt="Picture";im.src=r[0].img;el.replaceWith(im);const b=$("#dm-msgs");if(b&&b.scrollHeight-b.scrollTop-b.clientHeight<400)b.scrollTop=b.scrollHeight}}}
   catch(e){delete PICREQ[x.id]}}}
-const pair=id=>"dms?select="+COLS+"&or=(and(sender_id.eq."+UID+",recipient_id.eq."+id+"),and(sender_id.eq."+id+",recipient_id.eq."+UID+"))&order=created_at.asc&limit=400";
+const pair=(id,ch)=>"dms?select="+COLS+(NEW10?"&channel=eq."+(ch==="trade"?"trade":"personal"):"")+"&or=(and(sender_id.eq."+UID+",recipient_id.eq."+id+"),and(sender_id.eq."+id+",recipient_id.eq."+UID+"))&order=created_at.asc&limit=400";
 async function rest(fn){try{return await fn()}catch(e){
- if(NEW9&&/edited_at/i.test(e.message)){NEW9=false;COLS=EXT;return await rest(fn)}
- if(NEW8&&/kind|payload/i.test(e.message)){NEW8=false;NEW9=false;COLS=BASE;return await fn()}throw e}}
+ if(NEW10&&/channel/i.test(e.message)){NEW10=false;COLS=EXT9;return await rest(fn)}
+ if(NEW9&&/edited_at/i.test(e.message)){NEW9=false;NEW10=false;COLS=EXT;return await rest(fn)}
+ if(NEW8&&/kind|payload/i.test(e.message)){NEW8=false;NEW9=false;NEW10=false;COLS=BASE;return await fn()}throw e}}
 const sigOf=m=>m.length+":"+(m.length?m[m.length-1].id:"")+":"+m.map(x=>(x.edited_at||"")+(x.ms||"")+(x.mr||"")).join("|");
 async function loadNotifs(){if(!notifOk||!NEW9)return;
  try{NOTIF=await EMAuth.rest("notifications?select=id,text,payload,created_at&order=created_at.desc&limit=30")}catch(e){NOTIF=[];if(setup(e))notifOk=false}}
@@ -145,24 +154,26 @@ async function tick(first){
   if(window.EMSocial&&(first||tk%3===0)){await EMSocial.load()}tk++;
   const fids=window.EMSocial&&EMSocial.loaded&&!EMSocial.missing?[...EMSocial.friends(),...EMSocial.incoming().map(r=>r.requester_id)]:[];
   await loadProfiles([...ALL.map(x=>x.sender_id===UID?x.recipient_id:x.sender_id),...fids]);
-  if(cur){const m=vis(await rest(()=>EMAuth.rest(pair(cur.id))));const sig=sigOf(m);
+  if(cur){const m=vis(await rest(()=>EMAuth.rest(pair(cur.id,cur.ch))));const sig=sigOf(m);
    if(sig!==lastSig||first){lastSig=sig;MSGS=m;paintChat(false)}
-   paintHead();if(!document.hidden)markRead(cur.id)}
+   paintHead();if(!document.hidden)markRead(key(cur.id,cur.ch))}
   await loadNotifs();build();paintList()}
  catch(e){if(first){$("#dm-list").innerHTML=setup(e)?SETUPMSG:'<div class="dm-none">Couldn\'t load messages: '+esc(e.message)+"</div>"}}}
-async function open(id,name){
- cur={id,name};lastSig="";MSGS=[];root.classList.add("chat");draft=CONV.some(c=>c.id===id)?draft:{id,name};
+async function open(id,name,ch,pre){ch=ch==="trade"?"trade":"personal";
+ if(ch==="trade"&&!NEW10){alert(NEED10);ch="personal"}
+ cur={id,name,ch};lastSig="";MSGS=[];root.classList.add("chat");draft=CONV.some(c=>c.key===key(id,ch))?draft:{id,name,ch};
+ if(ch==="trade")TAB="trade";else TAB=isFr(id)?"friends":"others";sv("dm_tab",TAB);
  await loadProfiles([id]);paintChat(true);build();paintList();
- try{MSGS=vis(await rest(()=>EMAuth.rest(pair(id))));lastSig=sigOf(MSGS);markRead(id);paintChat(true);build();paintList()}
+ try{MSGS=vis(await rest(()=>EMAuth.rest(pair(id,ch))));lastSig=sigOf(MSGS);markRead(key(id,ch));paintChat(true);build();paintList()}
  catch(e){const b=$("#dm-err");if(b)b.textContent=setup(e)?"Run supabase-setup-6.sql in Supabase first.":e.message}
- const i=$("#dm-in");if(i&&innerWidth>820)i.focus()}
+ const i=$("#dm-in");if(i){if(pre&&!i.value&&!MSGS.length)i.value=pre;if(innerWidth>820)i.focus()}}
 /* one place that writes a message */
 async function post(fields){
- const body=Object.assign({sender_id:UID,recipient_id:cur.id,sender_name:ME,recipient_name:cur.name},fields);
+ const body=Object.assign({sender_id:UID,recipient_id:cur.id,sender_name:ME,recipient_name:cur.name},cur.ch==="trade"?{channel:"trade"}:{},fields);
  const r=await EMAuth.rest("dms?select="+COLS,"POST",body,{Prefer:"return=representation"});const m=r[0];
  if(fields.kind==="image"&&m){IMG[m.id]=fields.payload.img}
  if(fields.kind==="item"&&m&&!m.iname)m.iname=fields.payload.n;
- MSGS.push(m);ALL.unshift(m);lastSig=sigOf(MSGS);markRead(cur.id);draft=null;paintChat(true);build();paintList()}
+ MSGS.push(m);ALL.unshift(m);lastSig=sigOf(MSGS);markRead(key(cur.id,cur.ch));draft=null;paintChat(true);build();paintList()}
 async function send(){
  const i=$("#dm-in"),b=$("#dm-send"),t=i.value.trim();if(!cur)return;if(!t&&!pendImg)return;$("#dm-err").textContent="";b.disabled=true;
  try{
@@ -250,7 +261,8 @@ $("#dm-list").addEventListener("click",async e=>{
   try{if(ra)await EMSocial.accept(row);else await EMSocial.remove(row);await EMSocial.load();paintList();paintHead()}catch(err){alert("Couldn't do that: "+err.message)}return}
  const nm=e.target.closest("[data-nmsg]");if(nm){open(nm.dataset.nmsg,nm.dataset.nn);return}
  const nd=e.target.closest("[data-ndel]");if(nd){const id=nd.closest("[data-nid]").dataset.nid;try{await EMAuth.rest("notifications?id=eq."+encodeURIComponent(id),"DELETE");NOTIF=NOTIF.filter(n=>n.id!==id);paintList()}catch(err){alert("Couldn't dismiss: "+err.message)}return}
- const c=e.target.closest(".dm-c");if(c)open(c.dataset.id,c.dataset.n)});
+ const tb=e.target.closest("[data-tab]");if(tb){TAB=tb.dataset.tab;sv("dm_tab",TAB);paintList();return}
+ const c=e.target.closest(".dm-c");if(c)open(c.dataset.id,c.dataset.n,c.dataset.ch)});
 $("#dm-r").addEventListener("click",async e=>{
  const t=e.target;
  if(t.id==="dm-send")send();
@@ -282,10 +294,15 @@ $("#dm-r").addEventListener("keydown",e=>{if(e.target.id==="dm-ed"&&e.key==="Ent
 let tm;$("#dm-q").addEventListener("input",e=>{q=e.target.value;clearTimeout(tm);paintList();const s=q.trim();if(s.length<2){people=[];return}
  tm=setTimeout(async()=>{try{const r=await EMAuth.rest("profiles?select=id,username,role,avatar&username=ilike."+encodeURIComponent("*"+s.replace(/[*%,()]/g,"")+"*")+"&limit=12");
   people=r.filter(p=>p.id!==UID);people.forEach(p=>prof[p.id]=p);paintList()}catch(err){}},250)});
+{const lh=$(".dm-lh");if(lh){lh.insertAdjacentHTML("beforeend",'<div class="dm-tabs" id="dm-tabs"></div>');$("#dm-tabs").addEventListener("click",e=>{const tb=e.target.closest("[data-tab]");if(tb){TAB=tb.dataset.tab;sv("dm_tab",TAB);paintList()}})}}
 paintChat();
-tick(true).then(async()=>{const u=new URLSearchParams(location.search).get("u");
+tick(true).then(async()=>{const P=new URLSearchParams(location.search),u=P.get("u"),ch=P.get("ch"),ad=P.get("ad");
  if(u&&u.toLowerCase()!==ME.toLowerCase()){try{const r=await EMAuth.rest("profiles?select=id,username,role,avatar&username=ilike."+encodeURIComponent(u.replace(/[*%,()]/g,"")));
-  if(r&&r[0]){prof[r[0].id]=r[0];open(r[0].id,r[0].username)}}catch(e){}}});
+  if(r&&r[0]){prof[r[0].id]=r[0];let pre="";
+   if(ch==="trade"&&ad&&/^[0-9a-f-]{36}$/i.test(ad)){try{const a=await EMAuth.rest("ads?id=eq."+ad+"&select=offering,looking");
+     if(a&&a[0]){const nm=L=>(L||[]).map(e=>e.n==="@r"?e.q+" Robux":e.n==="@m"?e.q+" Gems":e.n.startsWith("@g:")?e.n.slice(3)+" crosstrade":e.n+(e.q>1?" x"+e.q:"")).join(", ");
+      pre="Hi! About your trade ad. You offer: "+nm(a[0].offering)+". You want: "+nm(a[0].looking)+". "}}catch(e){}}
+   open(r[0].id,r[0].username,ch,pre.slice(0,900))}}catch(e){}}});
 setInterval(()=>{if(!document.hidden)tick(false)},4000);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)tick(false)});
 })();

@@ -92,7 +92,8 @@ $$(".tabs button").forEach(b=>b.onclick=()=>tab(b.dataset.tab));
 /* ---- trade hub ----
    Ads live in the Supabase "ads" table. Only logged-in people can read, post and delete (own ads; admin can delete any). */
 const ME=window.EMAuth&&EMAuth.user();
-let ADS=[];
+let ADS=[],HEARTS={},HOK=true;
+const HEART='<svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-9.5-9.2C1.2 8.5 3 5 6.4 5c2 0 3.6 1.1 4.6 2.7h2C14 6.1 15.6 5 17.6 5 21 5 22.8 8.5 21.5 11.8 19.5 16.4 12 21 12 21z"/></svg>';
 const row=r=>({id:r.id,uid:r.user_id,u:r.username,a:r.offering||[],b:r.looking||[],c:r.need||[],note:r.note||"",t:Date.parse(r.created_at)});
 const Ads={
  async all(){return(await EMAuth.rest("ads?select=*&order=created_at.desc&limit=200")).map(row)},
@@ -119,11 +120,19 @@ const tot=L=>L.reduce((t,e)=>{const i=by(e.n);return i?t+line(i,e.q):t},0);
 function paintFeed(){const q=$("#h-q").value.trim().toLowerCase(),L=ADS.filter(a=>!q||a.u.toLowerCase().includes(q)||[...a.a,...a.b].some(e=>e.n.toLowerCase().includes(q)));
  const can=a=>EMAuth.isAdmin()||a.uid===EMAuth.uid();
  $("#feed").innerHTML=L.length?L.map(a=>{const A=tot(a.a),B=tot(a.b);
-  return`<div class="ad"><div class="ad-h"><b>${esc(a.u)}</b><span>${ago(a.t)}</span></div><div class="cols"><div><div class="lab">Offering · ${fmt(A)}</div>${mini(a.a)}</div><div><div class="lab">Looking for · ${fmt(B)}</div>${tagsHTML(a.c)}${mini(a.b)}</div></div>${a.note?`<p>${esc(a.note)}</p>`:""}<div class="act"><button data-chk="${esc(a.id)}">⚖ Check this trade</button>${can(a)?`<button data-del="${esc(a.id)}">${a.uid===EMAuth.uid()?"Delete my ad":"Delete ad (admin)"}</button>`:""}</div></div>`}).join(""):'<div class="em">No ads yet. Post the first one above.</div>'}
+  return`<div class="ad"><div class="ad-h"><b>${esc(a.u)}</b><span class="ad-r"><button type="button" class="heart${(HEARTS[a.id]||{}).me?" on":""}" data-heart="${esc(a.id)}" aria-pressed="${!!(HEARTS[a.id]||{}).me}" aria-label="Heart this ad" title="Heart this ad">${HEART}<span>${(HEARTS[a.id]||{}).n||0}</span></button>${ago(a.t)}</span></div><div class="cols"><div><div class="lab">Offering · ${fmt(A)}</div>${mini(a.a)}</div><div><div class="lab">Looking for · ${fmt(B)}</div>${tagsHTML(a.c)}${mini(a.b)}</div></div>${a.note?`<p>${esc(a.note)}</p>`:""}<div class="act"><button data-chk="${esc(a.id)}">⚖ Check this trade</button>${a.uid!==EMAuth.uid()?`<span class="talk"><button type="button" data-talk>Talk to the trader</button><span class="talk-m" hidden><a href="forum-discussions.html?u=${encodeURIComponent(a.u)}">Personal message</a><a href="forum-discussions.html?u=${encodeURIComponent(a.u)}&ch=trade&ad=${esc(a.id)}">Trading message</a></span></span>`:""}${can(a)?`<button data-del="${esc(a.id)}">${a.uid===EMAuth.uid()?"Delete my ad":"Delete ad (admin)"}</button>`:""}</div></div>`}).join(""):'<div class="em">No ads yet. Post the first one above.</div>'}
+async function loadHearts(){if(!HOK)return;
+ try{const r=await EMAuth.rest("ad_hearts?select=ad_id,user_id&limit=10000"),m={};r.forEach(h=>{const o=m[h.ad_id]||(m[h.ad_id]={n:0,me:false});o.n++;if(h.user_id===EMAuth.uid())o.me=true});HEARTS=m}
+ catch(e){if(/does not exist|schema cache|Could not find/i.test(e.message))HOK=false}}
 async function feed(){if(!ME)return;
- try{ADS=await Ads.all();paintFeed()}catch(e){$("#feed").innerHTML='<div class="em">Couldn\'t load ads: '+esc(e.message)+'</div>'}}
+ try{ADS=await Ads.all();await loadHearts();paintFeed()}catch(e){$("#feed").innerHTML='<div class="em">Couldn\'t load ads: '+esc(e.message)+'</div>'}}
 $("#h-q").oninput=paintFeed;
-$("#feed").onclick=async e=>{const c=e.target.closest("[data-chk]"),d=e.target.closest("[data-del]");
+$("#feed").onclick=async e=>{const c=e.target.closest("[data-chk]"),d=e.target.closest("[data-del]"),hb=e.target.closest("[data-heart]"),tk=e.target.closest("[data-talk]");
+ if(tk){const m=tk.nextElementSibling;const was=m.hidden;document.querySelectorAll(".talk-m").forEach(x=>x.hidden=true);m.hidden=!was;return}
+ if(hb){if(!HOK){alert("Run supabase-setup-10.sql in Supabase first.");return}
+  const id=hb.dataset.heart,o=HEARTS[id]||(HEARTS[id]={n:0,me:false}),on=!o.me;o.me=on;o.n=Math.max(0,o.n+(on?1:-1));paintFeed();
+  try{if(on)await EMAuth.rest("ad_hearts","POST",{ad_id:id,user_id:EMAuth.uid()},{Prefer:"return=minimal"});else await EMAuth.rest("ad_hearts?ad_id=eq."+encodeURIComponent(id)+"&user_id=eq."+EMAuth.uid(),"DELETE",null,{Prefer:"return=minimal"})}
+  catch(x){if(!/duplicate|23505/i.test(x.message)){o.me=!on;o.n=Math.max(0,o.n+(on?-1:1));paintFeed();if(/does not exist|schema cache/i.test(x.message))HOK=false;alert("Couldn't heart: "+(HOK?x.message:"run supabase-setup-10.sql in Supabase first."))}}return}
  if(c){const a=ADS.find(x=>x.id===c.dataset.chk);if(a){/* viewer gives what the poster wants */S.a=JSON.parse(JSON.stringify(a.b));S.b=JSON.parse(JSON.stringify(a.a));persist("a");persist("b");api.redraw();tab("chk");scrollTo(0,0)}}
  if(d&&confirm("Delete this ad?")){try{await Ads.del(d.dataset.del);await feed()}catch(x){alert("Couldn't delete: "+x.message)}}};
 api.redraw();tab(location.hash==="#hub"?"hub":"chk");
@@ -136,3 +145,4 @@ document.addEventListener("input",e=>{const r=e.target.closest&&e.target.closest
  S[k]=S[k].filter(x=>x.n!=="@r");if(v)S[k].push({n:"@r",q:v});persist(k);paintTags()});
 document.addEventListener("input",e=>{const r=e.target.closest&&e.target.closest("[data-gem]");if(!r)return;const k=r.dataset.gem,v=Math.max(0,Math.min(99999999,parseInt(r.value,10)||0));
  S[k]=S[k].filter(x=>x.n!=="@m");if(v)S[k].push({n:"@m",q:v});persist(k);paintTags()});
+document.addEventListener("click",e=>{if(!e.target.closest(".talk"))document.querySelectorAll(".talk-m").forEach(x=>x.hidden=true)});

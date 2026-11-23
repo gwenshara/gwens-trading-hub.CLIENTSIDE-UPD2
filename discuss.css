@@ -174,3 +174,12 @@
 .dm-ntb{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
 .dm-ntb button{padding:6px 10px;border:0;border-radius:8px;background:#7aa7ff;color:#fff;font:800 11px Montserrat,sans-serif;cursor:pointer}
 .dm-ntb button.sec{background:transparent;border:1px solid var(--bl,#3a3a42);color:var(--text)}
+
+/* ===== Friends / People / Trade sections ===== */
+.dm-tabs{display:flex;gap:6px;margin-top:12px}
+.dm-tabs[hidden]{display:none}
+.dm-tabs button{flex:1;position:relative;padding:9px 6px;border-radius:10px;border:2px solid var(--bl,#3a3a42);background:transparent;color:var(--mute);font:800 12px Montserrat,sans-serif;cursor:pointer}
+.dm-tabs button:hover{border-color:#7aa7ff66;color:var(--text)}
+.dm-tabs button.on{background:#7aa7ff;border-color:#7aa7ff;color:#fff}
+.dm-tabs button i{font-style:normal;display:inline-block;min-width:16px;height:16px;line-height:16px;margin-left:5px;padding:0 4px;border-radius:99px;background:#e5484d;color:#fff;font-size:10px}
+.dm-fr.tr{background:#c27a14}
