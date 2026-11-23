@@ -53,6 +53,7 @@ function card(p){
  <div class="vt-top">${thumb(p.item)}<div class="vt-ti"><h3>${esc(p.item)}</h3><span>by <b>${esc(p.username)}</b> · ${ago(Date.parse(p.created_at))}</span></div><span class="vt-st">${open?"Open":"Closed"}</span></div>
  <div class="vt-chg"><b>${KIND[p.kind]}</b><em>${showVal(p.kind,p.current_val)}</em><span class="ar">➜</span><span class="to">${showVal(p.kind,p.proposed)}</span></div>
  ${p.note?`<p class="vt-note">${esc(p.note)}</p>`:""}
+ ${(p.images&&p.images.length)?`<div class="vt-imgs n${p.images.length}">${p.images.map((u,i)=>`<button type="button" class="vt-im" data-im="${i}"><img src="${esc(u)}" alt="Poll picture ${i+1}"></button>`).join("")}</div>`:""}
  <div class="vt-res"><div class="vt-rb"><i class="a" style="width:${pa}%"></i><i class="d" style="width:${pd}%"></i></div><div class="vt-rn"><span class="a">${UP}${t.a} agree${tot?" · "+pa+"%":""}</span><span>${tot} vote${tot===1?"":"s"}</span><span class="d">${t.d} disagree${DN}</span></div></div>
  <div class="vt-act"><button class="va ${t.my==="agree"?"on":""}" data-v="agree" ${open?"":"disabled"}>${UP}Agree</button><button class="vd ${t.my==="disagree"?"on":""}" data-v="disagree" ${open?"":"disabled"}>${DN}Disagree</button><button class="ghost" data-cm>💬 ${cm.length} comment${cm.length===1?"":"s"}</button><span class="gap"></span>${can?`<button class="ghost" data-close>${open?"Close poll":"Reopen"}</button><button class="ghost danger" data-del>Delete</button>`:""}</div>
  <div class="vt-msg"></div>
@@ -62,6 +63,7 @@ function card(p){
 const note=(el,m,ok)=>{const b=el.closest(".vt-card").querySelector(".vt-msg");b.textContent=m;b.className="vt-msg"+(ok?" ok":"")};
 $("#vt-list").addEventListener("click",async e=>{
  const c=e.target.closest(".vt-card");if(!c)return;const id=c.dataset.id,p=P.find(x=>x.id===id),b=e.target.closest("button");if(!b||!p)return;
+ if(b.dataset.im!==undefined){const u=(p.images||[])[+b.dataset.im];if(u){lb.innerHTML=`<img src="${esc(u)}" alt="">`;lb.hidden=false}return}
  try{
   if(b.dataset.v){if(!ME){note(b,"Log in (top left) to vote.");return}
    const my=tally(id).my,v=b.dataset.v;
@@ -82,10 +84,10 @@ document.querySelectorAll(".vt-f [data-f]").forEach(b=>b.onclick=()=>{filt=b.dat
 $("#f-mine").onclick=()=>{if(!ME){alert("Log in (top left) first.");return}mine=!mine;$("#f-mine").classList.toggle("on",mine);paint()};
 $("#vt-q").oninput=e=>{q=e.target.value;paint()};$("#vt-sort").onchange=e=>{sort=e.target.value;paint()};
 /* ---- create poll ---- */
-let N={item:null,kind:"price",val:"",stars:0,dem:""};
+let N={item:null,kind:"price",val:"",stars:0,dem:"",imgs:[]};
 const ov=$("#vt-ov");
 function openNew(){if(!ME){alert(EMAuth.configured?"Log in (top left) to create a poll.":"The accounts server isn't set up yet, see SETUP.md.");return}
- N={item:null,kind:"price",val:"",stars:0,dem:""};drawNew();$("#n-note").value="";$("#n-msg").textContent="";ov.hidden=false;setTimeout(()=>$("#n-q").focus(),30)}
+ N={item:null,kind:"price",val:"",stars:0,dem:"",imgs:[]};drawNew();drawImgs();$("#n-note").value="";$("#n-msg").textContent="";ov.hidden=false;setTimeout(()=>$("#n-q").focus(),30)}
 const closeNew=()=>{ov.hidden=true};
 function drawNew(){
  $("#n-pick").innerHTML=N.item?`<div class="vt-sel">${thumb(N.item)}<b>${esc(N.item)}</b><button type="button" id="n-ch">Change</button></div>`:`<input id="n-q" autocomplete="off" placeholder="Search an item…"><div class="vt-rs" id="n-rs" hidden></div>`;
@@ -108,8 +110,24 @@ ov.addEventListener("click",e=>{
  else if(b.dataset.k){N.kind=b.dataset.k;drawNew()}
  else if(b.dataset.s){N.stars=+b.dataset.s;drawNew()}
  else if(b.dataset.d){N.dem=b.dataset.d;drawNew()}
+ else if(b.id==="n-addimg")$("#n-file").click()
+ else if(b.dataset.ri){N.imgs.splice(+b.dataset.ri,1);drawImgs()}
  else if(b.id==="n-go")submit(b)});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!ov.hidden)closeNew()});
+/* ---- pictures on a poll: shrunk in the browser so they fit in the database ---- */
+function shrinkImg(file,max){return new Promise((ok,no)=>{const r=new FileReader();r.onerror=()=>no(new Error("Couldn't read that file."));
+ r.onload=()=>{const im=new Image();im.onerror=()=>no(new Error("That file isn't a picture I can open."));
+  im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height)),w=Math.round(im.width*k),h=Math.round(im.height*k),c=document.createElement("canvas");c.width=w;c.height=h;c.getContext("2d").drawImage(im,0,0,w,h);
+   let u=c.toDataURL("image/webp",.72);if(u.indexOf("data:image/webp")!==0)u=c.toDataURL("image/jpeg",.72);ok(u)};im.src=r.result};r.readAsDataURL(file)})}
+function drawImgs(){const b=$("#n-imgs");if(!b)return;
+ b.innerHTML=N.imgs.map((u,i)=>`<span class="vt-th"><img src="${u}" alt=""><button type="button" data-ri="${i}" aria-label="Remove picture">\u2715</button></span>`).join("")+(N.imgs.length<3?'<button type="button" class="vt-addimg" id="n-addimg">+ Add picture</button>':"")}
+$("#n-file").onchange=async e=>{const m=$("#n-msg");m.className="vt-msg";
+ for(const f of Array.from(e.target.files)){if(N.imgs.length>=3){m.textContent="Up to 3 pictures per poll.";break}
+  try{N.imgs.push(await shrinkImg(f,720))}catch(err){m.textContent=err.message}}
+ e.target.value="";drawImgs()};
+const lb=document.createElement("div");lb.className="vt-lb";lb.hidden=true;document.body.appendChild(lb);
+lb.onclick=()=>{lb.hidden=true;lb.innerHTML=""};
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!lb.hidden){lb.hidden=true;lb.innerHTML=""}});
 async function submit(btn){
  const m=$("#n-msg");m.className="vt-msg";
  if(!N.item){m.textContent="Choose an item first.";return}
@@ -120,9 +138,9 @@ async function submit(btn){
  const cur=curOf(N.kind,N.item);
  if(String(cur).toLowerCase()===prop){m.textContent="That is already the current "+KIND[N.kind].toLowerCase()+".";return}
  btn.disabled=true;m.textContent="Posting…";
- try{const r=await api("polls","POST",{user_id:UID,username:ME,item:N.item,kind:N.kind,current_val:String(cur),proposed:prop,note:$("#n-note").value.trim()},{Prefer:"return=representation"});
+ try{const r=await api("polls","POST",{user_id:UID,username:ME,item:N.item,kind:N.kind,current_val:String(cur),proposed:prop,note:$("#n-note").value.trim(),images:N.imgs},{Prefer:"return=representation"});
   P.unshift(r[0]);closeNew();filt="open";document.querySelectorAll(".vt-f [data-f]").forEach(x=>x.classList.toggle("on",x.dataset.f==="open"));paint();window.scrollTo({top:0,behavior:"smooth"})}
- catch(e){m.textContent=e.message==="SETUP"?"Run supabase-setup-5.sql in Supabase first.":"Couldn't post: "+e.message}
+ catch(e){m.textContent=e.message==="SETUP"?"Run supabase-setup-5.sql in Supabase first.":/images/i.test(e.message)?"Pictures can't be saved yet: run supabase-setup-7.sql in Supabase first.":"Couldn't post: "+e.message}
  btn.disabled=false}
 $("#vt-new").onclick=openNew;
 if(!ME)$("#vt-tip").textContent=EMAuth.configured?"Log in (top left) to create polls, vote and comment. You can read everything without an account.":"The accounts server isn't set up yet, see SETUP.md.";

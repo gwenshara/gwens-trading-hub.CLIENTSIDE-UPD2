@@ -94,3 +94,14 @@
 .vt-ar{width:1.05em;height:1.05em;vertical-align:-.15em;margin-right:5px;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
 .vt-act .va .vt-ar,.vt-rn .a .vt-ar{color:#4cd964}.vt-act .vd .vt-ar,.vt-rn .d .vt-ar{color:#ff4d4d}
 .vt-rn .d .vt-ar{margin:0 0 0 5px}
+
+.vt-imgbar{display:flex;flex-wrap:wrap;gap:10px}
+.vt-th{position:relative;width:86px;height:86px;border-radius:10px;overflow:hidden;border:1px solid #fff3;background:#1c1c20}
+.vt-th img{width:100%;height:100%;object-fit:cover;display:block}
+.vt-th button{position:absolute;top:3px;right:3px;width:22px;height:22px;border:0;border-radius:50%;background:#000c;color:#fff;cursor:pointer;font-size:12px;line-height:1}
+.vt-addimg{width:86px;height:86px;border-radius:10px;border:2px dashed #7aa7ff88;background:transparent;color:#7aa7ff;font:700 12px Montserrat,sans-serif;cursor:pointer}
+.vt-imgs{display:grid;gap:8px;margin-top:10px}.vt-imgs.n1{grid-template-columns:1fr}.vt-imgs.n2{grid-template-columns:1fr 1fr}.vt-imgs.n3{grid-template-columns:1fr 1fr 1fr}
+.vt-im{padding:0;border:1px solid #fff2;border-radius:10px;overflow:hidden;background:#1c1c20;cursor:zoom-in;display:block}
+.vt-im img{width:100%;max-height:320px;object-fit:cover;display:block}.vt-imgs.n1 .vt-im img{max-height:380px;object-fit:contain}
+.vt-lb{position:fixed;inset:0;z-index:300;background:#000d;display:flex;align-items:center;justify-content:center;padding:20px;cursor:zoom-out}
+.vt-lb[hidden]{display:none}.vt-lb img{max-width:100%;max-height:100%;border-radius:10px}
