@@ -1,16 +1,20 @@
-/* Remembers light/dark mode on every page and in every tab. Loaded in <head> so there is no flash. */
+/* Dark mode is the default; light mode is the extra option. The choice is remembered on every page and in every tab. */
 (function(){
+if(window.__emTheme)return;window.__emTheme=1;
 var K="em_theme",R=document.documentElement;
-function get(){try{var v=localStorage.getItem(K);return v==="light"||v==="dark"?v:null}catch(e){return null}}
-function put(v){try{localStorage.setItem(K,v)}catch(e){}}
-var s=get();if(s)R.setAttribute("data-theme",s);
-/* any change to the theme (the Catalog's own button, or ours) is saved */
-new MutationObserver(function(){var t=R.getAttribute("data-theme");if(t==="light"||t==="dark"){if(t!==get())put(t)}}).observe(R,{attributes:true,attributeFilter:["data-theme"]});
-/* another open tab changed it */
-addEventListener("storage",function(e){if(e.key===K&&(e.newValue==="light"||e.newValue==="dark")&&R.getAttribute("data-theme")!==e.newValue)R.setAttribute("data-theme",e.newValue)});
-function light(){var t=R.getAttribute("data-theme");return t?t==="light":matchMedia("(prefers-color-scheme:light)").matches}
-document.addEventListener("DOMContentLoaded",function(){
- if(document.getElementById("theme"))return; /* the Catalog pages already have a button */
+function ok(v){return v==="light"||v==="dark"}
+function get(){var v=null;try{v=localStorage.getItem(K)}catch(e){}
+ if(!ok(v)){var m=document.cookie.match(/(?:^|; )em_theme=(light|dark)/);v=m?m[1]:null}
+ return ok(v)?v:null}
+function put(v){try{localStorage.setItem(K,v)}catch(e){}
+ try{document.cookie=K+"="+v+"; path=/; max-age=31536000; SameSite=Lax"}catch(e){}}
+R.setAttribute("data-theme",get()||"dark"); /* nothing saved yet = dark */
+new MutationObserver(function(){var t=R.getAttribute("data-theme");if(ok(t)&&t!==get())put(t)}).observe(R,{attributes:true,attributeFilter:["data-theme"]});
+addEventListener("storage",function(e){if(e.key===K&&ok(e.newValue)&&R.getAttribute("data-theme")!==e.newValue)R.setAttribute("data-theme",e.newValue)});
+function light(){return R.getAttribute("data-theme")==="light"}
+function ready(f){if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",f);else f()}
+ready(function(){
+ if(document.getElementById("theme")||document.querySelector(".em-theme"))return; /* the Catalog pages already have a button */
  var st=document.createElement("style");
  st.textContent=".em-theme{position:fixed;top:12px;right:12px;z-index:900;width:42px;height:42px;padding:0;border-radius:50%;border:1px solid var(--line,#3a3a42);background:var(--panel,#26262a);color:var(--text,#f1f1f4);cursor:pointer;display:grid;place-items:center}.em-theme:hover{border-color:var(--accent,#7aa7ff)}.em-theme svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}";
  document.head.appendChild(st);

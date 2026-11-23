@@ -1,3 +1,4 @@
+if(!window.__emTheme){try{var _t=document.createElement("script");_t.src="theme.js?v=1";document.head.appendChild(_t)}catch(e){}}
 /* EM Wiki accounts, stored on a real server (Supabase) so they work on every device and every visit.
    Passwords are handled and hashed by Supabase Auth; this file never sees a stored password.
    Set your project URL and public key in supabase-config.js (see SETUP.md). */
