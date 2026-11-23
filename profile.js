@@ -76,11 +76,18 @@ function paintPres(){
  let h='<div class="em-roles">'+PR.tags(P)+'</div>';
  if(mine){h+='<div class="em-stm"><button type="button" class="em-stb" id="pf-stb">'+PR.dot({status:P.status,last_seen:new Date().toISOString()})+' '+PR.STATUS[P.status||"online"].n+' \u25BE</button><div class="em-stp" id="pf-stp" hidden>'+["online","idle","dnd"].map(k=>'<button type="button" data-s="'+k+'"><i class="em-dot" style="background:'+PR.STATUS[k].c+'"></i>'+PR.STATUS[k].n+'</button>').join("")+'</div></div>'}
  else h+='<div style="margin-top:6px;font:700 13px Montserrat,sans-serif;color:var(--mute)">'+PR.dot(P)+' '+PR.STATUS[PR.eff(P)].n+'</div>';
- if(ADMIN){h+='<div class="em-rle" id="pf-rle">'+Object.keys(PR.ROLES).map(k=>'<label><input type="checkbox" data-r="'+k+'"'+((P.roles||[]).includes(k)?" checked":"")+'><i class="em-role" style="--rc:'+PR.ROLES[k].c+'">'+PR.ROLES[k].n+'</i></label>').join("")+'</div>'}
  box.innerHTML=h;
  const b=$("#pf-stb");if(b)b.onclick=e=>{e.stopPropagation();$("#pf-stp").hidden=!$("#pf-stp").hidden};
  box.querySelectorAll("#pf-stp [data-s]").forEach(x=>x.onclick=async()=>{const k=x.dataset.s;$("#pf-stp").hidden=true;await PR.beat(k);P.status=k;P.last_seen=new Date().toISOString();paintPres()});
- box.querySelectorAll("#pf-rle input").forEach(c=>c.onchange=async()=>{const r=[...box.querySelectorAll("#pf-rle input:checked")].map(i=>i.dataset.r);
-  if(await rpc("set_roles",{target:P.username,r:r},"Roles updated.")){P.roles=r;paintPres()}else paintPres()});
+ paintRoleMgr();
 }
+let _rmOpen=false;
+function paintRoleMgr(){
+ if(!PR||!ADMIN)return;
+ let w=$("#pf-rm");if(!w){w=document.createElement("div");w.id="pf-rm";w.className="pf-box";const a=$("#pf-hint")||$("#pf-st");(a||$("#pf")).insertAdjacentElement("afterend",w)}
+ w.innerHTML='<button type="button" id="pf-rmb" class="pri" style="padding:8px 16px;border-radius:10px;font-weight:700;cursor:pointer">'+(_rmOpen?"Hide roles":"Manage roles")+'</button>'
+  +'<div class="em-rle" id="pf-rle"'+' style="margin-top:12px;display:'+(_rmOpen?"flex":"none")+';flex-wrap:wrap;gap:10px">'+Object.keys(PR.ROLES).map(k=>'<label><input type="checkbox" data-r="'+k+'"'+((P.roles||[]).includes(k)?" checked":"")+'><i class="em-role" style="--rc:'+PR.ROLES[k].c+'">'+PR.ROLES[k].n+'</i></label>').join("")+'</div>';
+ $("#pf-rmb").onclick=()=>{_rmOpen=!_rmOpen;paintRoleMgr()};
+ w.querySelectorAll("#pf-rle input").forEach(c=>c.onchange=async()=>{const r=[...w.querySelectorAll("#pf-rle input:checked")].map(i=>i.dataset.r);
+  if(await rpc("set_roles",{target:P.username,r:r},"Roles updated.")){P.roles=r}paintPres()})}
 document.addEventListener("click",()=>{const m=$("#pf-stp");if(m)m.hidden=true});

@@ -9,10 +9,18 @@ const av=(n,u,m)=>PR&&m?'<span class="em-avd">'+av0(n,u)+PR.dot(m)+'</span>':av0
 const day=t=>new Date(t).toLocaleDateString(undefined,{year:"numeric",month:"long",day:"numeric"});
 const ago=t=>{const m=Math.round((Date.now()-t)/6e4);return m<1?"just now":m<60?m+" min ago":m<1440?Math.round(m/60)+" h ago":Math.round(m/1440)+" d ago"};
 const names=L=>(L||[]).map(e=>esc(e.n)+(e.q>1?" ×"+e.q:"")).join(", ")||"–";
+(function(){const s=document.createElement("style");s.textContent=".mb-cat{grid-column:1/-1;margin:22px 0 4px;display:flex;align-items:center;gap:10px;font:800 13px Montserrat,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}.mb-cat:first-child{margin-top:4px}.mb-cat i{font-style:normal;width:10px;height:10px;border-radius:50%;background:var(--rc,#8a8a93)}.mb-cat b{font-weight:700;opacity:.7}.mb-cat:after{content:'';flex:1;height:1px;background:var(--bl,#333)}";document.head.appendChild(s)})();
+const tile=m=>'<button class="mb-t" data-u="'+esc(m.username)+'">'+av(m.username,m.avatar,m)+'<span class="nm">'+esc(m.nick||m.username)+'</span></button>';
+function groups(L){
+ /* a member is listed once, under the first category that applies: Admin, then the roles in order, then Members */
+ const keys=PR&&PR.ROLES?Object.keys(PR.ROLES):[],G=[{n:"Admin",c:"#ff4d4d",L:[]}].concat(keys.map(k=>({n:PR.ROLES[k].n,c:PR.ROLES[k].c,k,L:[]}))),rest={n:"Members",c:"#8a8a93",L:[]};
+ L.forEach(m=>{if(m.role==="admin"){G[0].L.push(m);return}
+  const g=G.find(g=>g.k&&(m.roles||[]).includes(g.k));(g||rest).L.push(m)});
+ return G.concat(rest).filter(g=>g.L.length)}
 function draw(){
  const f=q.value.trim().toLowerCase(),L=M.filter(m=>!f||m.username.toLowerCase().includes(f)||(m.nick||"").toLowerCase().includes(f));
  note.textContent=M.length+(M.length===1?" member":" members")+" so far. Click one to open their profile.";
- grid.innerHTML=L.length?L.map(m=>'<button class="mb-t" data-u="'+esc(m.username)+'">'+av(m.username,m.avatar,m)+'<span class="nm">'+esc(m.nick||m.username)+(m.role==="admin"?'<i class="mb-ad">ADMIN</i>':"")+(PR?PR.tags(m):"")+'</span></button>').join(""):'<div class="mb-empty">No member found.</div>'}
+ grid.innerHTML=L.length?groups(L).map(g=>'<div class="mb-cat" style="--rc:'+g.c+'"><i></i>'+esc(g.n)+' <b>'+g.L.length+'</b></div>'+g.L.map(tile).join("")).join(""):'<div class="mb-empty">No member found.</div>'}
 function open(u){
  const m=M.find(x=>x.username===u);if(!m)return;
  const mine=ADS.filter(a=>a.username===m.username),idx=M.indexOf(m)+1;
