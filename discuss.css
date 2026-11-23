@@ -226,7 +226,7 @@
 
 /* group maker, official banner */
 .g-off{background:#8b4dff;color:#fff;text-align:center;font:800 13px/1 Montserrat,sans-serif;letter-spacing:.12em;padding:11px 12px}
-.dm-hb.dg{border-color:#e5484d;color:#e5484d}.dm-hb.dg:hover{background:#e5484d;color:#fff}
+.dm-hb.dg{background:#7aa7ff;border-color:#7aa7ff;color:#fff}.dm-hb.dg:hover{filter:brightness(1.1)}
 .dm-newg{width:100%;padding:11px;margin-bottom:6px;border:2px dashed #7aa7ff88;border-radius:12px;background:transparent;color:#7aa7ff;font:800 13px Montserrat,sans-serif;cursor:pointer}
 .dm-newg:hover{background:#7aa7ff22}
 .ng-sel{display:flex;flex-wrap:wrap;gap:6px}.ng-sel:empty{display:none}
@@ -236,5 +236,5 @@
 
 /* middleman request outcome */
 .mm-x{font:700 12px Montserrat,sans-serif;color:#e5484d}
-.mm-go{width:100%;margin-top:6px;padding:12px;border:0;border-radius:10px;background:#8b4dff;color:#fff;font:800 14px Montserrat,sans-serif;cursor:pointer}
+.mm-go{width:100%;margin-top:6px;padding:12px;border:0;border-radius:10px;background:#7aa7ff;color:#fff;font:800 14px Montserrat,sans-serif;cursor:pointer}
 .mm-go:hover{filter:brightness(1.1)}
