@@ -65,7 +65,15 @@ const setup=e=>/does not exist|schema cache|Could not find the table/i.test(e.me
 const NEED10="Run supabase-setup-10.sql in Supabase first.",key=(id,ch)=>ch==="trade"?id+"|trade":id,chOf=x=>x.channel==="trade"?"trade":"personal",isCur=(id,ch)=>!!(cur&&cur.id===id&&(cur.ch||"personal")===(ch||"personal"));
 const NEED8="Run supabase-setup-8.sql in Supabase first.";
 const SETUPMSG='<div class="dm-none"><b>Messages are not set up yet.</b><br>Run <code>supabase-setup-6.sql</code> once in the Supabase SQL Editor, then refresh.</div>';
-const sum=x=>x.kind==="mm"?"Middleman request: "+(x.mm||""):x.kind==="image"?(x.text?"Photo: "+x.text:"Photo"):x.kind==="item"?"Item: "+(x.iname||""):x.text;
+const ADRE=/^\[\[ad:([0-9a-f-]{36})\]\]$/i,adOf=x=>(!x.kind||x.kind==="text")&&ADRE.test(x.text||"")?x.text.match(ADRE)[1]:null,ADC={},ADQ={};let adCtx=null;
+const adNm=L=>(L||[]).map(e=>e.n==="@r"?e.q+" Robux":e.n==="@m"?e.q+" Gems":String(e.n).startsWith("@g:")?String(e.n).slice(3)+" crosstrade":e.n+(e.q>1?" x"+e.q:"")).join(", ");
+const adBox=(a,tag)=>a?'<div class="dm-adc-t">'+tag+(a.username?' \u00b7 '+esc(a.username):"")+'</div><div class="dm-adc-r"><span>Offering</span>'+esc(adNm(a.offering)||"-")+'</div><div class="dm-adc-r"><span>Looking for</span>'+esc(adNm(a.looking)||"-")+'</div>'+(a.note?'<div class="dm-adc-n">'+esc(a.note)+'</div>':""):'<div class="dm-adc-t">'+tag+'</div><div class="dm-adc-n">This trade ad is no longer available.</div>';
+async function loadAds(){for(const x of MSGS){const id=adOf(x);if(!id||ADC[id]!==undefined||ADQ[id])continue;ADQ[id]=1;
+ try{const r=await EMAuth.rest("ads?id=eq."+id+"&select=id,username,offering,looking,note");ADC[id]=r&&r[0]||null}catch(e){delete ADQ[id];continue}
+ document.querySelectorAll('[data-adc="'+id+'"]').forEach(el=>el.innerHTML=adBox(ADC[id],"Trade ad"));paintAdb()}}
+function paintAdb(){const b=$("#dm-adb");if(!b)return;const a=adCtx&&cur&&cur.ch==="trade"&&adCtx.uid===cur.id?adCtx:null;
+ if(!a||MSGS.some(m=>adOf(m)===a.id)){b.hidden=true;b.innerHTML="";return}b.hidden=false;b.innerHTML=adBox(a.ad,"Trade you were interested in")}
+const sum=x=>adOf(x)?"Trade ad":x.kind==="mm"?"Middleman request: "+(x.mm||""):x.kind==="image"?(x.text?"Photo: "+x.text:"Photo"):x.kind==="item"?"Item: "+(x.iname||""):x.text;
 async function loadProfiles(ids){ids=[...new Set(ids)].filter(i=>i&&!prof[i]);if(!ids.length)return;
  try{const r=await EMAuth.rest("profiles?select=id,username,role,avatar&id=in.("+ids.slice(0,60).join(",")+")");r.forEach(p=>prof[p.id]=p);ids.forEach(i=>{if(!prof[i])prof[i]={}})}catch(e){ids.forEach(i=>{prof[i]={}})}}
 function build(){
@@ -116,6 +124,7 @@ function msgHtml(x){
  if(x.kind==="mm"){const nm=x.mm||"",sOk=x.ms==="true",rOk=x.mr==="true",mine=out?sOk:rOk,both=sOk&&rOk,other=out?pname(x.recipient_id)||x.recipient_name:x.sender_name;
   const line=(n,ok)=>'<li class="'+(ok?"ok":"")+'"><i>'+(ok?"\u2713":"")+"</i>"+esc(n)+(ok?" confirmed":" waiting\u2026")+"</li>";
   return`<div class="dm-m mmq ${out?"out":"in"}${both?" done":""}" data-id="${id}">${mo}<div class="mm-t">Middleman request</div><div class="mm-n">${esc(nm)}</div><ul>${line(x.sender_name,sOk)}${line(x.recipient_name,rOk)}</ul>${both?'<div class="mm-d">Both confirmed. The moderator was notified.</div>':mine?'<div class="mm-w">Waiting for '+esc(other)+" to confirm\u2026</div>":'<button class="mm-b" data-mm type="button">Click to confirm</button>'}${tm}</div>`}
+  {const aid=adOf(x);if(aid)return`<div class="dm-m adm ${out?"out":"in"}" data-id="${id}">${mo}<div class="dm-adc" data-adc="${aid}">${ADC[aid]!==undefined?adBox(ADC[aid],"Trade ad"):'<div class="dm-adc-n">Loading trade ad\u2026</div>'}</div>${tm}</div>`}
  if(editing&&editing.id===x.id)return`<div class="dm-m ${out?"out":"in"} ed-box" data-id="${id}"><textarea id="dm-ed" maxlength="1000" rows="2">${esc(editing.text)}</textarea><div class="ed-b"><button type="button" data-edsave>Save</button><button type="button" data-edcancel class="sec">Cancel</button></div><div class="ed-e" id="dm-ede"></div></div>`;
  if(x.kind==="image"){const u=IMG[x.id];
   return`<div class="dm-m pic ${out?"out":"in"}" data-id="${id}">${mo}${u?'<img class="dm-pic" data-pic="'+id+'" src="'+esc(u)+'" alt="Picture">':'<div class="dm-pic ph" data-pic="'+id+'">Loading picture\u2026</div>'}${x.text?'<div class="dm-cap">'+esc(x.text)+"</div>":""}${tm}</div>`}
@@ -127,11 +136,11 @@ function paintChat(stick){
  if(!cur){r.innerHTML='<div class="dm-empty"><div>'+ICON+'<h3>Your messages</h3>Pick a conversation on the left,<br>or search a member to start a new one.</div></div>';root.classList.remove("chat");return}
  if(!$("#dm-msgs")||r.dataset.id!==key(cur.id,cur.ch)){
   r.dataset.id=key(cur.id,cur.ch);pendImg=null;
-  r.innerHTML=`<div class="dm-rh"><button class="dm-back" id="dm-back" type="button">\u2039 Back</button>${av(cur.id,cur.name)}<b>${esc(cur.name)}</b>${adm(cur.id)}${cur.ch==="trade"?'<i class="dm-fr tr">Trading chat</i>':""}<span class="dm-ha" id="dm-ha"></span></div><div class="dm-msgs" id="dm-msgs"></div><div class="dm-err" id="dm-err"></div><div class="dm-pend" id="dm-pend" hidden></div><div class="dm-f"><div class="dm-pw"><button class="dm-plus" id="dm-plus" type="button" aria-label="Send a picture or an item">${PLUS}</button><div class="dm-menu" id="dm-menu" hidden><button type="button" data-add="img">Send a picture</button><button type="button" data-add="item">Send an item</button><button type="button" data-add="mm">Request a middleman</button></div></div><textarea id="dm-in" maxlength="1000" rows="1" placeholder="Message ${esc(cur.name)}\u2026"></textarea><button id="dm-send" type="button">Send</button></div><input type="file" id="dm-file" accept="image/*" hidden>`;stick=true;paintHead()}
+  r.innerHTML=`<div class="dm-rh"><button class="dm-back" id="dm-back" type="button">\u2039 Back</button>${av(cur.id,cur.name)}<b>${esc(cur.name)}</b>${adm(cur.id)}${cur.ch==="trade"?'<i class="dm-fr tr">Trading chat</i>':""}<span class="dm-ha" id="dm-ha"></span></div><div class="dm-adb" id="dm-adb" hidden></div><div class="dm-msgs" id="dm-msgs"></div><div class="dm-err" id="dm-err"></div><div class="dm-pend" id="dm-pend" hidden></div><div class="dm-f"><div class="dm-pw"><button class="dm-plus" id="dm-plus" type="button" aria-label="Send a picture or an item">${PLUS}</button><div class="dm-menu" id="dm-menu" hidden><button type="button" data-add="img">Send a picture</button><button type="button" data-add="item">Send an item</button><button type="button" data-add="mm">Request a middleman</button></div></div><textarea id="dm-in" maxlength="1000" rows="1" placeholder="Message ${esc(cur.name)}\u2026"></textarea><button id="dm-send" type="button">Send</button></div><input type="file" id="dm-file" accept="image/*" hidden>`;stick=true;paintHead();paintAdb()}
  const box=$("#dm-msgs"),near=box.scrollHeight-box.scrollTop-box.clientHeight<90;
  let h="",d="";MSGS.forEach(x=>{const k=day(x.created_at);if(k!==d){d=k;h+='<div class="dm-day">'+k+"</div>"}h+=msgHtml(x)});
  if(!MSGS.length)h='<div class="dm-none" style="margin:auto">No messages yet. Say hi</div>';
- box.innerHTML=h;if(stick||near)box.scrollTop=box.scrollHeight;loadPics()}
+ box.innerHTML=h;if(stick||near)box.scrollTop=box.scrollHeight;loadPics();loadAds();paintAdb()}
 /* pictures are fetched one by one, so the message list stays light */
 async function loadPics(){
  const need=MSGS.filter(x=>x.kind==="image"&&!IMG[x.id]&&!PICREQ[x.id]);
@@ -174,11 +183,12 @@ async function post(fields){
  if(fields.kind==="image"&&m){IMG[m.id]=fields.payload.img}
  if(fields.kind==="item"&&m&&!m.iname)m.iname=fields.payload.n;
  MSGS.push(m);ALL.unshift(m);lastSig=sigOf(MSGS);markRead(key(cur.id,cur.ch));draft=null;paintChat(true);build();paintList()}
+async function sendAdMark(){const a=adCtx;if(!a||!cur||cur.ch!=="trade"||a.uid!==cur.id)return;adCtx=null;if(MSGS.some(m=>adOf(m)===a.id))return;ADC[a.id]=a.ad;await post(NEW8?{kind:"text",text:"[[ad:"+a.id+"]]"}:{text:"[[ad:"+a.id+"]]"})}
 async function send(){
  const i=$("#dm-in"),b=$("#dm-send"),t=i.value.trim();if(!cur)return;if(!t&&!pendImg)return;$("#dm-err").textContent="";b.disabled=true;
  try{
   if(pendImg){if(!NEW8)throw new Error(NEED8);await post({kind:"image",text:t,payload:{img:pendImg}});pendImg=null;paintPend()}
-  else await post(NEW8?{kind:"text",text:t}:{text:t});
+  else{await sendAdMark();await post(NEW8?{kind:"text",text:t}:{text:t})}
   i.value=""}
  catch(e){$("#dm-err").textContent=setup(e)||/dms_content_check|violates check/i.test(e.message)?(/dms_content_check|violates check/i.test(e.message)?"The server refused it. Run supabase-setup-8.sql in Supabase first.":"Run supabase-setup-6.sql in Supabase first."):"Couldn't send: "+e.message}
  b.disabled=false;i.focus()}
@@ -234,7 +244,7 @@ function closePop(){if(pop){pop.remove();pop=null}}
 function openMo(btn){closePop();
  const el=btn.closest(".dm-m"),x=MSGS.find(m=>m.id===el.dataset.id);if(!x)return;const out=x.sender_id===UID;
  pop=document.createElement("div");pop.className="dm-pop";
- let h="";if(out&&(x.kind==="text"||x.kind==="image"))h+='<button type="button" data-a="edit">Edit message</button>';
+ let h="";if(out&&!adOf(x)&&(x.kind==="text"||x.kind==="image"))h+='<button type="button" data-a="edit">Edit message</button>';
  h+=out?'<button type="button" data-a="del" class="dg">Delete for both of us</button>':'<button type="button" data-a="hide" class="dg">Delete for me</button>';
  pop.innerHTML=h;document.body.appendChild(pop);
  const r=btn.getBoundingClientRect();pop.style.top=Math.min(innerHeight-pop.offsetHeight-8,r.bottom+4)+"px";
@@ -299,9 +309,9 @@ paintChat();
 tick(true).then(async()=>{const P=new URLSearchParams(location.search),u=P.get("u"),ch=P.get("ch"),ad=P.get("ad");
  if(u&&u.toLowerCase()!==ME.toLowerCase()){try{const r=await EMAuth.rest("profiles?select=id,username,role,avatar&username=ilike."+encodeURIComponent(u.replace(/[*%,()]/g,"")));
   if(r&&r[0]){prof[r[0].id]=r[0];let pre="";
-   if(ch==="trade"&&ad&&/^[0-9a-f-]{36}$/i.test(ad)){try{const a=await EMAuth.rest("ads?id=eq."+ad+"&select=offering,looking");
+   if(ch==="trade"&&ad&&/^[0-9a-f-]{36}$/i.test(ad)){try{const a=await EMAuth.rest("ads?id=eq."+ad+"&select=id,username,offering,looking,note");
      if(a&&a[0]){const nm=L=>(L||[]).map(e=>e.n==="@r"?e.q+" Robux":e.n==="@m"?e.q+" Gems":e.n.startsWith("@g:")?e.n.slice(3)+" crosstrade":e.n+(e.q>1?" x"+e.q:"")).join(", ");
-      pre="Hi! About your trade ad. You offer: "+nm(a[0].offering)+". You want: "+nm(a[0].looking)+". "}}catch(e){}}
+      if(a[0])adCtx={id:ad.toLowerCase(),uid:r[0].id,ad:a[0]};pre="Hi! About your trade ad. You offer: "+nm(a[0].offering)+". You want: "+nm(a[0].looking)+". "}}catch(e){}}
    open(r[0].id,r[0].username,ch,pre.slice(0,900))}}catch(e){}}});
 setInterval(()=>{if(!document.hidden)tick(false)},4000);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)tick(false)});

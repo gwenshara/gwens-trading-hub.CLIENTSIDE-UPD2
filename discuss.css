@@ -183,3 +183,12 @@
 .dm-tabs button.on{background:#7aa7ff;border-color:#7aa7ff;color:#fff}
 .dm-tabs button i{font-style:normal;display:inline-block;min-width:16px;height:16px;line-height:16px;margin-left:5px;padding:0 4px;border-radius:99px;background:#e5484d;color:#fff;font-size:10px}
 .dm-fr.tr{background:#c27a14}
+.dm-adb{margin:10px 16px 0;padding:10px 14px;border-radius:14px;border:2px solid #ff9a3c;background:#00000030}
+.dm-adb[hidden]{display:none}
+.dm-m.adm{max-width:min(520px,86%);padding:0;background:none}
+.dm-m.adm time{padding:0 6px}
+.dm-adc{padding:10px 14px;border-radius:14px;border:2px solid #ff9a3c;background:#00000040;color:var(--text)}
+.dm-adc-t{font:800 12px Montserrat,sans-serif;letter-spacing:.04em;text-transform:uppercase;color:#ff9a3c;margin-bottom:6px}
+.dm-adc-r{font:500 14px/1.4 Inter,system-ui,sans-serif;margin-top:3px}
+.dm-adc-r span{display:block;font:700 11px Montserrat,sans-serif;opacity:.7;text-transform:uppercase}
+.dm-adc-n{font:500 13px/1.4 Inter,system-ui,sans-serif;opacity:.8;margin-top:6px;white-space:pre-wrap}
