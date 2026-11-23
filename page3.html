@@ -887,6 +887,12 @@ const INFL_TIP="careful! this item is being manipulated to have this price, it m
 const ptT=i=>bang(i)?` title="${INFL_TIP}"`:"",ptC=i=>bang(i)?` data-tip="${INFL_TIP}" tabindex="0"`:"";
 const dc=i=>{const d=SET.trend?trend(i.n):null;return d==="up"?" dg":(d==="down"||d==="infl")?" dr":""};
 const tagsHTML=i=>{let n=0,h="";const nw=isNew(i);if(nw)h+='<span class="newr" aria-label="New"></span>';if(SET.ret&&i.r){h+='<span class="ret'+(nw?' nr':'')+'">RETIRED</span>';n++}if(SET.exo&&isExo(i)){h+=`<span class="exo${n?" b":""}${nw?" nr":""}">EXOTIC</span>`;n++}if(SET.code&&isCode(i)){h+=`<span class="cd" style="top:${22+(nw?18:0)+15*n}px">CODE</span>`}return h};
+let cpg=1,pgKey="";
+function drawPagerC(n){const el=document.getElementById("pager");if(!el)return;if(n<2){el.innerHTML="";el.hidden=true;return}el.hidden=false;
+ let h=cpg<2?'<span class="pg dis">&lsaquo;</span>':'<button type="button" class="pg" data-cpg="'+(cpg-1)+'" aria-label="Previous page">&lsaquo;</button>';
+ for(let p=1;p<=n;p++)h+='<button type="button" class="pg'+(p===cpg?' on':'')+'" data-cpg="'+p+'"'+(p===cpg?' aria-current="page"':'')+' aria-label="Page '+p+'">'+p+'</button>';
+ el.innerHTML=h+(cpg>=n?'<span class="pg dis">&rsaquo;</span>':'<button type="button" class="pg" data-cpg="'+(cpg+1)+'" aria-label="Next page">&rsaquo;</button>')}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-cpg]");if(!b)return;cpg=+b.dataset.cpg;render();const c=document.getElementById("count");if(c)c.scrollIntoView({block:"start"})});
 function drawPager(on){
  const el=document.getElementById("pager");if(!el)return;
  if(!on){el.innerHTML="";el.hidden=true;return}
@@ -903,8 +909,9 @@ function render(){
  if(!dflt&&PAGE!==1){try{sessionStorage.setItem("em_pg_state",JSON.stringify({q:$("#q").value,sort:$("#sort").value,types:[...typeOn],stats:[...statOn],onlyList}))}catch(e){}location.replace("index.html");return}
  const list=items.filter(i=>i.n.toLowerCase().includes(q)&&(!dflt||PGL[i.n]===CP)&&(!typeOn.size||typeOn.has(i.t))&&
   (!statOn.has("Retired")||i.r)&&(!statOn.has("Exotics")||isExo(i))&&(!statOn.has("Codes")||isCode(i))&&(!statOn.has("Gamenight")||isGN(i))&&(!statOn.has("New")||isNew(i))&&(!statOn.has("StarShop")||isSS(i))&&(!statOn.has("TokenShop")||isTS(i))&&(!statOn.has("CoinShop")||isCS(i))&&(!statOn.has("EasySell")||isES(i))&&seasonOk(i)&&(!["Increasing","Receding","Stabilizing","Fluctuating","Inflated"].some(x=>statOn.has(x))||(statOn.has("Increasing")&&trend(i.n)==="up")||(statOn.has("Receding")&&trend(i.n)==="down")||(statOn.has("Stabilizing")&&trend(i.n)==="flat")||(statOn.has("Fluctuating")&&trend(i.n)==="fluct")||(statOn.has("Inflated")&&trend(i.n)==="infl"))&&(!statOn.has("Untradable")||i.u)&&(!statOn.has("Unobtainable")||i.ub)&&(!statOn.has("Favorites")||favs.has(i.id))&&(!onlyList||favs.has(i.id))).sort(SB($("#sort").value));
- $("#count").textContent=`Showing ${list.length} of ${items.length} items`+(dflt?` · Page ${CP} of ${NPG}`:"");drawPager(dflt);$("#lcount").textContent=favs.size;$("#lists").classList.toggle("on",onlyList);$("#lists").setAttribute("aria-pressed",onlyList);
- $("#grid").innerHTML=list.length?list.map(i=>{
+ let view=list,npc=1;if(!dflt){const key=$("#sort").value+"|"+q+"|"+[...typeOn].join()+"|"+[...statOn].join()+"|"+onlyList;if(key!==pgKey){pgKey=key;cpg=1}npc=Math.max(1,Math.ceil(list.length/PGCAP));if(cpg>npc)cpg=npc;view=list.slice((cpg-1)*PGCAP,cpg*PGCAP)}
+ $("#count").textContent=`Showing ${list.length} of ${items.length} items`+(dflt?` · Page ${CP} of ${NPG}`:(npc>1?` · Page ${cpg} of ${npc}`:""));if(dflt)drawPager(true);else drawPagerC(npc);$("#lcount").textContent=favs.size;$("#lists").classList.toggle("on",onlyList);$("#lists").setAttribute("aria-pressed",onlyList);
+ $("#grid").innerHTML=list.length?view.map(i=>{
   const title=i.t==="t";
   return `<div class="card ${i.t}" data-open="${i.id}" tabindex="0" role="button" aria-label="${esc(i.n)}">${tagsHTML(i)}${i.ub?'<span class="un ub" title="Unobtainable"><img src="'+UNOB+'" alt="Unobtainable"></span>':""}${i.u?'<span class="un'+(i.ub?' u2':'')+'" title="Untradable"><img src="'+UNI+'" alt="Untradable"></span>':""}${SET.trend?trd(i.n,""):""}
   <button class="fav ${favs.has(i.id)?"on":""}" data-f="${i.id}" aria-label="Favorite ${esc(i.n)}">♥</button>
