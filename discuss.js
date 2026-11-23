@@ -50,7 +50,7 @@ const isFr=id=>!!(window.EMSocial&&EMSocial.loaded&&EMSocial.rel(id).kind==="fri
 const frTag=id=>isFr(id)?'<i class="dm-fr">Friend</i>':"";
 const pname=id=>(prof[id]&&prof[id].username)||"";
 let ALL=[],CONV=[],cur=null,MSGS=[],draft=null,q="",people=[],lastSig="",pendImg=null,tk=0,NEW8=true;
-const BASE="id,sender_id,recipient_id,sender_name,recipient_name,text,created_at",EXT=BASE+",kind,iname:payload->>n",EXT9=EXT+",edited_at,mm:payload->>mm,ms:payload->>s,mr:payload->>r,md:payload->>done",EXT10=EXT9+",channel",EXT11=EXT10+",read_at";
+const BASE="id,sender_id,recipient_id,sender_name,recipient_name,text,created_at",EXT=BASE+",kind,iname:payload->>n",EXT9=EXT+",edited_at,mm:payload->>mm,ms:payload->>s,mr:payload->>r,md:payload->>done,mat:payload->>at,mst:payload->>st,mg:payload->>gid",EXT10=EXT9+",channel",EXT11=EXT10+",read_at";
 let COLS=EXT11,NEW11=true,NEW10=true,TAB=ld("dm_tab","friends"),NEW9=true,NOTIF=[],notifOk=true;
 const NEED13="Run supabase-setup-13.sql in Supabase first.",NEED9="Run supabase-setup-9.sql in Supabase first.";
 const HK="dm_hid:"+UID,hid=ld(HK,{}),vis=a=>a.filter(x=>!hid[x.id]);
@@ -97,7 +97,7 @@ function paintList(){
  const reqs=SO?EMSocial.incoming():[],inConv=new Set(CONV.filter(c=>c.ch!=="trade").map(c=>c.id));
  let fr=SO?EMSocial.friends().filter(id=>!inConv.has(id)&&pname(id)).map(id=>({id,n:pname(id)})):[];
  let h="";
- if(NOTIF.length&&!s)h+='<div class="dm-sec">Middleman requests ('+NOTIF.length+')</div>'+NOTIF.map(n=>{const p=n.payload||{};return'<div class="dm-nt" data-nid="'+esc(n.id)+'"><b>'+esc(n.text)+'</b><small>'+esc(day(n.created_at)+", "+fmtT(n.created_at))+'</small><span class="dm-ntb"><button type="button" data-nacc>Accept</button>'+(p.a?'<button type="button" data-nmsg="'+esc(p.a)+'" data-nn="'+esc(p.an)+'">Message '+esc(p.an)+'</button>':"")+(p.b?'<button type="button" data-nmsg="'+esc(p.b)+'" data-nn="'+esc(p.bn)+'">Message '+esc(p.bn)+'</button>':"")+'<button type="button" class="sec" data-ndel>Dismiss</button></span></div>'}).join("");
+ if(NOTIF.length&&!s)h+='<div class="dm-sec">Middleman requests ('+NOTIF.length+')</div>'+NOTIF.map(n=>{const p=n.payload||{};return'<div class="dm-nt" data-nid="'+esc(n.id)+'"><b>'+esc(n.text)+'</b><small>'+esc(day(n.created_at)+", "+fmtT(n.created_at))+" \u00b7 accept within "+Math.max(1,Math.ceil((MMT-(Date.now()-Date.parse(n.created_at)))/6e4))+" min</small>"+'<span class="dm-ntb"><button type="button" data-nacc>Accept</button>'+(p.a?'<button type="button" data-nmsg="'+esc(p.a)+'" data-nn="'+esc(p.an)+'">Message '+esc(p.an)+'</button>':"")+(p.b?'<button type="button" data-nmsg="'+esc(p.b)+'" data-nn="'+esc(p.bn)+'">Message '+esc(p.bn)+'</button>':"")+'<button type="button" class="sec" data-ndel>Decline</button></span></div>'}).join("");
  const mine=CONV.filter(c=>!s||c.name.toLowerCase().includes(s));
  if(s){fr=fr.filter(f=>f.n.toLowerCase().includes(s));
   h+=mine.length?'<div class="dm-sec">Conversations</div>'+mine.map(card).join(""):"";
@@ -126,7 +126,7 @@ function msgHtml(x){
   tm="<time"+(x.edited_at?' title="Edited '+esc(new Date(x.edited_at).toLocaleString())+'"':"")+">"+fmtT(x.created_at)+(x.edited_at?' <em class="ed">\u00b7 edited</em>':"")+"</time>";
  if(x.kind==="mm"){const nm=x.mm||"",sOk=x.ms==="true",rOk=x.mr==="true",mine=out?sOk:rOk,both=sOk&&rOk,other=out?pname(x.recipient_id)||x.recipient_name:x.sender_name;
   const line=(n,ok)=>'<li class="'+(ok?"ok":"")+'"><i>'+(ok?"\u2713":"")+"</i>"+esc(n)+(ok?" confirmed":" waiting\u2026")+"</li>";
-  return`<div class="dm-m mmq ${out?"out":"in"}${both?" done":""}" data-id="${id}">${mo}<div class="mm-t">Middleman request</div><div class="mm-n">${esc(nm)}</div><ul>${line(x.sender_name,sOk)}${line(x.recipient_name,rOk)}</ul>${both?'<div class="mm-d">Both confirmed. '+esc(nm)+' was notified.</div>':mine?'<div class="mm-w">Waiting for '+esc(other)+" to confirm\u2026</div>":'<button class="mm-b" data-mm type="button">Click to confirm</button>'}${tm}</div>`}
+  return`<div class="dm-m mmq ${out?"out":"in"}${both?" done":""}" data-id="${id}">${mo}<div class="mm-t">Middleman request</div><div class="mm-n">${esc(nm)}</div><ul>${line(x.sender_name,sOk)}${line(x.recipient_name,rOk)}</ul>${x.mst==="accepted"&&x.mg?'<div class="mm-d">'+esc(nm)+' accepted.</div><button class="mm-go" data-go="'+esc(x.mg)+'" type="button">Go to the group \u2192</button>':x.mst==="declined"?'<div class="mm-x">'+esc(nm)+" didn\'t accept</div>":mmExp(x)?'<div class="mm-x">'+esc(nm)+" didn\'t accept in time</div>":both?'<div class="mm-d">Both confirmed. '+esc(nm)+' was notified and has 10 minutes to accept\u2026</div>':mine?'<div class="mm-w">Waiting for '+esc(other)+" to confirm\u2026</div>":'<button class="mm-b" data-mm type="button">Click to confirm</button>'}${tm}</div>`}
   {const st=stOf(x);if(st)return`<div class="dm-m stk ${out?"out":"in"}" data-id="${id}">${mo}${st.src?'<img class="dm-stk" src="'+st.src+'" alt="Sticker">':'<span class="dm-stkx">Sticker</span>'}${tm}</div>`}
   {const aid=adOf(x);if(aid)return`<div class="dm-m adm ${out?"out":"in"}" data-id="${id}">${mo}<div class="dm-adc" data-adc="${aid}">${ADC[aid]!==undefined?adBox(ADC[aid],"Trade ad"):'<div class="dm-adc-n">Loading trade ad\u2026</div>'}</div>${tm}</div>`}
  if(editing&&editing.id===x.id)return`<div class="dm-m ${out?"out":"in"} ed-box" data-id="${id}"><textarea id="dm-ed" maxlength="1000" rows="2">${esc(editing.text)}</textarea><div class="ed-b"><button type="button" data-edsave>Save</button><button type="button" data-edcancel class="sec">Cancel</button></div><div class="ed-e" id="dm-ede"></div></div>`;
@@ -160,9 +160,11 @@ async function rest(fn){try{return await fn()}catch(e){
  if(NEW10&&/channel/i.test(e.message)){NEW10=false;NEW11=false;COLS=EXT9;return await rest(fn)}
  if(NEW9&&/edited_at/i.test(e.message)){NEW9=false;NEW10=false;NEW11=false;COLS=EXT;return await rest(fn)}
  if(NEW8&&/kind|payload/i.test(e.message)){NEW8=false;NEW9=false;NEW10=false;NEW11=false;COLS=BASE;return await fn()}throw e}}
-const sigOf=m=>m.length+":"+(m.length?m[m.length-1].id:"")+":"+m.map(x=>(x.edited_at||"")+(x.ms||"")+(x.mr||"")+(x.read_at?"r":"")).join("|");
+const MMT=6e5;
+function mmExp(x){return x.md==="1"&&!x.mst&&!!x.mat&&Date.now()-Date.parse(x.mat)>MMT}
+const sigOf=m=>m.length+":"+(m.length?m[m.length-1].id:"")+":"+m.map(x=>(x.edited_at||"")+(x.ms||"")+(x.mr||"")+(x.mst||"")+(mmExp(x)?"x":"")+(x.read_at?"r":"")).join("|");
 async function loadNotifs(){if(!notifOk||!NEW9)return;
- try{NOTIF=await EMAuth.rest("notifications?select=id,text,payload,created_at&order=created_at.desc&limit=30")}catch(e){NOTIF=[];if(setup(e))notifOk=false}}
+ try{NOTIF=(await EMAuth.rest("notifications?select=id,text,payload,created_at&order=created_at.desc&limit=30")).filter(n=>Date.now()-Date.parse(n.created_at)<=MMT)}catch(e){NOTIF=[];if(setup(e))notifOk=false}}
 async function tick(first){
  try{
   ALL=vis(await rest(()=>EMAuth.rest("dms?select="+COLS+"&or=(sender_id.eq."+UID+",recipient_id.eq."+UID+")&order=created_at.desc&limit=600")));
@@ -371,7 +373,7 @@ $("#dm-list").addEventListener("click",async e=>{
  if(ra||rd){const row=EMSocial.incoming().find(r=>r.id===(ra||rd).closest("[data-rid]").dataset.rid);if(!row)return;
   try{if(ra)await EMSocial.accept(row);else await EMSocial.remove(row);await EMSocial.load();paintList();paintHead()}catch(err){alert("Couldn't do that: "+err.message)}return}
  const nm=e.target.closest("[data-nmsg]");if(nm){open(nm.dataset.nmsg,nm.dataset.nn);return}
- const nd=e.target.closest("[data-ndel]");if(nd){const id=nd.closest("[data-nid]").dataset.nid;try{await EMAuth.rest("notifications?id=eq."+encodeURIComponent(id),"DELETE");NOTIF=NOTIF.filter(n=>n.id!==id);paintList()}catch(err){alert("Couldn't dismiss: "+err.message)}return}
+ const nd=e.target.closest("[data-ndel]");if(nd){const id=nd.closest("[data-nid]").dataset.nid;try{try{await EMAuth.rest("rpc/mm_decline","POST",{p_nid:id})}catch(e0){await EMAuth.rest("notifications?id=eq."+encodeURIComponent(id),"DELETE")}NOTIF=NOTIF.filter(n=>n.id!==id);paintList()}catch(err){alert("Couldn't dismiss: "+err.message)}return}
  const tb=e.target.closest("[data-tab]");if(tb){TAB=tb.dataset.tab;sv("dm_tab",TAB);paintList();return}
  const c=e.target.closest(".dm-c");if(c){if(c.dataset.grp)openGroup(c.dataset.grp);else open(c.dataset.id,c.dataset.n,c.dataset.ch)}});
 $("#dm-r").addEventListener("click",async e=>{
@@ -392,6 +394,7 @@ $("#dm-r").addEventListener("click",async e=>{
   if(!NEW8){$("#dm-err").textContent=NEED8;return}
   if(a==="mm"){if(!NEW9){$("#dm-err").textContent=NEED9;return}openMM();return}
   if(a==="img")$("#dm-file").click();else openPicker()}
+ else if(t.closest("[data-go]")){const gid=t.closest("[data-go]").dataset.go;await loadGroups();buildG();if(GL.some(g=>g.id===gid))openGroup(gid);else alert(grpOk?"This chat was closed.":NEED13)}
  else if(t.closest("[data-unpic]")){pendImg=null;paintPend()}
  else if(t.closest("[data-item]"))openCard(t.closest("[data-item]").dataset.item);
  else if(t.closest(".dm-pic:not(.ph)")){const im=t.closest(".dm-pic");openPic(im.src)}
