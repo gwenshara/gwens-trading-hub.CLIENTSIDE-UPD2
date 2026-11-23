@@ -33,9 +33,10 @@ async function load(){
   const idx=all.findIndex(r=>r.username.toLowerCase()===name.toLowerCase());if(idx<0)return msg("Member not found.");
   let r;try{r=(await EMAuth.rest("profiles?username=eq."+encodeURIComponent(all[idx].username)+"&select=id,username,role,created_at,avatar,banner,bio,nickname,discord,discord_verified"))[0]}
   catch(e){try{r=(await EMAuth.rest("profiles?username=eq."+encodeURIComponent(all[idx].username)+"&select=id,username,role,created_at,avatar,banner,bio"))[0];r.__nodc=1}catch(e2){r=(await EMAuth.rest("profiles?username=eq."+encodeURIComponent(all[idx].username)+"&select=id,username,role,created_at"))[0];r.__old=1}}
+  try{const x=(await EMAuth.rest("profiles?id=eq."+encodeURIComponent(r.id)+"&select=status,last_seen,roles"))[0];if(x)Object.assign(r,x)}catch(e){r.__nopres=1}
   P=r;$("#pf").hidden=false;$("#pf-msg").hidden=true;$("#pf-n").textContent="#"+(idx+1);
   try{$("#pf-ads").textContent=(await EMAuth.rest("ads?select=id&username=eq."+encodeURIComponent(P.username)+"&limit=1000")).length}catch(e){}
-  paint();
+  paint();paintPres();
   if(window.EMSocial)EMSocial.mount($("#pf-soc"),P.id,P.username);
   if(mine){["#pf-bb","#pf-ab","#pf-bx","#pf-hint","#pf-nx"].forEach(s=>$(s).hidden=false);$("#pf-un").textContent=P.username;if(P.__nodc)$("#pf-hint").textContent="Nickname and Discord can't be saved yet: run supabase-setup-7.sql in Supabase first.";
    if(P.__old)$("#pf-hint").textContent="Pictures can't be saved yet: run supabase-setup-4.sql in Supabase first."}
@@ -64,3 +65,22 @@ $("#pf-ds").onclick=async()=>{const v=$("#pf-dt").value.trim().replace(/^@/,"");
 $("#pf-dok").onclick=async()=>{if(await rpc("verify_discord",{target:P.username,ok:true},"Discord confirmed.")){P.discord_verified=true;paintDc()}};
 $("#pf-dno").onclick=async()=>{if(await rpc("verify_discord",{target:P.username,ok:false},"Confirmation removed.")){P.discord_verified=false;paintDc()}};
 msg("Loading…");load();
+
+/* online status + roles */
+const PR=window.EMPresence;
+function paintPres(){
+ if(!PR)return;
+ const w=document.querySelector(".pf-avw");if(w){w.style.position="relative";let d=$("#pf-dot");if(!d){d=document.createElement("span");d.id="pf-dot";w.appendChild(d)}
+  const s=PR.eff(P);d.style.cssText="position:absolute;left:6px;bottom:6px;width:18px;height:18px;border-radius:50%;border:4px solid #1c1c1f;box-sizing:content-box;background:"+PR.STATUS[s].c;d.title=PR.STATUS[s].n}
+ let box=$("#pf-pres");if(!box){box=document.createElement("div");box.id="pf-pres";$("#pf-sub").insertAdjacentElement("afterend",box)}
+ let h='<div class="em-roles">'+PR.tags(P)+'</div>';
+ if(mine){h+='<div class="em-stm"><button type="button" class="em-stb" id="pf-stb">'+PR.dot({status:P.status,last_seen:new Date().toISOString()})+' '+PR.STATUS[P.status||"online"].n+' \u25BE</button><div class="em-stp" id="pf-stp" hidden>'+["online","idle","dnd"].map(k=>'<button type="button" data-s="'+k+'"><i class="em-dot" style="background:'+PR.STATUS[k].c+'"></i>'+PR.STATUS[k].n+'</button>').join("")+'</div></div>'}
+ else h+='<div style="margin-top:6px;font:700 13px Montserrat,sans-serif;color:var(--mute)">'+PR.dot(P)+' '+PR.STATUS[PR.eff(P)].n+'</div>';
+ if(ADMIN){h+='<div class="em-rle" id="pf-rle">'+Object.keys(PR.ROLES).map(k=>'<label><input type="checkbox" data-r="'+k+'"'+((P.roles||[]).includes(k)?" checked":"")+'><i class="em-role" style="--rc:'+PR.ROLES[k].c+'">'+PR.ROLES[k].n+'</i></label>').join("")+'</div>'}
+ box.innerHTML=h;
+ const b=$("#pf-stb");if(b)b.onclick=e=>{e.stopPropagation();$("#pf-stp").hidden=!$("#pf-stp").hidden};
+ box.querySelectorAll("#pf-stp [data-s]").forEach(x=>x.onclick=async()=>{const k=x.dataset.s;$("#pf-stp").hidden=true;await PR.beat(k);P.status=k;P.last_seen=new Date().toISOString();paintPres()});
+ box.querySelectorAll("#pf-rle input").forEach(c=>c.onchange=async()=>{const r=[...box.querySelectorAll("#pf-rle input:checked")].map(i=>i.dataset.r);
+  if(await rpc("set_roles",{target:P.username,r:r},"Roles updated.")){P.roles=r;paintPres()}else paintPres()});
+}
+document.addEventListener("click",()=>{const m=$("#pf-stp");if(m)m.hidden=true});
