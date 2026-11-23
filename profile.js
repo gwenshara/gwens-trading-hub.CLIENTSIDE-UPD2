@@ -31,11 +31,12 @@ async function load(){
  try{
   const all=await EMAuth.rest("profiles?select=username,created_at&order=created_at.asc&limit=1000");
   const idx=all.findIndex(r=>r.username.toLowerCase()===name.toLowerCase());if(idx<0)return msg("Member not found.");
-  let r;try{r=(await EMAuth.rest("profiles?username=eq."+encodeURIComponent(all[idx].username)+"&select=username,role,created_at,avatar,banner,bio,nickname,discord,discord_verified"))[0]}
-  catch(e){try{r=(await EMAuth.rest("profiles?username=eq."+encodeURIComponent(all[idx].username)+"&select=username,role,created_at,avatar,banner,bio"))[0];r.__nodc=1}catch(e2){r=(await EMAuth.rest("profiles?username=eq."+encodeURIComponent(all[idx].username)+"&select=username,role,created_at"))[0];r.__old=1}}
+  let r;try{r=(await EMAuth.rest("profiles?username=eq."+encodeURIComponent(all[idx].username)+"&select=id,username,role,created_at,avatar,banner,bio,nickname,discord,discord_verified"))[0]}
+  catch(e){try{r=(await EMAuth.rest("profiles?username=eq."+encodeURIComponent(all[idx].username)+"&select=id,username,role,created_at,avatar,banner,bio"))[0];r.__nodc=1}catch(e2){r=(await EMAuth.rest("profiles?username=eq."+encodeURIComponent(all[idx].username)+"&select=id,username,role,created_at"))[0];r.__old=1}}
   P=r;$("#pf").hidden=false;$("#pf-msg").hidden=true;$("#pf-n").textContent="#"+(idx+1);
   try{$("#pf-ads").textContent=(await EMAuth.rest("ads?select=id&username=eq."+encodeURIComponent(P.username)+"&limit=1000")).length}catch(e){}
   paint();
+  if(window.EMSocial)EMSocial.mount($("#pf-soc"),P.id,P.username);
   if(mine){["#pf-bb","#pf-ab","#pf-bx","#pf-hint","#pf-nx"].forEach(s=>$(s).hidden=false);$("#pf-un").textContent=P.username;if(P.__nodc)$("#pf-hint").textContent="Nickname and Discord can't be saved yet: run supabase-setup-7.sql in Supabase first.";
    if(P.__old)$("#pf-hint").textContent="Pictures can't be saved yet: run supabase-setup-4.sql in Supabase first."}
  }catch(e){msg("Couldn't load the profile: "+e.message)}}

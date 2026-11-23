@@ -1,0 +1,13 @@
+/* Friends + Follow (Profile, Members, Discussions) */
+.sc-stats{display:flex;gap:10px;margin-top:14px}
+.sc-stats>div{flex:1;background:var(--b3,#262629);border:1px solid var(--bl,#3a3a42);border-radius:12px;padding:10px 8px;text-align:center}
+.sc-stats b{display:block;font:800 20px Montserrat,sans-serif;color:var(--text)}
+.sc-stats span{font:600 12px Montserrat,sans-serif;color:var(--mute)}
+.sc-btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center}
+.sc-b{display:inline-block;padding:9px 16px;border-radius:10px;border:2px solid var(--bl,#3a3a42);background:transparent;color:var(--text);font:800 13px Montserrat,sans-serif;cursor:pointer;text-decoration:none}
+.sc-b:hover{border-color:#7aa7ff}
+.sc-b.pri{background:#7aa7ff;border-color:#7aa7ff;color:#fff}
+.sc-b:disabled{opacity:.5;cursor:default}
+.sc-tag{font:800 12px Montserrat,sans-serif;padding:7px 12px;border-radius:999px;background:#1f7a46;color:#fff}
+.sc-err{color:#ff6b6b;font:600 13px Montserrat,sans-serif;margin:8px 0 0}
+.sc-note{color:var(--mute);font:500 13px/1.5 Inter,"Segoe UI",system-ui,sans-serif;margin:12px 0 0}

@@ -21,6 +21,7 @@ function open(u){
  decorate(m);mo.hidden=false;document.body.style.overflow="hidden"}
 async function decorate(m){
  const bn=document.createElement("div");bn.className="mb-bn";bn.style.background="linear-gradient(120deg,"+color(m.username)+",#2a2a30)";card.insertBefore(bn,card.firstChild);
+ const soc=document.createElement("div");soc.style.padding="0 4px";const st=card.querySelector(".mb-st");if(st)st.parentNode.insertBefore(soc,st);if(window.EMSocial)EMSocial.mount(soc,m.id,m.username);
  const top=card.querySelector(".mb-top");if(top)top.insertAdjacentHTML("afterend",'<p class="mb-bio" hidden></p><p style="text-align:center;margin:8px 0 0;font-size:13px"><a href="profile.html?u='+encodeURIComponent(m.username)+'" style="color:var(--accent);font-weight:700">Open full profile</a></p>');
  try{let r;try{r=(await EMAuth.rest("profiles?username=eq."+encodeURIComponent(m.username)+"&select=banner,bio,discord,discord_verified"))[0]||{}}catch(e0){r=(await EMAuth.rest("profiles?username=eq."+encodeURIComponent(m.username)+"&select=banner,bio"))[0]||{}}
   if(r.banner)bn.style.cssText="background:url("+r.banner+") center/cover";
@@ -35,8 +36,8 @@ async function load(){
  if(!window.EMAuth||!EMAuth.configured){note.textContent="";grid.innerHTML='<div class="mb-empty">The accounts server isn\'t set up yet, see SETUP.md.</div>';return}
  if(!EMAuth.user()){note.textContent="";grid.innerHTML='<div class="mb-empty">Log in (top left) to see the members.</div>';return}
  try{
-  let p;try{p=await EMAuth.rest("profiles?select=username,role,created_at,avatar,nickname&order=created_at.asc&limit=1000")}catch(e){p=await EMAuth.rest("profiles?select=username,role,created_at,avatar&order=created_at.asc&limit=1000")}
-  M=p.map(r=>({username:r.username,role:r.role,avatar:r.avatar||"",nick:r.nickname||"",t:Date.parse(r.created_at)}));
+  let p;try{p=await EMAuth.rest("profiles?select=id,username,role,created_at,avatar,nickname&order=created_at.asc&limit=1000")}catch(e){p=await EMAuth.rest("profiles?select=id,username,role,created_at,avatar&order=created_at.asc&limit=1000")}
+  M=p.map(r=>({id:r.id,username:r.username,role:r.role,avatar:r.avatar||"",nick:r.nickname||"",t:Date.parse(r.created_at)}));
   try{ADS=(await EMAuth.rest("ads?select=username,offering,looking,note,created_at&order=created_at.desc&limit=500")).map(r=>({username:r.username,a:r.offering||[],b:r.looking||[],note:r.note||"",t:Date.parse(r.created_at)}))}catch(e){ADS=[]}
   draw()}
  catch(e){note.textContent="";grid.innerHTML='<div class="mb-empty">Couldn\'t load the members: '+esc(e.message)+'</div>'}}
