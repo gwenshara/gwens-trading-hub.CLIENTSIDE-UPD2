@@ -1,5 +1,7 @@
 :root{--bg:#1b1b1d;--panel:#26262a;--line:#3a3a42;--text:#f1f1f4;--mute:#a0a0ab;--accent:#7aa7ff;--g:#5cff5c;--p:#3b78f5;--t:#bf5bff;--e:#ffb02e;--o:#ff7a5c}
-@media(prefers-color-scheme:light){:root{--bg:#eef0f4;--panel:#fff;--line:#c9ced8;--text:#1b2230;--mute:#5d6778;--accent:#2563eb}}
+@media(prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#eef0f4;--panel:#fff;--line:#c9ced8;--text:#1b2230;--mute:#5d6778;--accent:#2563eb}}
+:root[data-theme="light"]{--bg:#eef0f4;--panel:#fff;--line:#c9ced8;--text:#1b2230;--mute:#5d6778;--accent:#2563eb}
+:root[data-theme="dark"]{--bg:#1b1b1d;--panel:#26262a;--line:#3a3a42;--text:#f1f1f4;--mute:#a0a0ab;--accent:#7aa7ff}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.4 Montserrat,"Segoe UI",system-ui,sans-serif}
 .wrap{max-width:1000px;margin:0 auto;padding:14px 14px 60px}
 button,input,textarea{font:inherit;color:var(--text)}
