@@ -417,6 +417,15 @@ button:hover,select:hover{border-color:var(--accent)}
 .mlh2.on svg{fill:#ff4d6a;stroke:#ff4d6a}.mlh2:hover svg{stroke:#fff}.mlh2.on:hover svg{stroke:#ff4d6a}
 .mltot{display:flex;justify-content:center;gap:8px;align-items:center;margin-top:10px;font:800 12px Montserrat,sans-serif;letter-spacing:.04em;color:#c4c8d4;text-transform:uppercase}.mltot b{font-size:17px;color:#fff;display:flex;align-items:center;gap:6px}.mltot b i{width:15px;height:15px;border:2px solid #fff;border-radius:50%;display:inline-block}
 .mle{color:#8b90a0;text-align:center;padding:26px 0;font:600 14px Montserrat,sans-serif}
+.m .ft #mw{position:relative;display:inline-grid;place-items:center;width:34px;height:34px;padding:6px;transition:transform .16s ease;transform-origin:center}
+.m .ft #mw svg{width:20px;height:20px}
+.m .ft #mw:hover{transform:scale(1.2)}
+.m .ft #mw.on{color:#ffd34d}.m .ft #mw.on svg path:first-child{fill:currentColor}.m .ft #mw.on svg path+path{stroke:#1a1405}
+.m .ft #mw::after{content:attr(data-tip);position:absolute;left:0;bottom:calc(100% + 8px);transform:translateY(4px);background:#000d;color:#fff;font:700 12px Montserrat,sans-serif;white-space:nowrap;padding:5px 9px;border-radius:7px;opacity:0;pointer-events:none;transition:opacity .15s,transform .15s;z-index:6}
+.m .ft #mw:hover::after,.m .ft #mw:focus-visible::after,.m .ft #mw.pop::after{opacity:1;transform:none}
+.mlh.mltabs h2{cursor:pointer;user-select:none}.mlh.mltabs h2:not(.act){color:#8b90a0}.mlh.mltabs h2:not(.act):hover{color:#c4c8d4}.mlh.mltabs h2 svg{stroke:currentColor}
+.mlh2.mlwb.on svg{fill:#ffd34d;stroke:#ffd34d}.mlh2.mlwb.on:hover svg{stroke:#ffd34d}
+@media (prefers-reduced-motion:reduce){.m .ft #mw:hover{transform:none}}
 .mlr{margin-top:20px}.mlr .mlg{grid-template-columns:repeat(auto-fill,minmax(96px,110px))}
 
 /* icon size slider */
@@ -841,6 +850,19 @@ const favMirror=()=>{try{const a=[...favs].filter(id=>items[id]).map(id=>[items[
 
 const getQ=id=>Math.max(1,Math.min(99,+QTY[id]||1));
 try{if(localStorage.getItem(EMAuth.listKey("favn"))===null)favMirror()}catch(e){}
+
+/* ===== Wishlist (separate from the hearts, which are now "Favorites" = inventory) ===== */
+let WISH=new Set();try{const a=JSON.parse(localStorage.getItem(EMAuth.listKey("wishn"))||"[]");WISH=new Set((Array.isArray(a)?a:[]).map(r=>Array.isArray(r)?r[0]:r).filter(n=>typeof n==="string"&&n))}catch(e){}
+const saveWish=()=>{try{localStorage.setItem(EMAuth.listKey("wishn"),JSON.stringify([...WISH].map(n=>[n,1])))}catch(e){}};
+const WSVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"/><path d="M12 7.5v5M9.5 10h5"/></svg>';
+const wishBtn=n=>{const on=WISH.has(n);return`<button id="mw" type="button" class="${on?"on":""}" data-tip="${on?"Added":"Add to my wishlist"}" aria-label="${on?"Remove from my wishlist":"Add to my wishlist"}" aria-pressed="${on}">${WSVG}</button>`};
+document.addEventListener("click",e=>{const b=e.target.closest("#mw");if(!b||openId==null||!items[openId])return;const n=items[openId].n,had=WISH.has(n);
+ if(had)WISH.delete(n);else WISH.add(n);saveWish();
+ b.classList.toggle("on",!had);b.setAttribute("aria-pressed",String(!had));b.setAttribute("aria-label",had?"Add to my wishlist":"Remove from my wishlist");
+ b.dataset.tip=had?"Removed":"Added";b.classList.add("pop");clearTimeout(b._t);
+ b._t=setTimeout(()=>{b.classList.remove("pop");b.dataset.tip=WISH.has(n)?"Added":"Add to my wishlist"},1400);
+ const m=document.getElementById("mlm");if(m&&!m.hidden)drawML()});
+
 const qtyHTML=id=>SET.qty===false?"":`<div class="qty"><button type="button" data-q="-1" data-qid="${id}" aria-label="Decrease quantity">\u2212</button><span>x${getQ(id)}</span><button type="button" data-q="1" data-qid="${id}" aria-label="Increase quantity">+</button></div>`;
 const syncQ=()=>{const fl=document.querySelector(".m .fl");if(!fl||openId==null)return;const q=fl.querySelector(".qty");if(favs.has(openId)){if(!q)fl.insertAdjacentHTML("beforeend",qtyHTML(openId));else q.querySelector("span").textContent="x"+getQ(openId)}else if(q)q.remove()};
 document.addEventListener("click",e=>{const b=e.target.closest("[data-q]");if(!b)return;e.stopImmediatePropagation();e.preventDefault();const id=+b.dataset.qid;QTY[id]=Math.max(1,Math.min(99,getQ(id)+(+b.dataset.q)));saveQty();render();syncQ()},true);
@@ -1011,7 +1033,7 @@ function openM(id){
  <div class="mi"${ptT(i)} style="${imS(i.n)}">${art}${inf.credit?`<span class="cr">${esc(inf.credit)}</span>`:""}</div>
  ${lines}${chips?`<div class="pcs">${chips}</div>`:""}${inf.odds?`<div class="pcs"><span class="pc od">${esc(inf.odds)}</span></div>`:""}${inf.exp?`<div class="xp">[EXPIRED] "${esc(inf.exp)}"</div>`:""}
  ${isES(i)?'<div class="esr"><span class="bd es">Easily sellable</span></div>':""}
- <div class="ft"><span class="fl">${badge}<button id="mf" aria-label="Save to My List">${favs.has(id)?"\u2665":"\u2661"}</button>${favs.has(id)?qtyHTML(id):""}</span>${EDIT?'<button id="edb">\u270f Edit</button>':""}<button id="more">\u21aa More Info</button></div>
+ <div class="ft"><span class="fl">${badge}<button id="mf" aria-label="Add to Favorites">${favs.has(id)?"\u2665":"\u2661"}</button>${wishBtn(i.n)}${favs.has(id)?qtyHTML(id):""}</span>${EDIT?'<button id="edb">\u270f Edit</button>':""}<button id="more">\u21aa More Info</button></div>
  </div><div class="sv" id="sv" hidden><h2>${esc(i.n)}</h2>${VID[i.n]?(/^data:image|\.gif(\?|$)/i.test(VID[i.n])?`<img class="vid" src="${VID[i.n]}" alt="${esc(i.n)} showcase">`:`<video class="vid" id="vid" src="${VID[i.n]}" loop playsinline controls preload="metadata"></video>`):'<div class="nv">Showcase coming soon</div>'}</div><div class="fv" id="fv" hidden>${factHTML(i)}</div></div>
  <div class="ed" id="ed" hidden><h2>Edit ${esc(i.n)}</h2>
  <label>Price<input type="text" id="ed-p" value="${esc(i.p)}"></label>
@@ -1409,29 +1431,40 @@ const _omR=openM;openM=function(id){_omR(id);pushRecent(id);if(!$("#mlm").hidden
 const mlm=document.createElement("div");mlm.id="mlm";mlm.hidden=true;document.body.appendChild(mlm);
 const spc=n=>String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g,"\u202f");
 const HRT='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.4-9.3C1.4 8 3.2 4.8 6.4 4.8c2 0 3.7 1.1 5.6 3.3 1.9-2.2 3.6-3.3 5.6-3.3 3.2 0 5 3.2 3.8 6.4-1.9 4.7-9.4 9.3-9.4 9.3z"/></svg>';
-let mlKeep=new Set();
-const mlTile=(i,q)=>{const title=i.t==="t",pic=TPIC(i.n),on=favs.has(i.id);
- return `<div class="mlt${on?"":" off"}" data-mlo="${i.id}" tabindex="0" role="button" aria-label="${esc(i.n)}"><button class="mlh2${on?" on":""}" data-f="${i.id}" aria-label="${on?"Remove from":"Add to"} My List: ${esc(i.n)}" aria-pressed="${on}">${HRT}</button>${q>1&&SET.qty!==false?`<span class="mq">x${q}</span>`:""}${title?"":`<div class="mn">${esc(i.n)}</div>`}<div class="${title&&!pic?"ttl img":"img"}">${pic||(title?esc(i.n):emo(i.n,i.t))}</div><div class="price"><b></b>${esc(i.p)}</div></div>`};
+let mlKeep=new Set(),mlKeepW=new Set(),mlTab="wish";
+const WBM='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"/></svg>';
+const idOfName=n=>{const i=items.find(x=>x.n===n);return i?i.id:-1};
+const wishIds=()=>[...WISH].map(idOfName).filter(id=>id>=0);
+const mlTile=(i,q,mode)=>{const title=i.t==="t",pic=TPIC(i.n),w=mode==="w",on=w?WISH.has(i.n):favs.has(i.id);
+ const btn=w?`<button class="mlh2 mlwb${on?" on":""}" data-w="${i.id}" aria-label="${on?"Remove from":"Add to"} my wishlist: ${esc(i.n)}" aria-pressed="${on}">${WBM}</button>`:`<button class="mlh2${on?" on":""}" data-f="${i.id}" aria-label="${on?"Remove from":"Add to"} Favorites: ${esc(i.n)}" aria-pressed="${on}">${HRT}</button>`;
+ return `<div class="mlt${on?"":" off"}" data-mlo="${i.id}" tabindex="0" role="button" aria-label="${esc(i.n)}">${btn}${q>1&&SET.qty!==false?`<span class="mq">x${q}</span>`:""}${title?"":`<div class="mn">${esc(i.n)}</div>`}<div class="${title&&!pic?"ttl img":"img"}">${pic||(title?esc(i.n):emo(i.n,i.t))}</div><div class="price"><b></b>${esc(i.p)}</div></div>`};
 function drawML(){
  const ws=mlm.querySelector(".mlw"),wt=ws?ws.scrollTop:0,bt=mlm.querySelector(".mlb"),bs=bt?bt.scrollTop:0;
- const ids=[...new Set([...mlKeep,...favs])].filter(id=>items[id]),rc=getRecent();
- const total=[...favs].filter(id=>items[id]).reduce((t,id)=>t+items[id].v*getQ(id),0);
+ const wtab=mlTab==="wish",
+  ids=(wtab?[...new Set([...mlKeepW,...wishIds()])]:[...new Set([...mlKeep,...favs])]).filter(id=>items[id]),rc=getRecent(),
+  total=wtab?wishIds().reduce((t,id)=>t+items[id].v,0):[...favs].filter(id=>items[id]).reduce((t,id)=>t+items[id].v*getQ(id),0);
+ const BM='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"/><path d="M12 7.5v5M9.5 10h5"/></svg>',
+  HT='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.4-9.3C1.4 8 3.2 4.8 6.4 4.8c2 0 3.7 1.1 5.6 3.3 1.9-2.2 3.6-3.3 5.6-3.3 3.2 0 5 3.2 3.8 6.4-1.9 4.7-9.4 9.3-9.4 9.3z"/></svg>';
  mlm.innerHTML=`<div class="mlb" role="dialog" aria-modal="true" aria-label="My Lists"><button class="mlx" id="mlx" aria-label="Close">\u2715</button><h1>My Lists</h1>
- <div class="mlh"><h2><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"/><path d="M12 7.5v5M9.5 10h5"/></svg> Wishlist</h2><h2 class="mlfv"><svg viewBox="0 0 24 24" fill="none" stroke="#8b90a0" stroke-width="2.4" stroke-linejoin="round"><path d="M12 20.5s-7.5-4.6-9.4-9.3C1.4 8 3.2 4.8 6.4 4.8c2 0 3.7 1.1 5.6 3.3 1.9-2.2 3.6-3.3 5.6-3.3 3.2 0 5 3.2 3.8 6.4-1.9 4.7-9.4 9.3-9.4 9.3z"/></svg> Favorites</h2></div>
- <div class="mlw">${ids.length?`<div class="mlg">${ids.map(id=>mlTile(items[id],getQ(id))).join("")}</div>`:'<div class="mle">Nothing saved yet. Tap the heart on any item to add it here.</div>'}</div>
- <div class="mltot">Wishlist total value: <b><i></i>${spc(total)}</b></div>
- <button class="mlva" id="mlva">View all <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg></button>
+ <div class="mlh mltabs" role="tablist"><h2 class="${wtab?"act":""}" data-mltab="wish" role="tab" tabindex="0" aria-selected="${wtab}">${BM} Wishlist</h2><h2 class="${wtab?"":"act"}" data-mltab="fav" role="tab" tabindex="0" aria-selected="${!wtab}">${HT} Favorites</h2></div>
+ <div class="mlw">${ids.length?`<div class="mlg">${ids.map(id=>mlTile(items[id],wtab?0:getQ(id),wtab?"w":"f")).join("")}</div>`:`<div class="mle">${wtab?"Your wishlist is empty. Open an item and tap the bookmark icon under it to add it here.":"Nothing saved yet. Tap the heart on any item to add it here."}</div>`}</div>
+ <div class="mltot">${wtab?"Wishlist":"Favorites"} total value: <b><i></i>${spc(total)}</b></div>
+ ${wtab?"":`<button class="mlva" id="mlva">View all <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg></button>`}
  <div class="mlr"><div class="mlh"><h2><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> Recently viewed</h2></div>${rc.length?`<div class="mlg">${rc.slice(0,8).map(id=>mlTile(items[id],0)).join("")}</div>`:'<div class="mle">Items you open will show up here.</div>'}</div></div>`;
  const w2=mlm.querySelector(".mlw"),b2=mlm.querySelector(".mlb");if(w2)w2.scrollTop=wt;if(b2)b2.scrollTop=bs}
-function openML(){mlKeep=new Set(favs);drawML();mlm.hidden=false}
+function openML(){mlKeep=new Set(favs);mlKeepW=new Set(wishIds());drawML();mlm.hidden=false}
 function closeML(){mlm.hidden=true}
 window.EMLists_open=openML;
 mlm.addEventListener("click",e=>{
  if(e.target===mlm||e.target.closest("#mlx"))return closeML();
+ const tb=e.target.closest("[data-mltab]");if(tb){mlTab=tb.dataset.mltab;drawML();const w=mlm.querySelector(".mlw");if(w)w.scrollTop=0;return}
  if(e.target.closest("#mlva")){closeML();onlyList=true;render();window.scrollTo({top:0,behavior:"smooth"});return}
+ const wb=e.target.closest("[data-w]");if(wb){const it=items[+wb.dataset.w];if(it){if(WISH.has(it.n))WISH.delete(it.n);else WISH.add(it.n);saveWish()}drawML();return}
  if(e.target.closest("[data-f]")){setTimeout(drawML,0);return}
  const t=e.target.closest("[data-mlo]");if(t)openM(+t.dataset.mlo)});
-mlm.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target.dataset&&e.target.dataset.mlo){e.preventDefault();openM(+e.target.dataset.mlo)}});
+mlm.addEventListener("keydown",e=>{if(e.key!=="Enter"&&e.key!==" ")return;const d=e.target.dataset;if(!d)return;
+ if(d.mltab){e.preventDefault();mlTab=d.mltab;drawML();return}
+ if(d.mlo){e.preventDefault();openM(+d.mlo)}});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!mlm.hidden&&$("#mo").hidden)closeML()},true);
 /* the heart in an open info card also updates the panel behind it */
 document.addEventListener("click",e=>{if(e.target.id==="mf"&&!mlm.hidden)setTimeout(drawML,0)});

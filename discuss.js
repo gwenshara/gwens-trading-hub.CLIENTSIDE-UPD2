@@ -27,14 +27,14 @@ function rebuild(){if(!HAS_ITEMS)return;
  BYN={};ITEMS.forEach(i=>BYN[i.n]=i)}
 rebuild();
 /* the admin's saved edits, kept in memory only (never written to this browser's catalog data) */
-if(HAS_ITEMS&&window.EMData&&EMData.enabled())EMData.onChange((k,v)=>{try{const j=JSON.parse(v);if(k==="overrides")LIVE.ovr=j;else if(k==="custom")LIVE.custom=j;else if(k==="images")LIVE.images=j;rebuild()}catch(e){}return false});
+if(HAS_ITEMS&&window.EMData&&EMData.enabled())EMData.onChange((k,v)=>{try{const j=JSON.parse(v);if(k==="overrides")LIVE.ovr=j;else if(k==="custom")LIVE.custom=j;else if(k==="images")LIVE.images=j;rebuild();try{if(cur)paintChat(false)}catch(e2){}}catch(e){}return false});
 const TL={up:"Increasing",down:"Receding",flat:"Stabilizing",fluct:"Fluctuating",infl:"Inflated"};
 const TYPE={g:"Gear",p:"Pet",t:"Title",e:"Effect",o:"Death"};
 const SL={1:"Horrible demand",2:"No demand",3:"HTT - hard to trade",4:"Doing well",5:"Really good demand"};
 const price=p=>String(p==null?"":p).replace(/^0\/C/i,"O/C");
 const thumb=n=>{const i=BYN[n],t=TH[n]||{};let h="";
  if(t.fx){if(t.m)h+='<img class="fxm" src="'+esc(t.m)+'" alt="">';h+='<img class="fxa" src="'+esc(t.a)+'" alt="">'}
- else if(t.a)h='<img src="'+esc(t.a)+'" alt="">';else h="?";
+ else if(t.a)h='<img src="'+esc(t.a)+'" alt="">';else if(i&&i.t==="t")return'<span class="th t txt"><i>'+esc(n)+"</i></span>";else h="?";
  return'<span class="th '+(i?i.t:"g")+'">'+h+"</span>"};
 const stars=n=>n?'<span class="dm-st" title="'+esc(SL[n]||"")+'">'+"\u2605".repeat(n)+"</span>":"";
 const chipTxt=c=>{const k=c[0],v=c[1];return k==="star"?v+" Stars":k==="rbx"?v+" Robux":k==="coin"?v+" Coins":k==="token"?v+" Tokens":k==="rank"?"Rank "+v:String(v)};
@@ -80,12 +80,13 @@ async function loadAds(){for(const x of MSGS){const id=adOf(x);if(!id||ADC[id]!=
 function paintAdb(){const b=$("#dm-adb");if(!b)return;const a=adCtx&&cur&&cur.ch==="trade"&&adCtx.uid===cur.id?adCtx:null;
  if(!a||MSGS.some(m=>adOf(m)===a.id)){b.hidden=true;b.innerHTML="";return}b.hidden=false;b.innerHTML=adBox(a.ad,"Trade you were interested in")}
 
-const WLRE=/^\[\[wl:([\s\S]*)\]\]$/,wlOf=x=>{if(x.kind&&x.kind!=="text")return null;const m=WLRE.exec(x.text||"");if(!m)return null;return m[1].split("|").filter(Boolean).map(p=>{const k=p.lastIndexOf("*"),q=k>0?+p.slice(k+1):1;return k>0&&q>0?{n:p.slice(0,k),q:q}:{n:p,q:1}})},
-wlCard=l=>{const tot=l.reduce((t,r)=>t+r.q,0);return'<div class="dm-wl"><div class="dm-wlh"><b>Wishlist</b><span>'+l.length+(l.length===1?" item":" items")+(tot>l.length?" \u00b7 "+tot+" total":"")+'</span></div><div class="dm-wll">'+l.map(r=>{const i=BYN[r.n];return'<button class="dm-wli" data-item="'+esc(r.n)+'" type="button">'+(i?thumb(r.n):'<span class="th g">?</span>')+'<span class="dm-wlx"><b>'+esc(r.n)+(r.q>1?" x"+r.q:"")+'</b><span>'+(i?esc(price(i.p))+(i.stars?" \u00b7 "+stars(i.stars):""):"Item not found")+'</span></span></button>'}).join("")+'</div></div>'},
-myList=()=>{let a=[];try{a=JSON.parse(localStorage.getItem(EMAuth.listKey("favn"))||"[]")}catch(e){}return Array.isArray(a)?a.filter(r=>r&&typeof r[0]==="string"&&r[0]):[]};
+const WLRE=/^\[\[(wl|inv):([\s\S]*)\]\]$/,wlOf=x=>{if(x.kind&&x.kind!=="text")return null;const m=WLRE.exec(x.text||"");if(!m)return null;const l=m[2].split("|").filter(Boolean).map(p=>{const k=p.lastIndexOf("*"),q=k>0?+p.slice(k+1):1;return k>0&&q>0?{n:p.slice(0,k),q:q}:{n:p,q:1}});l.k=m[1];return l},
+wlNm=x=>{const l=wlOf(x);return l&&l.k==="inv"?"Inventory":"Wishlist"},
+wlCard=l=>{const tot=l.reduce((t,r)=>t+r.q,0);return'<div class="dm-wl"><div class="dm-wlh"><b>'+(l.k==="inv"?"Inventory":"Wishlist")+'</b><span>'+l.length+(l.length===1?" item":" items")+(tot>l.length?" \u00b7 "+tot+" total":"")+'</span></div><div class="dm-wll">'+l.map(r=>{const i=BYN[r.n];return'<button class="dm-wli" data-item="'+esc(r.n)+'" type="button">'+(i?thumb(r.n):'<span class="th g">?</span>')+'<span class="dm-wlx"><b>'+esc(r.n)+(r.q>1?" x"+r.q:"")+'</b><span>'+(i?esc(price(i.p))+(i.stars?" \u00b7 "+stars(i.stars):""):"Item not found")+'</span></span></button>'}).join("")+'</div></div>'},
+myList=k=>{let a=[];try{a=JSON.parse(localStorage.getItem(EMAuth.listKey(k||"wishn"))||"[]")}catch(e){}return Array.isArray(a)?a.filter(r=>r&&typeof r[0]==="string"&&r[0]):[]};
 const STRE=/^\[\[st:([a-z]+)(\d+)\]\]$/i,stOf=x=>{if(x.kind&&x.kind!=="text")return null;const m=STRE.exec(x.text||"");if(!m)return null;const p=(window.EM_STICKERS||{})[m[1].toLowerCase()],u=p&&p.items[+m[2]-1];return{pack:m[1].toLowerCase(),n:+m[2],src:u||""}};
-const gsum=x=>stOf(x)?"Sticker":wlOf(x)?"Wishlist":x.kind==="image"?(x.text?"Photo: "+x.text:"Photo"):x.kind==="item"?"Item: "+(x.iname||""):x.text;
-const sum=x=>adOf(x)?"Trade ad":stOf(x)?"Sticker":wlOf(x)?"Wishlist":x.kind==="mm"?"Middleman request: "+(x.mm||""):x.kind==="image"?(x.text?"Photo: "+x.text:"Photo"):x.kind==="item"?"Item: "+(x.iname||""):x.text;
+const gsum=x=>stOf(x)?"Sticker":wlOf(x)?wlNm(x):x.kind==="image"?(x.text?"Photo: "+x.text:"Photo"):x.kind==="item"?"Item: "+(x.iname||""):x.text;
+const sum=x=>adOf(x)?"Trade ad":stOf(x)?"Sticker":wlOf(x)?wlNm(x):x.kind==="mm"?"Middleman request: "+(x.mm||""):x.kind==="image"?(x.text?"Photo: "+x.text:"Photo"):x.kind==="item"?"Item: "+(x.iname||""):x.text;
 async function loadProfiles(ids){ids=[...new Set(ids)].filter(i=>i&&!prof[i]);if(!ids.length)return;
  try{const r=await EMAuth.rest("profiles?select=id,username,role,avatar&id=in.("+ids.slice(0,60).join(",")+")");r.forEach(p=>prof[p.id]=p);ids.forEach(i=>{if(!prof[i])prof[i]={}})}catch(e){ids.forEach(i=>{prof[i]={}})}}
 function build(){
@@ -189,7 +190,7 @@ function paintChat(stick){
  if(cur.grp)return paintGroup(stick);
  if(!$("#dm-msgs")||r.dataset.id!==key(cur.id,cur.ch)){
   r.dataset.id=key(cur.id,cur.ch);pendImg=null;
-  r.innerHTML=`<div class="dm-rh"><button class="dm-back" id="dm-back" type="button">\u2039 Back</button>${av(cur.id,cur.name)}<b>${esc(cur.name)}</b>${adm(cur.id)}${cur.ch==="trade"?'<i class="dm-fr tr">Trading chat</i>':""}<span class="dm-ha" id="dm-ha"></span></div><div class="dm-adb" id="dm-adb" hidden></div><div class="dm-msgs" id="dm-msgs"></div><div class="dm-err" id="dm-err"></div><div class="dm-pend" id="dm-pend" hidden></div><div class="dm-f"><div class="dm-pw"><button class="dm-plus" id="dm-plus" type="button" aria-label="Send a picture or an item">${PLUS}</button><div class="dm-menu" id="dm-menu" hidden><button type="button" data-add="img">Send a picture</button><button type="button" data-add="item">Send an item</button><button type="button" data-add="wl">Send my wishlist</button><button type="button" data-add="stk">Stickers</button><button type="button" data-add="mm">Request a middleman</button></div><div class="dm-stp" id="dm-stp" hidden></div></div><textarea id="dm-in" maxlength="1000" rows="1" placeholder="Message ${esc(cur.name)}\u2026"></textarea><button id="dm-send" type="button">Send</button></div><input type="file" id="dm-file" accept="image/*" hidden>`;stick=true;paintHead();paintAdb()}
+  r.innerHTML=`<div class="dm-rh"><button class="dm-back" id="dm-back" type="button">\u2039 Back</button>${av(cur.id,cur.name)}<b>${esc(cur.name)}</b>${adm(cur.id)}${cur.ch==="trade"?'<i class="dm-fr tr">Trading chat</i>':""}<span class="dm-ha" id="dm-ha"></span></div><div class="dm-adb" id="dm-adb" hidden></div><div class="dm-msgs" id="dm-msgs"></div><div class="dm-err" id="dm-err"></div><div class="dm-pend" id="dm-pend" hidden></div><div class="dm-f"><div class="dm-pw"><button class="dm-plus" id="dm-plus" type="button" aria-label="Send a picture or an item">${PLUS}</button><div class="dm-menu" id="dm-menu" hidden><button type="button" data-add="img">Send a picture</button><button type="button" data-add="item">Send an item</button><button type="button" data-add="wl">Send my wishlist</button><button type="button" data-add="inv">Send my inventory</button><button type="button" data-add="stk">Stickers</button><button type="button" data-add="mm">Request a middleman</button></div><div class="dm-stp" id="dm-stp" hidden></div></div><textarea id="dm-in" maxlength="1000" rows="1" placeholder="Message ${esc(cur.name)}\u2026"></textarea><button id="dm-send" type="button">Send</button></div><input type="file" id="dm-file" accept="image/*" hidden>`;stick=true;paintHead();paintAdb()}
  const box=$("#dm-msgs"),near=box.scrollHeight-box.scrollTop-box.clientHeight<90;
  const lo=[...MSGS].reverse().find(m=>m.sender_id===UID),SEENID=lo&&lo.read_at?lo.id:null;let h="",d="";MSGS.forEach(x=>{const k=day(x.created_at);if(k!==d){d=k;h+='<div class="dm-day">'+k+"</div>"}h+=msgHtml(x)+(x.id===SEENID?'<div class="dm-seen">Seen '+fmtT(x.read_at)+"</div>":"")});
  if(!MSGS.length)h='<div class="dm-none" style="margin:auto">No messages yet. Say hi</div>';
@@ -251,13 +252,16 @@ function paintStk(){const p=stp(),S=window.EM_STICKERS||{},names=Object.keys(S);
  if(!names.length){p.innerHTML='<div class="dm-stn">Stickers didn\'t load. Upload stickers.js and refresh.</div>';return}
  if(!stkPack){p.innerHTML='<div class="dm-stt">Stickers</div><div class="dm-stpk">'+names.map(n=>'<button type="button" data-pack="'+n+'"><img src="'+S[n].items[0]+'" alt=""><b>'+esc(S[n].name)+'</b></button>').join("")+'</div>';return}
  const pk=S[stkPack];p.innerHTML='<div class="dm-stt"><button type="button" data-stkback class="dm-stb" aria-label="Back">\u2039</button><b>'+esc(pk.name)+'</b></div><div class="dm-stg">'+pk.items.map((u,i)=>'<button type="button" data-stk="'+stkPack+(i+1)+'"><img src="'+u+'" alt="Sticker '+(i+1)+'"></button>').join("")+'</div>'}
-async function sendWishlist(){if(!cur)return;errEl().textContent="";const L=myList();
- if(!L.length){errEl().textContent="Your wishlist is empty. Open the catalog, tap the heart on the items you want, then come back.";return}
- let t="[[wl:",n=0;for(const r of L){const nm=String(r[0]).replace(/[|*\[\]]/g,""),q=Math.max(1,Math.min(99,+r[1]||1)),p=nm+(q>1?"*"+q:"");const nx=t+(n?"|":"")+p;if(nx.length>996)break;t=nx;n++}
- t+="]]";
- try{if(cur.grp)await postG({kind:"text",text:t});else{await sendAdMark();await post(NEW8?{kind:"text",text:t}:{text:t})}
-  if(n<L.length)errEl().textContent="Sent the first "+n+" of "+L.length+" items. A message can only hold so many."}
- catch(e){errEl().textContent="Couldn\'t send: "+e.message}}
+async function sendWishlist(kind){if(!cur)return;errEl().textContent="";const inv=kind==="inv",L=myList(inv?"favn":"wishn");
+ if(!L.length){errEl().textContent=inv?"Your inventory is empty. Open the catalog and tap the heart on the items you own, then come back.":"Your wishlist is empty. Open an item in the catalog and tap the bookmark icon under it, then come back.";return}
+ const pre="[["+(inv?"inv":"wl")+":",parts=[];let t=pre,n=0,tot=0;
+ for(const r of L){const nm=String(r[0]).replace(/[|*\[\]]/g,""),q=Math.max(1,Math.min(99,+r[1]||1)),p=nm+(q>1?"*"+q:"");const nx=t+(n?"|":"")+p;
+  if(nx.length>996&&n){parts.push(t+"]]");t=pre+p;n=1}else{t=nx;n++}tot++}
+ if(n)parts.push(t+"]]");
+ const MAXP=5,send=parts.slice(0,MAXP);let sent=0;
+ try{for(const m of send){if(cur.grp)await postG({kind:"text",text:m});else{await sendAdMark();await post(NEW8?{kind:"text",text:m}:{text:m})}sent++}
+  if(parts.length>MAXP)errEl().textContent="Sent the first "+MAXP+" messages of your "+(inv?"inventory":"wishlist")+". The rest was too long to send."}
+ catch(e){errEl().textContent="Couldn\'t send: "+e.message+(sent?" ("+sent+" of "+send.length+" parts were sent.)":"")}}
 async function sendSticker(v){if(!cur)return;errEl().textContent="";try{if(cur.grp)await postG({kind:"text",text:"[["+"st:"+v+"]]"});else{await sendAdMark();await post(NEW8?{kind:"text",text:"[["+"st:"+v+"]]"}:{text:"[["+"st:"+v+"]]"})}}catch(e){errEl().textContent="Couldn\'t send: "+e.message}}
 /* tell the other person their messages were seen */
 let pingBusy=false;
@@ -388,7 +392,7 @@ function gHtml(x){const out=x.sender_id===UID;
 function paintGroup(stick){const r=$("#dm-r");if(!cur||!cur.grp)return;
  if(!$("#gp-msgs")||r.dataset.id!=="g:"+cur.id){r.dataset.id="g:"+cur.id;pendImg=null;
   const gg=GL.find(x=>x.id===cur.id)||{},mmg=gg.kind==="mm",own=gg.owner_id===UID;
-  r.innerHTML=(mmg?'<div class="g-off">OFFICIAL MIDDLEMAN INTERACTION</div>':"")+'<div class="dm-rh"><button class="dm-back" id="dm-back" type="button">\u2039 Back</button><span class="dm-av gav">'+(mmg?"MM":"G")+'</span><b>'+esc(cur.name)+'</b><i class="dm-fr gr">'+(mmg?"Middleman":"Group")+'</i>'+(own?'<span class="dm-ha"><button class="dm-hb dg" data-gclose type="button">'+(mmg?"Close chat (interaction over)":"Delete group")+'</button></span>':"")+'</div><div class="g-mem" id="gp-mem"></div><div class="dm-msgs" id="gp-msgs"></div><div class="dm-err" id="gp-err"></div><div class="dm-pend" id="gp-pend" hidden></div><div class="dm-f"><div class="dm-pw"><button class="dm-plus" id="gp-plus" type="button" aria-label="Send a picture or an item">'+PLUS+'</button><div class="dm-menu" id="gp-menu" hidden><button type="button" data-gadd="img">Send a picture</button><button type="button" data-gadd="item">Send an item</button><button type="button" data-gadd="wl">Send my wishlist</button><button type="button" data-gadd="stk">Stickers</button></div><div class="dm-stp" id="gp-stp" hidden></div></div><textarea id="gp-in" maxlength="1000" rows="1" placeholder="Message the group\u2026"></textarea><button id="gp-send" type="button">Send</button></div><input type="file" id="gp-file" accept="image/*" hidden>';stick=true}
+  r.innerHTML=(mmg?'<div class="g-off">OFFICIAL MIDDLEMAN INTERACTION</div>':"")+'<div class="dm-rh"><button class="dm-back" id="dm-back" type="button">\u2039 Back</button><span class="dm-av gav">'+(mmg?"MM":"G")+'</span><b>'+esc(cur.name)+'</b><i class="dm-fr gr">'+(mmg?"Middleman":"Group")+'</i>'+(own?'<span class="dm-ha"><button class="dm-hb dg" data-gclose type="button">'+(mmg?"Close chat (interaction over)":"Delete group")+'</button></span>':"")+'</div><div class="g-mem" id="gp-mem"></div><div class="dm-msgs" id="gp-msgs"></div><div class="dm-err" id="gp-err"></div><div class="dm-pend" id="gp-pend" hidden></div><div class="dm-f"><div class="dm-pw"><button class="dm-plus" id="gp-plus" type="button" aria-label="Send a picture or an item">'+PLUS+'</button><div class="dm-menu" id="gp-menu" hidden><button type="button" data-gadd="img">Send a picture</button><button type="button" data-gadd="item">Send an item</button><button type="button" data-gadd="wl">Send my wishlist</button><button type="button" data-gadd="inv">Send my inventory</button><button type="button" data-gadd="stk">Stickers</button></div><div class="dm-stp" id="gp-stp" hidden></div></div><textarea id="gp-in" maxlength="1000" rows="1" placeholder="Message the group\u2026"></textarea><button id="gp-send" type="button">Send</button></div><input type="file" id="gp-file" accept="image/*" hidden>';stick=true}
  $("#gp-mem").textContent="Members: "+(GMEM[cur.id]||[]).map(m=>m.username).join(", ");
  const box=$("#gp-msgs"),near=box.scrollHeight-box.scrollTop-box.clientHeight<90,L=GM[cur.id]||[];let h="",d="";
  L.forEach(x=>{const k=day(x.created_at);if(k!==d){d=k;h+='<div class="dm-day">'+k+"</div>"}h+=gediting&&gediting.id===x.id?gHtml(x):withRx(gHtml(x),x)});
@@ -470,7 +474,7 @@ $("#dm-r").addEventListener("click",async e=>{
   else if(t.closest("#gp-plus")){const m=$("#gp-menu"),sp=$("#gp-stp");if(sp)sp.hidden=true;m.hidden=!m.hidden}
   else if(t.closest("[data-gadd]")){const a=t.closest("[data-gadd]").dataset.gadd;$("#gp-menu").hidden=true;
    if(!GNEW){$("#gp-err").textContent=NEED17;return}
-   if(a==="wl")sendWishlist();else if(a==="stk")openStk();else if(a==="img")$("#gp-file").click();else openPicker()}
+   if(a==="wl"||a==="inv")sendWishlist(a);else if(a==="stk")openStk();else if(a==="img")$("#gp-file").click();else openPicker()}
   else if(t.closest("[data-pack]")){stkPack=t.closest("[data-pack]").dataset.pack;paintStk()}
   else if(t.closest("[data-stkback]")){stkPack=null;paintStk()}
   else if(t.closest("[data-stk]")){const v=t.closest("[data-stk]").dataset.stk;$("#gp-stp").hidden=true;sendSticker(v)}
@@ -491,7 +495,7 @@ $("#dm-r").addEventListener("click",async e=>{
   else if(t.closest("[data-stk]")){const v=t.closest("[data-stk]").dataset.stk;$("#dm-stp").hidden=true;sendSticker(v)}
   else if(t.closest("[data-add]")){const a=t.closest("[data-add]").dataset.add;$("#dm-menu").hidden=true;
   if(!NEW8){$("#dm-err").textContent=NEED8;return}
-  if(a==="wl"){sendWishlist();return}
+  if(a==="wl"||a==="inv"){sendWishlist(a);return}
   if(a==="mm"){if(!NEW9){$("#dm-err").textContent=NEED9;return}openMM();return}
   if(a==="img")$("#dm-file").click();else openPicker()}
  else if(t.closest("[data-unpic]")){pendImg=null;paintPend()}
