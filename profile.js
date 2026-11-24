@@ -97,9 +97,9 @@ function paintMod(){
  if(mine||!P||!EMAuth.canMod||!EMAuth.canMod())return;
  if(P.role==="admin"||((P.roles||[]).includes("moderator")&&!ADMIN))return;
  let w=$("#pf-md");if(!w){w=document.createElement("div");w.id="pf-md";w.className="pf-box";w.style.borderColor="#e5484d";$("#pf-bio").closest(".pf-box").insertAdjacentElement("afterend",w)}
- const opts=[["avatar","Profile picture"],["banner","Banner"],["nickname","Nickname"],["bio","About me"]];
+ const opts=[["avatar","Profile picture"],["banner","Banner"],["nickname","Nickname"],["bio","About me"],["username","Username (they must pick a new one)"]];
  w.innerHTML='<h4>Moderation</h4><button type="button" id="pf-mdb" class="pri" style="padding:8px 16px;border-radius:10px;font-weight:700;cursor:pointer;background:#e5484d;border-color:#e5484d;color:#fff">'+(_mdOpen?"Hide":"Reset profile / send warning")+'</button>'
-  +'<div id="pf-mdf" style="display:'+(_mdOpen?"block":"none")+';margin-top:12px"><p class="pf-hint" style="margin:0 0 8px">Tick what to reset. Their login name does not change.</p>'
+  +'<div id="pf-mdf" style="display:'+(_mdOpen?"block":"none")+';margin-top:12px"><p class="pf-hint" style="margin:0 0 8px">Tick what to reset. Nickname: only the nickname is cleared. Username: they get a temporary name and must choose a new one.</p>'
   +'<div style="display:flex;flex-wrap:wrap;gap:12px 18px">'+opts.map(o=>'<label style="display:flex;gap:6px;align-items:center;font-weight:700;font-size:13px;cursor:pointer"><input type="checkbox" data-w="'+o[0]+'">'+o[1]+'</label>').join("")+'</div>'
   +'<label style="display:flex;gap:6px;align-items:center;font-weight:700;font-size:13px;margin-top:12px;cursor:pointer"><input type="checkbox" id="pf-mdw" checked>Send them a warning ("don\'t choose anything inappropriate")</label>'
   +'<div class="pf-row" style="margin-top:12px"><button type="button" id="pf-mdgo" class="pri" style="padding:8px 16px;border-radius:10px;font-weight:700;cursor:pointer">Reset now</button></div></div>';
@@ -108,7 +108,11 @@ function paintMod(){
   const what=[...w.querySelectorAll("[data-w]:checked")].map(i=>i.dataset.w),warn=$("#pf-mdw").checked;
   if(!what.length&&!warn)return;
   if(!confirm("Reset "+(what.length?what.join(", "):"nothing")+" for "+P.username+(warn?" and send a warning?":"?")))return;
-  if(await rpc("mod_reset",{target:P.username,what:what,warn:warn},"Done."+(warn?" Warning sent.":""))){
+  const st=$("#pf-st");st.style.color="";st.textContent="Saving…";let nu=null;
+  try{nu=await EMAuth.rest("rpc/mod_reset","POST",{target:P.username,what:what,warn:warn});st.style.color="#3bb26b";st.textContent="Done."+(warn?" Warning sent.":"")}
+  catch(e){st.style.color="#ff6b6b";st.textContent=/does not exist|schema cache/i.test(e.message)?"Run supabase-setup-22.sql in Supabase first.":e.message}
+  if(nu!==null){
+   if(typeof nu==="string"&&nu){location.href="profile.html?u="+encodeURIComponent(nu);return}
    if(what.includes("avatar"))P.avatar=null;if(what.includes("banner"))P.banner=null;if(what.includes("nickname"))P.nickname=null;if(what.includes("bio"))P.bio=null;
    paint();paintMod()}}}
 document.addEventListener("click",()=>{const m=$("#pf-stp");if(m)m.hidden=true});
