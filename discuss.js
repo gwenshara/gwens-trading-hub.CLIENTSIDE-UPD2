@@ -538,3 +538,41 @@ tick(true).then(async()=>{const P=new URLSearchParams(location.search),u=P.get("
 setInterval(()=>{if(!document.hidden)tick(false)},4000);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)tick(false)});
 })();
+
+/* ---------- chat colour: pick a colour for your own bubbles, per chat or for all chats (kept on this device) ---------- */
+(function(){
+const K="em_chat_color",SW=["#7aa7ff","#8b4dff","#ff5d9e","#e5484d","#ff9a3c","#f5c518","#2fb86a","#19b6a8","#3a3a44","#e8e8ee"],DEF="#7aa7ff";
+const rd=()=>{try{const o=JSON.parse(localStorage.getItem(EMAuth.listKey(K))||"{}");return o&&typeof o==="object"&&!Array.isArray(o)?o:{}}catch(e){return{}}};
+const wr=o=>{try{localStorage.setItem(EMAuth.listKey(K),JSON.stringify(o))}catch(e){}};
+const ok=c=>/^#[0-9a-f]{6}$/i.test(c||"");
+const fg=c=>{const n=parseInt(c.slice(1),16),r=n>>16,g=n>>8&255,b=n&255;return(r*299+g*587+b*114)/1000>165?"#111":"#fff"};
+const R=()=>document.getElementById("dm-r");
+const colorFor=k=>{const o=rd();return ok(o[k])?o[k]:(ok(o["*"])?o["*"]:null)};
+function apply(){const r=R();if(!r)return;const k=r.dataset.id,c=k&&colorFor(k);
+ if(c){r.style.setProperty("--cc",c);r.style.setProperty("--cct",fg(c))}else{r.style.removeProperty("--cc");r.style.removeProperty("--cct")}}
+const ICO='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.4 0 2-.9 2-1.8 0-1.2-1-1.6-1-2.7 0-1 .8-1.5 1.8-1.5H17a4 4 0 0 0 4-4C21 6.5 17 3 12 3z"/><circle cx="7.5" cy="11" r="1.1"/><circle cx="10.5" cy="7.5" r="1.1"/><circle cx="15" cy="7.5" r="1.1"/></svg>';
+function addBtn(){const r=R(),h=r&&r.querySelector(".dm-rh");if(!h||h.querySelector(".dm-ccb"))return;
+ const b=document.createElement("button");b.type="button";b.className="dm-ccb";b.title="Chat color";b.setAttribute("aria-label","Change chat color");b.innerHTML=ICO;h.appendChild(b)}
+let pop=null;
+const closePal=()=>{if(pop){pop.remove();pop=null}};
+function openPal(btn){closePal();const r=R(),k=r&&r.dataset.id;if(!k)return;
+ const o=rd(),c0=colorFor(k)||DEF,all=!ok(o[k])&&ok(o["*"]);
+ pop=document.createElement("div");pop.className="dm-ccp";
+ pop.innerHTML='<div class="dm-ccs">'+SW.map(c=>'<button type="button" data-cc="'+c+'" style="background:'+c+'" aria-label="Color '+c+'"></button>').join("")+'</div><label class="dm-ccc">Custom color <input type="color" id="dm-ccin" value="'+c0+'"></label><label class="dm-cca"><input type="checkbox" id="dm-ccall"'+(all?" checked":"")+'> Use for all my chats</label><button type="button" class="dm-ccr" data-ccreset>Reset to default</button><div class="dm-ccn">Colors your own messages. Only you see it, on this device.</div>';
+ document.body.appendChild(pop);
+ const b=btn.getBoundingClientRect();pop.style.top=Math.min(b.bottom+8,innerHeight-pop.offsetHeight-8)+"px";pop.style.right=Math.max(8,innerWidth-b.right)+"px"}
+function setC(c){const r=R(),k=r&&r.dataset.id;if(!k||!ok(c))return;const o=rd(),all=pop&&pop.querySelector("#dm-ccall").checked;
+ if(all){o["*"]=c;delete o[k]}else o[k]=c;wr(o);apply();const i=pop&&pop.querySelector("#dm-ccin");if(i)i.value=c}
+document.addEventListener("click",e=>{
+ const b=e.target.closest(".dm-ccb");if(b){e.stopPropagation();pop?closePal():openPal(b);return}
+ if(!pop)return;
+ const sw=e.target.closest("[data-cc]");if(sw){setC(sw.dataset.cc);return}
+ if(e.target.closest("[data-ccreset]")){const r=R(),k=r&&r.dataset.id;if(k){const o=rd(),all=pop.querySelector("#dm-ccall").checked;
+  if(all){delete o["*"];delete o[k]}else if(ok(o["*"]))o[k]=DEF;else delete o[k];wr(o);apply();closePal()}return}
+ if(e.target.closest("#dm-ccall")){const r=R(),k=r&&r.dataset.id;if(k)setC(colorFor(k)||DEF);return}
+ if(!e.target.closest(".dm-ccp"))closePal()},true);
+document.addEventListener("input",e=>{if(e.target.id==="dm-ccin")setC(e.target.value)});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closePal()});
+addEventListener("resize",closePal);
+const r0=R();if(r0){new MutationObserver(()=>{addBtn();apply()}).observe(r0,{childList:true,attributes:true,attributeFilter:["data-id"]});addBtn();apply()}
+})();
