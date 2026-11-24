@@ -34,9 +34,10 @@ async function load(){
   let r;try{r=(await EMAuth.rest("profiles?username=eq."+encodeURIComponent(all[idx].username)+"&select=id,username,role,created_at,avatar,banner,bio,nickname,discord,discord_verified"))[0]}
   catch(e){try{r=(await EMAuth.rest("profiles?username=eq."+encodeURIComponent(all[idx].username)+"&select=id,username,role,created_at,avatar,banner,bio"))[0];r.__nodc=1}catch(e2){r=(await EMAuth.rest("profiles?username=eq."+encodeURIComponent(all[idx].username)+"&select=id,username,role,created_at"))[0];r.__old=1}}
   try{const x=(await EMAuth.rest("profiles?id=eq."+encodeURIComponent(r.id)+"&select=status,last_seen,roles"))[0];if(x)Object.assign(r,x)}catch(e){r.__nopres=1}
+  try{const x=(await EMAuth.rest("profiles?id=eq."+encodeURIComponent(r.id)+"&select=roblox_id,roblox_name"))[0];if(x)Object.assign(r,x)}catch(e){r.__norb=1}
   P=r;$("#pf").hidden=false;$("#pf-msg").hidden=true;$("#pf-n").textContent="#"+(idx+1);
   try{$("#pf-ads").textContent=(await EMAuth.rest("ads?select=id&username=eq."+encodeURIComponent(P.username)+"&limit=1000")).length}catch(e){}
-  paint();paintPres();paintMod();
+  paint();paintPres();paintMod();paintRb();
   if(window.EMSocial)EMSocial.mount($("#pf-soc"),P.id,P.username);
   if(mine){["#pf-bb","#pf-ab","#pf-bx","#pf-hint","#pf-nx"].forEach(s=>$(s).hidden=false);$("#pf-un").textContent=P.username;if(P.__nodc)$("#pf-hint").textContent="Nickname and Discord can't be saved yet: run supabase-setup-7.sql in Supabase first.";
    if(P.__old)$("#pf-hint").textContent="Pictures can't be saved yet: run supabase-setup-4.sql in Supabase first."}
@@ -64,6 +65,30 @@ $("#pf-ds").onclick=async()=>{const v=$("#pf-dt").value.trim().replace(/^@/,"");
  if(await rpc("set_discord",{d:v},v?"Discord saved. Now ask @gwensharra to confirm it.":"Discord removed.")){P.discord=v||null;P.discord_verified=false;$("#pf-de").hidden=true;paintDc()}};
 $("#pf-dok").onclick=async()=>{if(await rpc("verify_discord",{target:P.username,ok:true},"Discord confirmed.")){P.discord_verified=true;paintDc()}};
 $("#pf-dno").onclick=async()=>{if(await rpc("verify_discord",{target:P.username,ok:false},"Confirmation removed.")){P.discord_verified=false;paintDc()}};
+/* roblox: a one-time code typed into the Roblox game links the account. No Roblox password is ever used. */
+const ROBLOX_GAME_URL=""; /* paste your game's link here, e.g. https://www.roblox.com/games/123456789/Your-Game */
+let rbTimer=null,rbEnd=0;
+function rbStop(){clearInterval(rbTimer);rbTimer=null}
+function paintRb(){const v=$("#pf-rv");if(!v)return;
+ const id=Number(P.roblox_id);
+ if(id>0&&P.roblox_name){v.className="";v.innerHTML='<a href="https://www.roblox.com/users/'+id+'/profile" target="_blank" rel="noopener noreferrer">'+esc(P.roblox_name)+' \u2197</a> <i class="pf-tag ok">Verified</i>'}
+ else{v.className="mt";v.textContent=P.__norb&&mine?"Roblox linking isn't ready yet: run supabase-setup-23.sql in Supabase first.":(mine?"No Roblox linked yet.":"No Roblox linked.")}
+ const linked=id>0&&!!P.roblox_name,coding=!$("#pf-rc").hidden;
+ $("#pf-rx").hidden=!mine||P.__norb||coding;$("#pf-rx").textContent=linked?"Link a different Roblox account":"Link my Roblox";
+ $("#pf-ru").hidden=!(linked&&(mine||ADMIN));
+ const g=$("#pf-rgame");if(ROBLOX_GAME_URL&&/^https:\/\/www\.roblox\.com\//.test(ROBLOX_GAME_URL)){g.href=ROBLOX_GAME_URL;g.style.display=coding?"inline-block":"none"}else g.style.display="none"}
+async function rbPoll(){
+ if(Date.now()>rbEnd){rbStop();$("#pf-rc").hidden=true;paintRb();$("#pf-st").style.color="#ff6b6b";$("#pf-st").textContent="The code expired. Press Link my Roblox for a new one.";return}
+ try{const x=(await EMAuth.rest("profiles?id=eq."+encodeURIComponent(P.id)+"&select=roblox_id,roblox_name"))[0];
+  if(x&&x.roblox_id){rbStop();Object.assign(P,x);$("#pf-rc").hidden=true;paintRb();const s=$("#pf-st");s.style.color="#3bb26b";s.textContent="Roblox linked!";setTimeout(()=>{s.textContent=""},5000)}}catch(e){}}
+$("#pf-rx").onclick=async()=>{const s=$("#pf-st");s.style.color="";s.textContent="";
+ try{const r=await EMAuth.rest("rpc/roblox_start","POST",{});
+  $("#pf-rcode").textContent=r.code;
+  $("#pf-rhelp").innerHTML="1. Open the link game on Roblox.<br>2. Type this code in the game and press Link.<br>3. Come back here. This page updates by itself. The code works for "+(r.minutes||10)+" minutes.";
+  $("#pf-rwait").textContent="Waiting for the game\u2026";$("#pf-rc").hidden=false;rbEnd=Date.now()+(r.minutes||10)*60000;rbStop();rbTimer=setInterval(rbPoll,4000);paintRb()}
+ catch(e){s.style.color="#ff6b6b";s.textContent=/does not exist|schema cache/i.test(e.message)?"Run supabase-setup-23.sql in Supabase first.":e.message}};
+$("#pf-ru").onclick=async()=>{if(!confirm("Unlink this Roblox account?"))return;
+ if(await rpc("roblox_unlink",mine?{}:{target:P.username},"Roblox unlinked.")){P.roblox_id=null;P.roblox_name=null;paintRb()}};
 msg("Loading…");load();
 
 /* online status + roles */
