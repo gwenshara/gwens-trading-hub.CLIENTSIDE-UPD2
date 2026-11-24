@@ -131,7 +131,7 @@ button:hover,select:hover{border-color:var(--accent)}
 .m .sv h2{margin:4px 0 0}
 .m .sv .vid{max-height:none;width:100%;aspect-ratio:16/9;margin:0}
 .m .nv{flex:1;display:grid;place-items:center;text-align:center;background:#0005;border:3px dashed #ffffff70;border-radius:12px;font:600 18px Montserrat,sans-serif;padding:20px;min-height:200px}
-.m .x{top:-18px;right:-18px;width:42px;height:42px;background:#fff;color:#111;border:4px solid #fff;font-size:20px;font-weight:800;line-height:1;cursor:pointer;z-index:6;box-shadow:0 0 0 3px #000}
+.m .x{top:-18px;right:-18px;width:42px;height:42px;background:#fff;color:#111;border:4px solid #fff;font-size:20px;font-weight:800;line-height:1;cursor:pointer;z-index:6;box-shadow:0 0 0 3px #000}.m .x{background:var(--top);border-color:var(--top);color:#000;display:flex;align-items:center;justify-content:center}.m .x svg{width:22px;height:22px;pointer-events:none;display:block}body.no-xbtn .m .x{display:none}body.no-sidetabs .m .tabs{display:none}
 .m .x:hover{background:#e6e6e6}
 .m .tabs{position:absolute;left:calc(100% - 5px);top:56px;display:flex;flex-direction:column;gap:10px;z-index:1}
 .m .tab{writing-mode:vertical-rl;width:46px;padding:16px 0;border:4px solid #fff;border-left:none;border-radius:0 16px 16px 0;background:var(--bot);color:#ffffffb0;font:600 18px Montserrat,sans-serif;cursor:pointer}
@@ -482,7 +482,7 @@ button:hover,select:hover{border-color:var(--accent)}
   <input id="q" type="search" placeholder="Search items…" aria-label="Search items">
   <div class="dd"><button id="ddb" aria-haspopup="listbox" aria-expanded="false"><span id="ddl">Sort: Category</span><span aria-hidden="true">▾</span></button><div class="ddp" id="ddp" role="listbox" hidden></div><input type="hidden" id="sort" value="cat"></div>
   <button id="lists" class="lst" aria-pressed="false">♥ My List<span id="lcount">0</span></button>
-  <button id="exp" hidden title="Copy all your edits as text">\ud83d\udccb Edits</button><div class="st"><button id="setb" aria-haspopup="true" aria-expanded="false" title="Settings">⚙ Settings</button><div class="stp" id="stp" hidden><div class="sec"><div class="stt">Notifications</div><div class="sn em-setnotif">Loading…</div></div><div class="sec"><div class="stt">Appearance</div><button id="theme" class="thr" type="button" aria-label="Switch between light and dark mode"><span>Theme: <b class="thv"></b></span><span class="thi" aria-hidden="true"></span></button></div><div class="sec"><button class="stg" id="stg" type="button" aria-expanded="false" aria-controls="stbody"><span>Show on items</span><i aria-hidden="true">▸</i></button><div class="stbody" id="stbody" hidden><label class="ck2"><input type="checkbox" data-s="ret"> Retired tags</label><label class="ck2"><input type="checkbox" data-s="exo"> Exotic tags</label><label class="ck2"><input type="checkbox" data-s="code"> Code tags</label><label class="ck2"><input type="checkbox" data-s="trend"> Item demand (arrows and colors)</label><label class="ck2"><input type="checkbox" data-s="qty"> Inventory amounts (x1, x2…)</label></div></div></div></div>
+  <button id="exp" hidden title="Copy all your edits as text">\ud83d\udccb Edits</button><div class="st"><button id="setb" aria-haspopup="true" aria-expanded="false" title="Settings">⚙ Settings</button><div class="stp" id="stp" hidden><div class="sec"><div class="stt">Notifications</div><div class="sn em-setnotif">Loading…</div></div><div class="sec"><div class="stt">Appearance</div><button id="theme" class="thr" type="button" aria-label="Switch between light and dark mode"><span>Theme: <b class="thv"></b></span><span class="thi" aria-hidden="true"></span></button></div><div class="sec"><button class="stg" id="stg" type="button" aria-expanded="false" aria-controls="stbody"><span>Show on items</span><i aria-hidden="true">▸</i></button><div class="stbody" id="stbody" hidden><label class="ck2"><input type="checkbox" data-s="ret"> Retired tags</label><label class="ck2"><input type="checkbox" data-s="exo"> Exotic tags</label><label class="ck2"><input type="checkbox" data-s="code"> Code tags</label><label class="ck2"><input type="checkbox" data-s="trend"> Item demand (arrows and colors)</label><label class="ck2"><input type="checkbox" data-s="qty"> Inventory amounts (x1, x2…)</label><label class="ck2"><input type="checkbox" data-s="stab"> Side tabs on info card (Main Info, Showcase, Fun Fact)</label><label class="ck2"><input type="checkbox" data-s="xbtn"> Close (X) button on info card</label></div></div></div></div>
  </div>
  <div class="car" id="car" role="tablist" aria-label="Item type"></div>
  <div class="chips" id="chips"></div>
@@ -925,7 +925,7 @@ const S={cat:catS,
 const PINTOP=["French", "German"];
 const SB=k=>(a,b)=>k==="cat"?catS(a,b):((+botU(a))-(+botU(b))||S[k](a,b));
 const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const SET=Object.assign({ret:true,exo:true,code:true,trend:true,qty:true},(()=>{try{return JSON.parse(localStorage.getItem("set")||"{}")}catch(e){return{}}})());
+const SET=Object.assign({ret:true,exo:true,code:true,trend:true,qty:true,stab:true,xbtn:true},(()=>{try{return JSON.parse(localStorage.getItem("set")||"{}")}catch(e){return{}}})());
 const bang=i=>(SET.trend&&trend(i.n)==="infl")?"!":"";
 const INFL_TIP="careful! this item is being manipulated to have this price, it may affect real live-market for a short amount of time";
 const ptT=i=>bang(i)?` title="${INFL_TIP}"`:"",ptC=i=>bang(i)?` data-tip="${INFL_TIP}" tabindex="0"`:"";
@@ -1027,7 +1027,7 @@ function openM(id){
  const chips=(inf.chips||[]).map(c=>c[0]==="rank"?`<span class="pc rk">RANK ${esc(String(c[1]))}</span>`:c[0]==="txt"?`<span class="pc tx">${esc(String(c[1]))}</span>`:`<span class="pc"><i class="ic ${c[0]}"></i>${c[1]}</span>`).join("");
  const badge=(SET.ret&&i.r)?'<span class="bd r">RETIRED</span>':i.ub?'<span class="bd ub"><img class="xi" src="'+UNOBX+'" alt="">Unobtainable</span>':i.u?'<span class="bd u"><img class="uni" src="'+UNI+'" alt="">UNTRADABLE</span>':"";
  const m=$("#m");m.className="m "+i.t;
- m.innerHTML=`<button class="x" id="mx" aria-label="Close">\u2715</button>
+ m.innerHTML=`<button class="x" id="mx" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5L19 19M19 5L5 19" stroke="#000" stroke-width="4.5" stroke-linecap="round" fill="none"/></svg></button>
  <div class="tabs" role="tablist"><button class="tab on" data-tab="main" role="tab">Main Info</button><button class="tab" data-tab="show" role="tab">Showcase</button><button class="tab" data-tab="fact" role="tab">Fun Fact</button></div>
  <div class="mc"><div class="mv" id="mv">
  <div class="tp"><div class="tl">${i.t==="t"&&!PIC(i.n)?"":`<h2>${esc(i.n)}</h2>`}${inf.aka?`<div class="ak">AKA ${esc(inf.aka)}</div>`:""}${inf.copies?`<div class="cp">${esc(inf.copies)}</div>`:""}</div>${SET.trend?trd(i.n,"mid"):""}<div class="prw"><div class="pr"><div class="pv${dc(i)}"${ptC(i)}><b></b>${esc(i.p)}${bang(i)}</div>${stars}</div>${wishBtn(i.n,"mw2")}</div></div>
@@ -1148,7 +1148,7 @@ document.addEventListener("click",e=>{
 })();
 applyOvr();
 
-document.querySelectorAll("#stp [data-s]").forEach(c=>{c.checked=!!SET[c.dataset.s];c.addEventListener("change",()=>{SET[c.dataset.s]=c.checked;try{localStorage.setItem("set",JSON.stringify(SET))}catch(e){}render()})});
+const applyCardSet=()=>{document.body.classList.toggle("no-sidetabs",!SET.stab);document.body.classList.toggle("no-xbtn",!SET.xbtn)};applyCardSet();document.querySelectorAll("#stp [data-s]").forEach(c=>{c.checked=!!SET[c.dataset.s];c.addEventListener("change",()=>{SET[c.dataset.s]=c.checked;applyCardSet();try{localStorage.setItem("set",JSON.stringify(SET))}catch(e){}render()})});
 function openST(o){$("#stp").hidden=!o;$("#setb").setAttribute("aria-expanded",o)}
 $("#setb").addEventListener("click",e=>{e.stopPropagation();openST($("#stp").hidden)});
 document.addEventListener("click",e=>{if(!e.target.closest(".st"))openST(false)});
