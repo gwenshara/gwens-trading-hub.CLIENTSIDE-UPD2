@@ -834,10 +834,13 @@ let OVR={},EDIT=false,DBDOC=null,CANDB=false,SAVED="{}";
 try{OVR=JSON.parse(localStorage.getItem("ovr")||"{}")}catch(e){}try{SAVED=localStorage.getItem("ovr_saved");if(SAVED===null){SAVED=JSON.stringify(OVR);localStorage.setItem("ovr_saved",SAVED)}}catch(e){SAVED=JSON.stringify(OVR)}
 const typeOn=new Set(),statOn=new Set();let onlyList=false;
 let favs=new Set();try{favs=new Set(JSON.parse(localStorage.getItem(EMAuth.listKey("favs"))||"[]"))}catch(e){}
-const saveFavs=()=>{try{localStorage.setItem(EMAuth.listKey("favs"),JSON.stringify([...favs]))}catch(e){}};
+const saveFavs=()=>{try{localStorage.setItem(EMAuth.listKey("favs"),JSON.stringify([...favs]))}catch(e){}favMirror()};
 let QTY={};try{QTY=JSON.parse(localStorage.getItem(EMAuth.listKey("favq"))||"{}")}catch(e){}
-const saveQty=()=>{try{localStorage.setItem(EMAuth.listKey("favq"),JSON.stringify(QTY))}catch(e){}};
+const saveQty=()=>{try{localStorage.setItem(EMAuth.listKey("favq"),JSON.stringify(QTY))}catch(e){}favMirror()};
+const favMirror=()=>{try{const a=[...favs].filter(id=>items[id]).map(id=>[items[id].n,getQ(id)]);localStorage.setItem(EMAuth.listKey("favn"),JSON.stringify(a))}catch(e){}};
+
 const getQ=id=>Math.max(1,Math.min(99,+QTY[id]||1));
+try{if(localStorage.getItem(EMAuth.listKey("favn"))===null)favMirror()}catch(e){}
 const qtyHTML=id=>SET.qty===false?"":`<div class="qty"><button type="button" data-q="-1" data-qid="${id}" aria-label="Decrease quantity">\u2212</button><span>x${getQ(id)}</span><button type="button" data-q="1" data-qid="${id}" aria-label="Increase quantity">+</button></div>`;
 const syncQ=()=>{const fl=document.querySelector(".m .fl");if(!fl||openId==null)return;const q=fl.querySelector(".qty");if(favs.has(openId)){if(!q)fl.insertAdjacentHTML("beforeend",qtyHTML(openId));else q.querySelector("span").textContent="x"+getQ(openId)}else if(q)q.remove()};
 document.addEventListener("click",e=>{const b=e.target.closest("[data-q]");if(!b)return;e.stopImmediatePropagation();e.preventDefault();const id=+b.dataset.qid;QTY[id]=Math.max(1,Math.min(99,getQ(id)+(+b.dataset.q)));saveQty();render();syncQ()},true);

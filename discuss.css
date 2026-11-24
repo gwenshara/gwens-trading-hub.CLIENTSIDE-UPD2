@@ -260,3 +260,9 @@
 .dm-pop.rxp button{font:400 24px/1 "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif;padding:6px 8px;border-radius:999px}
 .dm-pop.rxp button.on{background:#7aa7ff44}
 .dm-pop.rxp button:hover{transform:scale(1.15)}
+.dm-wl{min-width:230px;max-width:340px;border:2px solid #ffffff40;background:#00000030;border-radius:14px;padding:10px;color:inherit}
+.dm-wlh{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px}.dm-wlh b{font-size:15px}.dm-wlh span{font-size:12px;opacity:.7}
+.dm-wll{display:flex;flex-direction:column;gap:6px;max-height:300px;overflow-y:auto}
+.dm-wli{display:flex;gap:10px;align-items:center;width:100%;padding:6px;border-radius:10px;border:1px solid #ffffff26;background:#0000002a;color:inherit;text-align:left;cursor:pointer;font-family:inherit}
+.dm-wli:hover{border-color:#fff}.dm-wli .th{width:40px;height:40px;flex:none}
+.dm-wlx{display:flex;flex-direction:column;gap:1px;min-width:0}.dm-wlx b{font-size:13px;overflow-wrap:anywhere}.dm-wlx span{font-size:12px;opacity:.75}
