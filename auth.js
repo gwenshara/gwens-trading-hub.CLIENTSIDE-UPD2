@@ -26,7 +26,7 @@ async function loadProfile(uid,tok){
 function fromAuth(j){return{token:j.access_token,refresh:j.refresh_token,exp:Math.floor(Date.now()/1000)+(j.expires_in||3600),uid:j.user&&j.user.id}}
 const API=window.EMAuth={
  configured:ready,
- user:()=>S&&S.u||null,isAdmin:()=>!!(S&&S.role==="admin"),canEdit:()=>!!(S&&(S.role==="admin"||(S.roles||[]).indexOf("value_handler")>-1)),isValueHandler:()=>!!(S&&(S.roles||[]).indexOf("value_handler")>-1),uid:()=>S&&S.uid||null,
+ user:()=>S&&S.u||null,isAdmin:()=>!!(S&&S.role==="admin"),canEdit:()=>!!(S&&(S.role==="admin"||(S.roles||[]).indexOf("value_handler")>-1)),canMod:()=>!!(S&&(S.role==="admin"||(S.roles||[]).indexOf("moderator")>-1)),isValueHandler:()=>!!(S&&(S.roles||[]).indexOf("value_handler")>-1),uid:()=>S&&S.uid||null,
  /* a valid access token, refreshed when it is about to expire; null when signed out */
  async token(){
   if(!S)return null;
@@ -168,3 +168,5 @@ if(!window.__emBadges){try{var _b=document.createElement("script");_b.src="badge
 if(!window.EMPresence){try{var _p=document.createElement("script");_p.src="presence.js?v=2";document.head.appendChild(_p)}catch(e){}}
 
 if(!window.EMPush){try{var _n=document.createElement("script");_n.src="push.js?v=3";document.head.appendChild(_n)}catch(e){}}
+
+if(!window.__emWarn){try{var _w=document.createElement("script");_w.src="modwarn.js?v=1";document.head.appendChild(_w)}catch(e){}}

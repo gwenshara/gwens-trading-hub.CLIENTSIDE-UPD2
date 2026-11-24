@@ -36,7 +36,7 @@ async function load(){
   try{const x=(await EMAuth.rest("profiles?id=eq."+encodeURIComponent(r.id)+"&select=status,last_seen,roles"))[0];if(x)Object.assign(r,x)}catch(e){r.__nopres=1}
   P=r;$("#pf").hidden=false;$("#pf-msg").hidden=true;$("#pf-n").textContent="#"+(idx+1);
   try{$("#pf-ads").textContent=(await EMAuth.rest("ads?select=id&username=eq."+encodeURIComponent(P.username)+"&limit=1000")).length}catch(e){}
-  paint();paintPres();
+  paint();paintPres();paintMod();
   if(window.EMSocial)EMSocial.mount($("#pf-soc"),P.id,P.username);
   if(mine){["#pf-bb","#pf-ab","#pf-bx","#pf-hint","#pf-nx"].forEach(s=>$(s).hidden=false);$("#pf-un").textContent=P.username;if(P.__nodc)$("#pf-hint").textContent="Nickname and Discord can't be saved yet: run supabase-setup-7.sql in Supabase first.";
    if(P.__old)$("#pf-hint").textContent="Pictures can't be saved yet: run supabase-setup-4.sql in Supabase first."}
@@ -90,4 +90,25 @@ function paintRoleMgr(){
  $("#pf-rmb").onclick=()=>{_rmOpen=!_rmOpen;paintRoleMgr()};
  w.querySelectorAll("#pf-rle input").forEach(c=>c.onchange=async()=>{const r=[...w.querySelectorAll("#pf-rle input:checked")].map(i=>i.dataset.r);
   if(await rpc("set_roles",{target:P.username,r:r},"Roles updated.")){P.roles=r}paintPres()})}
+
+/* moderation: admins and moderators can reset parts of someone else's profile and send a warning */
+let _mdOpen=false;
+function paintMod(){
+ if(mine||!P||!EMAuth.canMod||!EMAuth.canMod())return;
+ if(P.role==="admin"||((P.roles||[]).includes("moderator")&&!ADMIN))return;
+ let w=$("#pf-md");if(!w){w=document.createElement("div");w.id="pf-md";w.className="pf-box";w.style.borderColor="#e5484d";$("#pf-bio").closest(".pf-box").insertAdjacentElement("afterend",w)}
+ const opts=[["avatar","Profile picture"],["banner","Banner"],["nickname","Nickname"],["bio","About me"]];
+ w.innerHTML='<h4>Moderation</h4><button type="button" id="pf-mdb" class="pri" style="padding:8px 16px;border-radius:10px;font-weight:700;cursor:pointer;background:#e5484d;border-color:#e5484d;color:#fff">'+(_mdOpen?"Hide":"Reset profile / send warning")+'</button>'
+  +'<div id="pf-mdf" style="display:'+(_mdOpen?"block":"none")+';margin-top:12px"><p class="pf-hint" style="margin:0 0 8px">Tick what to reset. Their login name does not change.</p>'
+  +'<div style="display:flex;flex-wrap:wrap;gap:12px 18px">'+opts.map(o=>'<label style="display:flex;gap:6px;align-items:center;font-weight:700;font-size:13px;cursor:pointer"><input type="checkbox" data-w="'+o[0]+'">'+o[1]+'</label>').join("")+'</div>'
+  +'<label style="display:flex;gap:6px;align-items:center;font-weight:700;font-size:13px;margin-top:12px;cursor:pointer"><input type="checkbox" id="pf-mdw" checked>Send them a warning ("don\'t choose anything inappropriate")</label>'
+  +'<div class="pf-row" style="margin-top:12px"><button type="button" id="pf-mdgo" class="pri" style="padding:8px 16px;border-radius:10px;font-weight:700;cursor:pointer">Reset now</button></div></div>';
+ $("#pf-mdb").onclick=()=>{_mdOpen=!_mdOpen;paintMod()};
+ const go=$("#pf-mdgo");if(go)go.onclick=async()=>{
+  const what=[...w.querySelectorAll("[data-w]:checked")].map(i=>i.dataset.w),warn=$("#pf-mdw").checked;
+  if(!what.length&&!warn)return;
+  if(!confirm("Reset "+(what.length?what.join(", "):"nothing")+" for "+P.username+(warn?" and send a warning?":"?")))return;
+  if(await rpc("mod_reset",{target:P.username,what:what,warn:warn},"Done."+(warn?" Warning sent.":""))){
+   if(what.includes("avatar"))P.avatar=null;if(what.includes("banner"))P.banner=null;if(what.includes("nickname"))P.nickname=null;if(what.includes("bio"))P.bio=null;
+   paint();paintMod()}}}
 document.addEventListener("click",()=>{const m=$("#pf-stp");if(m)m.hidden=true});
