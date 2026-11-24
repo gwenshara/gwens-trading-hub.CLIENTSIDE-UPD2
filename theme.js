@@ -14,14 +14,26 @@ addEventListener("storage",function(e){if(e.key===K&&ok(e.newValue)&&R.getAttrib
 function light(){return R.getAttribute("data-theme")==="light"}
 function ready(f){if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",f);else f()}
 ready(function(){
- if(document.getElementById("theme")||document.querySelector(".em-theme"))return; /* the Catalog pages already have a button */
+ if(document.getElementById("theme")||document.querySelector(".em-setb"))return; /* the Catalog pages have their own Settings menu */
+ var base=".sec{border-top:1px solid var(--line,#3a3a42);padding:10px 0}.sec:first-of-type{border-top:0;padding-top:0}.stt{font:700 13px Montserrat,Nunito,system-ui,sans-serif;color:var(--mute,#a0a0ab);margin:0 0 6px}"+
+ ".thr{display:flex;width:100%;align-items:center;justify-content:space-between;gap:10px;background:var(--bg,#1b1b1d);color:var(--text,#f1f1f4);border:1px solid var(--line,#3a3a42);border-radius:10px;padding:9px 12px;font:600 14px Nunito,system-ui,sans-serif;cursor:pointer}.thr:hover{border-color:var(--accent,#7aa7ff)}"+
+ ".thr .thv::before{content:\"Dark\"}:root[data-theme=\"light\"] .thr .thv::before{content:\"Light\"}.thr .thi::before{content:\"\\1F319\"}:root[data-theme=\"light\"] .thr .thi::before{content:\"\\2600\\FE0F\"}"+
+ ".sn{font:500 13px/1.4 Nunito,system-ui,sans-serif;color:var(--text,#f1f1f4)}.sn small{display:block;color:var(--mute,#a0a0ab);margin-top:2px}.sn .sd{display:inline-block;width:9px;height:9px;border-radius:50%;background:#80848e;margin-right:6px}.sn .sd.on{background:#3bb26b}.sn .sd.bad{background:#e5484d}"+
+ ".sn button{margin-top:8px;border:0;border-radius:10px;padding:8px 14px;background:#2e8bff;color:#fff;font:700 13px Montserrat,Nunito,system-ui,sans-serif;cursor:pointer}.sn button.alt{background:var(--bg,#1b1b1d);color:var(--text,#f1f1f4);border:1px solid var(--line,#3a3a42)}.sn .er{color:#e5484d;margin-top:6px}";
+ var css=base.replace(/(^|\})([^{}@]+)\{/g,function(m,a,sel){return a+sel.split(",").map(function(x){return ".em-setp "+x.trim().replace(/^:root\[data-theme=\"light\"\] /,"")}).join(",")+"{"});
+ /* keep the light-mode selectors working: they start with :root, so re-add them unscoped */
+ css=css.replace(/\.em-setp :root\[data-theme="light"\] /g,":root[data-theme=\"light\"] .em-setp ");
  var st=document.createElement("style");
- st.textContent=".em-theme{position:fixed;top:12px;right:12px;z-index:900;width:42px;height:42px;padding:0;border-radius:50%;border:1px solid var(--line,#3a3a42);background:var(--panel,#26262a);color:var(--text,#f1f1f4);cursor:pointer;display:grid;place-items:center}.em-theme:hover{border-color:var(--accent,#7aa7ff)}.em-theme svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}";
+ st.textContent=css+".em-setb{position:fixed;top:12px;right:12px;z-index:900;height:42px;padding:0 14px;border-radius:21px;border:1px solid var(--line,#3a3a42);background:var(--panel,#26262a);color:var(--text,#f1f1f4);cursor:pointer;display:flex;align-items:center;gap:6px;font:700 13px Montserrat,Nunito,system-ui,sans-serif}.em-setb:hover{border-color:var(--accent,#7aa7ff)}"+
+ ".em-setp{position:fixed;top:62px;right:12px;z-index:901;width:min(300px,calc(100vw - 24px));max-height:calc(100vh - 80px);overflow:auto;background:var(--panel,#26262a);color:var(--text,#f1f1f4);border:1px solid var(--line,#3a3a42);border-radius:14px;padding:14px 16px;box-shadow:0 10px 30px rgba(0,0,0,.35)}.em-setp[hidden]{display:none}";
  document.head.appendChild(st);
- var b=document.createElement("button");b.type="button";b.className="em-theme";b.setAttribute("aria-label","Switch between light and dark mode");
- function paint(){b.title=light()?"Switch to dark mode":"Switch to light mode";
-  b.innerHTML=light()?'<svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>':'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>'}
- b.onclick=function(){R.setAttribute("data-theme",light()?"dark":"light");paint()};
- new MutationObserver(paint).observe(R,{attributes:true,attributeFilter:["data-theme"]});
- paint();document.body.appendChild(b)});
+ var b=document.createElement("button");b.type="button";b.className="em-setb";b.setAttribute("aria-haspopup","true");b.setAttribute("aria-expanded","false");b.title="Settings";b.textContent="\u2699 Settings";
+ var p=document.createElement("div");p.className="em-setp";p.hidden=true;
+ p.innerHTML='<div class="sec"><div class="stt">Notifications</div><div class="sn em-setnotif">Log in to get notifications.</div></div><div class="sec"><div class="stt">Appearance</div><button type="button" class="thr" aria-label="Switch between light and dark mode"><span>Theme: <b class="thv"></b></span><span class="thi" aria-hidden="true"></span></button></div>';
+ function open(o){p.hidden=!o;b.setAttribute("aria-expanded",o)}
+ b.onclick=function(e){e.stopPropagation();open(p.hidden)};
+ p.querySelector(".thr").onclick=function(){R.setAttribute("data-theme",light()?"dark":"light")};
+ document.addEventListener("click",function(e){if(!e.target.closest(".em-setp,.em-setb"))open(false)});
+ document.addEventListener("keydown",function(e){if(e.key==="Escape")open(false)});
+ document.body.appendChild(b);document.body.appendChild(p)});
 })();

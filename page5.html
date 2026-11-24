@@ -166,6 +166,23 @@ button:hover,select:hover{border-color:var(--accent)}
 .stp{position:absolute;right:0;top:calc(100% + 6px);z-index:30;background:var(--panel);border:2px solid var(--line);border-radius:12px;padding:12px 16px;min-width:210px}
 .stp[hidden]{display:none}
 .stt{font:600 13px Montserrat,Nunito,sans-serif;color:var(--mute);margin-bottom:6px}
+.stp{min-width:260px;max-width:min(320px,calc(100vw - 24px))}
+.sec{border-top:1px solid var(--line);padding:8px 0}.sec:first-child{border-top:0;padding-top:0}
+.sec .stt{margin:0 0 6px}
+.thr{display:flex;width:100%;align-items:center;justify-content:space-between;gap:10px;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:9px 12px;font:600 14px Nunito,system-ui,sans-serif;cursor:pointer;height:auto}
+.thr:hover{border-color:var(--accent)}
+.thr .thv::before{content:"Dark"}:root[data-theme="light"] .thr .thv::before{content:"Light"}
+.thr .thi::before{content:"\1F319"}:root[data-theme="light"] .thr .thi::before{content:"\2600\FE0F"}
+.stg{display:flex;width:100%;align-items:center;justify-content:space-between;background:none;border:0;padding:2px 0;margin:0;color:var(--mute);font:600 13px Montserrat,Nunito,sans-serif;cursor:pointer;height:auto}
+.stg:hover{color:var(--text)}
+.stg i{display:inline-block;transition:transform .15s;font-style:normal}
+.stg[aria-expanded="true"] i{transform:rotate(90deg)}
+.stbody[hidden]{display:none}
+.sn{font:500 13px/1.4 Nunito,system-ui,sans-serif;color:var(--text)}.sn small{display:block;color:var(--mute);margin-top:2px}
+.sn .sd{display:inline-block;width:9px;height:9px;border-radius:50%;background:#80848e;margin-right:6px}.sn .sd.on{background:#3bb26b}.sn .sd.bad{background:#e5484d}
+.sn button{margin-top:8px;border:0;border-radius:10px;padding:8px 14px;background:#2e8bff;color:#fff;font:700 13px Montserrat,Nunito,sans-serif;cursor:pointer;height:auto}
+.sn button.alt{background:var(--bg);color:var(--text);border:1px solid var(--line)}
+.sn .er{color:#e5484d;margin-top:6px}
 .ck2{display:flex;gap:10px;align-items:center;padding:6px 0;font-size:15px;cursor:pointer}
 .ck2 input{flex:none;min-width:0;width:17px;height:17px;padding:0;accent-color:var(--accent)}
 .emp{display:flex;flex-direction:column;align-items:center;gap:8px;padding:56px 20px}
@@ -455,7 +472,7 @@ button:hover,select:hover{border-color:var(--accent)}
   <input id="q" type="search" placeholder="Search items…" aria-label="Search items">
   <div class="dd"><button id="ddb" aria-haspopup="listbox" aria-expanded="false"><span id="ddl">Sort: Category</span><span aria-hidden="true">▾</span></button><div class="ddp" id="ddp" role="listbox" hidden></div><input type="hidden" id="sort" value="cat"></div>
   <button id="lists" class="lst" aria-pressed="false">♥ My List<span id="lcount">0</span></button>
-  <button id="exp" hidden title="Copy all your edits as text">\ud83d\udccb Edits</button><div class="st"><button id="setb" aria-haspopup="true" aria-expanded="false" title="Settings">⚙ Settings</button><div class="stp" id="stp" hidden><div class="stt">Show on items</div><label class="ck2"><input type="checkbox" data-s="ret"> Retired tags</label><label class="ck2"><input type="checkbox" data-s="exo"> Exotic tags</label><label class="ck2"><input type="checkbox" data-s="code"> Code tags</label><label class="ck2"><input type="checkbox" data-s="trend"> Item demand (arrows and colors)</label><label class="ck2"><input type="checkbox" data-s="qty"> Inventory amounts (x1, x2…)</label></div></div><button id="theme" aria-label="Toggle theme">🌓</button>
+  <button id="exp" hidden title="Copy all your edits as text">\ud83d\udccb Edits</button><div class="st"><button id="setb" aria-haspopup="true" aria-expanded="false" title="Settings">⚙ Settings</button><div class="stp" id="stp" hidden><div class="sec"><div class="stt">Notifications</div><div class="sn em-setnotif">Log in to get notifications.</div></div><div class="sec"><div class="stt">Appearance</div><button id="theme" class="thr" type="button" aria-label="Switch between light and dark mode"><span>Theme: <b class="thv"></b></span><span class="thi" aria-hidden="true"></span></button></div><div class="sec"><button class="stg" id="stg" type="button" aria-expanded="false" aria-controls="stbody"><span>Show on items</span><i aria-hidden="true">▸</i></button><div class="stbody" id="stbody" hidden><label class="ck2"><input type="checkbox" data-s="ret"> Retired tags</label><label class="ck2"><input type="checkbox" data-s="exo"> Exotic tags</label><label class="ck2"><input type="checkbox" data-s="code"> Code tags</label><label class="ck2"><input type="checkbox" data-s="trend"> Item demand (arrows and colors)</label><label class="ck2"><input type="checkbox" data-s="qty"> Inventory amounts (x1, x2…)</label></div></div></div></div>
  </div>
  <div class="car" id="car" role="tablist" aria-label="Item type"></div>
  <div class="chips" id="chips"></div>
@@ -1109,6 +1126,7 @@ function openST(o){$("#stp").hidden=!o;$("#setb").setAttribute("aria-expanded",o
 $("#setb").addEventListener("click",e=>{e.stopPropagation();openST($("#stp").hidden)});
 document.addEventListener("click",e=>{if(!e.target.closest(".st"))openST(false)});
 document.addEventListener("keydown",e=>{if(e.key==="Escape")openST(false)});
+(function(){var g=document.getElementById("stg"),b=document.getElementById("stbody");if(!g||!b)return;g.addEventListener("click",function(){var o=b.hidden;b.hidden=!o;g.setAttribute("aria-expanded",o)})})();
 render();
 
 function updCG(){const f={Retired:i=>i.r,Exotics:isExo,Codes:isCode,Untradable:i=>i.u,Unobtainable:i=>i.ub,Gamenight:isGN,New:isNew,StarShop:isSS,TokenShop:isTS,CoinShop:isCS};{const en=$("#esn");if(en)en.textContent=" ("+items.filter(isES).length+")"}

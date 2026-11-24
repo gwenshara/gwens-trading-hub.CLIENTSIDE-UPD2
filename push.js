@@ -153,6 +153,27 @@ function askOnce() {
   el.querySelector("[data-y]").onclick = function () { el.remove(); openPanel(); };
 }
 
+/* The "Get notified?" box now lives in Settings (catalog Settings menu and the gear on the other pages) */
+async function paintNotif(el) {
+  if (!A.user()) { el.innerHTML = "Log in to get notifications."; return; }
+  var st = await API.state(), h;
+  if (st === "on") h = '<span class="sd on"></span>On for this device<br><button class="alt" type="button" data-m>Manage</button>';
+  else if (st === "off") h = '<b>Get notified?</b><small>We can tell you about new messages and value votes when you are away from the site.</small><button type="button" data-y>Turn on</button><div class="er"></div>';
+  else if (st === "blocked") h = '<span class="sd bad"></span>Blocked in your browser settings<small>Click the lock icon next to the address, allow Notifications for this site, then reload.</small>';
+  else if (st === "ios-install") h = 'Needs the Home Screen app on iPhone/iPad<small>Tap Share, then Add to Home Screen, open the site from the new icon, and turn notifications on there.</small>';
+  else h = "Not supported in this browser";
+  el.innerHTML = h;
+  var y = el.querySelector("[data-y]"), m = el.querySelector("[data-m]");
+  if (y) y.onclick = function () {
+    var er = el.querySelector(".er"); y.disabled = true; er.textContent = "";
+    API.enable().then(function () { paintNotif(el); }).catch(function (x) { y.disabled = false; er.textContent = x.message; });
+  };
+  if (m) m.onclick = function () { var host = el.closest(".stp,.em-setp"); if (host) host.hidden = true; openPanel(); };
+}
+function mountAll() { document.querySelectorAll(".em-setnotif").forEach(function (el) { paintNotif(el).catch(function () {}); }); }
+API.openPanel = openPanel; API.mount = mountAll;
+document.addEventListener("click", function (e) { if (e.target.closest("#setb,.em-setb")) setTimeout(mountAll, 0); }, true);
+
 function start() {
   if (!A.user()) return;
   addMenu();
@@ -169,7 +190,6 @@ function start() {
     try { sessionStorage.setItem("em_push_sync", "1"); } catch (e) {}
     subscribe().catch(function () {});
   }
-  if (ld("em_push_on") !== "1") setTimeout(askOnce, 6000);
 }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { setTimeout(start, 300); }); else setTimeout(start, 300);
 })();
