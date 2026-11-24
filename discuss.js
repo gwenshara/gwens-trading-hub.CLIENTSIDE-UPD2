@@ -375,7 +375,10 @@ const sigG=id=>{const L=GM[id]||[];return L.length+":"+(L.length?L[L.length-1].i
 function gRead(){if(!cur||!cur.grp||document.hidden)return;const L=GM[cur.id]||[],last=L[L.length-1],me=(GMEM[cur.id]||[]).find(x=>x.user_id===UID);
  if(!last||!me||Date.parse(me.last_read)>=Date.parse(last.created_at))return;me.last_read=last.created_at;buildG();paintList();
  EMAuth.rest("rpc/group_mark_read","POST",{p_group:cur.id}).catch(()=>{})}
-function gHtml(x){const out=x.sender_id===UID;
+/* in a group, every message from someone else gets that person's profile picture beside the bubble */
+function gHtml(x){const h=gHtml0(x);if(x.kind==="sys"||x.sender_id===UID||h.indexOf("ed-box")>-1)return h;
+ const a=av(x.sender_id,x.sender_name||"?").replace('class="dm-av"','class="dm-av gpf"');return h.replace(/^(<div[^>]*>)/,"$1"+a)}
+function gHtml0(x){const out=x.sender_id===UID;
  if(x.kind==="sys")return'<div class="g-sys">'+esc(x.text)+"</div>";
  const id=esc(x.id),c=out?"out":"in gin",mo=out?'<button class="mo" data-gmo type="button" aria-label="Message options" title="Options">\u22ef</button>':"",
   nm=out?"":'<b class="g-sn">'+esc(x.sender_name)+"</b>",
@@ -389,12 +392,14 @@ function gHtml(x){const out=x.sender_id===UID;
  if(x.kind==="item"){const n=x.iname||"",i=BYN[n];
   return'<div class="dm-m itm '+c+'" data-id="'+id+'">'+mo+nm+'<button class="dm-it" data-item="'+esc(n)+'" type="button">'+(i?thumb(n):'<span class="th g">?</span>')+'<span class="dm-itx"><b>'+esc(n)+"</b><span>"+(i?esc(price(i.p))+(i.stars?" \u00b7 "+stars(i.stars):""):"Item not found")+"</span><em>Tap to see the item info</em></span></button>"+tm+"</div>"}
  return'<div class="dm-m '+c+'" data-id="'+id+'">'+mo+nm+esc(x.text)+tm+"</div>"}
+let gProfBusy=false;
 function paintGroup(stick){const r=$("#dm-r");if(!cur||!cur.grp)return;
  if(!$("#gp-msgs")||r.dataset.id!=="g:"+cur.id){r.dataset.id="g:"+cur.id;pendImg=null;
   const gg=GL.find(x=>x.id===cur.id)||{},mmg=gg.kind==="mm",own=gg.owner_id===UID;
   r.innerHTML=(mmg?'<div class="g-off">OFFICIAL MIDDLEMAN INTERACTION</div>':"")+'<div class="dm-rh"><button class="dm-back" id="dm-back" type="button">\u2039 Back</button><span class="dm-av gav">'+(mmg?"MM":"G")+'</span><b>'+esc(cur.name)+'</b><i class="dm-fr gr">'+(mmg?"Middleman":"Group")+'</i>'+(own?'<span class="dm-ha"><button class="dm-hb dg" data-gclose type="button">'+(mmg?"Close chat (interaction over)":"Delete group")+'</button></span>':"")+'</div><div class="g-mem" id="gp-mem"></div><div class="dm-msgs" id="gp-msgs"></div><div class="dm-err" id="gp-err"></div><div class="dm-pend" id="gp-pend" hidden></div><div class="dm-f"><div class="dm-pw"><button class="dm-plus" id="gp-plus" type="button" aria-label="Send a picture or an item">'+PLUS+'</button><div class="dm-menu" id="gp-menu" hidden><button type="button" data-gadd="img">Send a picture</button><button type="button" data-gadd="item">Send an item</button><button type="button" data-gadd="wl">Send my wishlist</button><button type="button" data-gadd="inv">Send my inventory</button><button type="button" data-gadd="stk">Stickers</button></div><div class="dm-stp" id="gp-stp" hidden></div></div><textarea id="gp-in" maxlength="1000" rows="1" placeholder="Message the group\u2026"></textarea><button id="gp-send" type="button">Send</button></div><input type="file" id="gp-file" accept="image/*" hidden>';stick=true}
  $("#gp-mem").textContent="Members: "+(GMEM[cur.id]||[]).map(m=>m.username).join(", ");
  const box=$("#gp-msgs"),near=box.scrollHeight-box.scrollTop-box.clientHeight<90,L=GM[cur.id]||[];let h="",d="";
+ {const need=[...new Set(L.map(x=>x.sender_id))].filter(i=>i&&i!==UID&&!prof[i]);if(need.length&&!gProfBusy){gProfBusy=true;loadProfiles(need).then(()=>{gProfBusy=false;if(cur&&cur.grp)paintGroup(false)},()=>{gProfBusy=false})}}
  L.forEach(x=>{const k=day(x.created_at);if(k!==d){d=k;h+='<div class="dm-day">'+k+"</div>"}h+=gediting&&gediting.id===x.id?gHtml(x):withRx(gHtml(x),x)});
  if(!L.length)h='<div class="dm-none" style="margin:auto">No messages yet.</div>';
  box.innerHTML=h;if(stick||near)box.scrollTop=box.scrollHeight;gSig=sigG(cur.id);loadPics();

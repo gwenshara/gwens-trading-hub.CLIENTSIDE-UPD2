@@ -268,3 +268,16 @@
 .dm-wlx{display:flex;flex-direction:column;gap:1px;min-width:0}.dm-wlx b{font-size:13px;overflow-wrap:anywhere}.dm-wlx span{font-size:12px;opacity:.75}
 .th.txt{padding:2px}.th.txt i{font-style:normal;font-weight:800;font-size:9px;line-height:1.1;text-align:center;overflow-wrap:anywhere;max-height:100%;overflow:hidden;color:#fff}
 .dm-it .th.txt i{font-size:11px}.dm-ih .th.txt i{font-size:15px}
+
+/* wishlist / inventory cards: black, and bigger */
+.dm-m.wlm,.dm-m.wlm.in,.dm-m.wlm.out{background:#000;color:#fff;border:1px solid #2c2c32;padding:12px;max-width:min(520px,92%)}
+.dm-wl{min-width:min(310px,100%);max-width:500px;background:#000;border:1px solid #ffffff30;border-radius:16px;padding:12px}
+.dm-wlh{margin-bottom:10px}.dm-wlh b{font-size:19px}.dm-wlh span{font-size:13px}
+.dm-wll{gap:8px;max-height:420px}
+.dm-wli{padding:9px;gap:12px;background:#111114;border-color:#ffffff22}
+.dm-wli .th{width:56px;height:56px}
+.dm-wlx b{font-size:15px}.dm-wlx span{font-size:13px}
+.dm-wli .th.txt i{font-size:11px}
+/* group chats: profile picture next to each bubble from someone else */
+.dm-m.gin{margin-left:42px}
+.dm-m.gin>.gpf{position:absolute;left:-42px;top:2px;width:34px;height:34px;font-size:14px}
