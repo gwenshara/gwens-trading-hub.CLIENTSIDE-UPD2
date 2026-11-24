@@ -21,12 +21,12 @@ async function call(path,opt){
  return j}
 function save(s){S=s;if(s)sv("em_session",s);else try{localStorage.removeItem("em_session")}catch(e){}}
 async function loadProfile(uid,tok){
- const p=await call("/rest/v1/profiles?id=eq."+uid+"&select=username,role",{headers:hdr(tok)});
+ const p=await call("/rest/v1/profiles?id=eq."+uid+"&select=username,role,roles",{headers:hdr(tok)});
  if(!p||!p[0])throw new Error("Account profile not found.");return p[0]}
 function fromAuth(j){return{token:j.access_token,refresh:j.refresh_token,exp:Math.floor(Date.now()/1000)+(j.expires_in||3600),uid:j.user&&j.user.id}}
 const API=window.EMAuth={
  configured:ready,
- user:()=>S&&S.u||null,isAdmin:()=>!!(S&&S.role==="admin"),uid:()=>S&&S.uid||null,
+ user:()=>S&&S.u||null,isAdmin:()=>!!(S&&S.role==="admin"),canEdit:()=>!!(S&&(S.role==="admin"||(S.roles||[]).indexOf("value_handler")>-1)),isValueHandler:()=>!!(S&&(S.roles||[]).indexOf("value_handler")>-1),uid:()=>S&&S.uid||null,
  /* a valid access token, refreshed when it is about to expire; null when signed out */
  async token(){
   if(!S)return null;
@@ -42,7 +42,7 @@ const API=window.EMAuth={
   u=u.trim();if(!u||!pw)throw new Error("Enter your username and password.");
   let j;try{j=await call("/auth/v1/token?grant_type=password",{method:"POST",headers:hdr(),body:JSON.stringify({email:u.toLowerCase()+DOMAIN,password:pw})})}
   catch(e){if(e.status===400||e.status===401)throw new Error("Wrong username or password.");throw e}
-  const a=fromAuth(j),p=await loadProfile(a.uid,a.token);save(Object.assign({u:p.username,role:p.role},a))},
+  const a=fromAuth(j),p=await loadProfile(a.uid,a.token);save(Object.assign({u:p.username,role:p.role,roles:p.roles||[]},a))},
  async signUp(u,pw){
   u=u.trim();
   if(!/^[A-Za-z0-9_]{3,20}$/.test(u))throw new Error("Username: 3–20 letters, numbers or _.");
@@ -51,7 +51,7 @@ const API=window.EMAuth={
   catch(e){if(/already|registered|exists/i.test(e.message)||e.status===422&&/already/i.test(e.message))throw new Error("That username is taken.");
    if(/Database error/i.test(e.message))throw new Error("That username is taken or not allowed.");throw e}
   if(!j.access_token)throw new Error("Sign-up worked but e-mail confirmation is still ON in Supabase. Turn it off (see SETUP.md).");
-  const a=fromAuth(j),p=await loadProfile(a.uid,a.token);save(Object.assign({u:p.username,role:p.role},a))},
+  const a=fromAuth(j),p=await loadProfile(a.uid,a.token);save(Object.assign({u:p.username,role:p.role,roles:p.roles||[]},a))},
  /* My List is stored per account; guests use the plain key. First sign-in copies the guest list so nothing is lost. */
  listKey(k){const u=API.user();if(!u)return k;const ak=k+":"+u.toLowerCase();
   try{if(localStorage.getItem(ak)===null&&localStorage.getItem(k)!==null)localStorage.setItem(ak,localStorage.getItem(k))}catch(e){}return ak},
@@ -59,9 +59,9 @@ const API=window.EMAuth={
 };
 /* keep the role fresh (e.g. when you are made admin) without blocking the page */
 if(S&&ready)(async()=>{try{const tok=await API.token();if(!tok)return;const p=await loadProfile(S.uid,tok);
- if(p.username!==S.u||p.role!==S.role){save(Object.assign({},S,{u:p.username,role:p.role}));location.reload()}}catch(e){}})();
+ if(p.username!==S.u||p.role!==S.role||JSON.stringify(p.roles||[])!==JSON.stringify(S.roles||[])){save(Object.assign({},S,{u:p.username,role:p.role,roles:p.roles||[]}));location.reload()}}catch(e){}})();
 
-/* Shared site data (catalog edits + added items). Everyone reads it, only the admin writes it. */
+/* Shared site data (catalog edits + added items). Everyone reads it, only the admin or a Value Handler writes it. */
 const D=window.EMData={
  _ver:ld("em_ver",{}),_subs:[],_last:null,
  enabled:()=>ready,
@@ -80,14 +80,14 @@ const D=window.EMData={
    sv("em_ver",D._ver);await D.seed(meta)
   }catch(e){}},
  async put(key,str){
-  const tok=await API.token();if(!tok||!API.isAdmin())throw new Error("Only the admin can save for everyone.");
+  const tok=await API.token();if(!tok||!API.canEdit())throw new Error("Only the admin or a Value Handler can save for everyone.");
   const now=new Date().toISOString();
   await call("/rest/v1/site_state?on_conflict=key",{method:"POST",headers:Object.assign(hdr(tok),{Prefer:"resolution=merge-duplicates,return=minimal"}),body:JSON.stringify({key,value:str,updated_at:now,updated_by:API.user()})});
   D._ver[key]=now;sv("em_ver",D._ver)},
  /* showcase videos live in a Supabase Storage bucket called "showcase" (public to read, admin-only to write) */
  url:p=>CFG.url+"/storage/v1/object/public/showcase/"+p,
  async upload(path,file,onp){
-  const tok=await API.token();if(!tok||!API.isAdmin())throw new Error("Only the admin can upload.");
+  const tok=await API.token();if(!tok||!API.canEdit())throw new Error("Only the admin or a Value Handler can upload.");
   const ct={mp4:"video/mp4",webm:"video/webm",gif:"image/gif"}[(path.split(".").pop()||"").toLowerCase()]||file.type||"application/octet-stream";
   return new Promise((res,rej)=>{const x=new XMLHttpRequest();x.open("POST",CFG.url+"/storage/v1/object/showcase/"+path);
    x.setRequestHeader("apikey",CFG.anonKey);x.setRequestHeader("Authorization","Bearer "+tok);x.setRequestHeader("Content-Type",ct);x.setRequestHeader("x-upsert","true");
@@ -98,7 +98,7 @@ const D=window.EMData={
     if(x.status===413)m="That file is too big for the server (limit 50 MB).";rej(new Error(m))};
    x.send(file)})},
  async remove(path){
-  const tok=await API.token();if(!tok||!API.isAdmin())return;
+  const tok=await API.token();if(!tok||!API.canEdit())return;
   await fetch(CFG.url+"/storage/v1/object/showcase/"+path,{method:"DELETE",headers:{apikey:CFG.anonKey,Authorization:"Bearer "+tok}})},
  /* first time the admin opens the live site: upload what is already saved in this browser so nothing is lost */
  async seed(meta){
@@ -124,7 +124,7 @@ window.EMLog={
   const u=(window.EMAuth&&EMAuth.user())||"Admin";
   const L=EMLog.all();L.unshift({t:Date.now(),u:cap(u),item:item||"",text});
   try{localStorage.setItem("em_log",JSON.stringify(L.slice(0,1000)))}catch(e){}
-  if(ready&&API.isAdmin())logQ=logQ.then(()=>API.rest("site_log","POST",{username:API.user(),item:item||"",text},{Prefer:"return=minimal"})).catch(()=>{})},
+  if(ready&&API.canEdit())logQ=logQ.then(()=>API.rest("site_log","POST",{username:API.user(),item:item||"",text},{Prefer:"return=minimal"})).catch(()=>{})},
  async load(){
   if(!ready)return EMLog.all();
   const r=await call("/rest/v1/site_log?select=created_at,username,item,text&order=created_at.desc,id.desc&limit=1000",{headers:hdr()});
@@ -165,6 +165,6 @@ document.addEventListener("DOMContentLoaded",build);
 })();
 if(!window.__emBadges){try{var _b=document.createElement("script");_b.src="badges.js?v=1";document.head.appendChild(_b)}catch(e){}}
 
-if(!window.EMPresence){try{var _p=document.createElement("script");_p.src="presence.js?v=1";document.head.appendChild(_p)}catch(e){}}
+if(!window.EMPresence){try{var _p=document.createElement("script");_p.src="presence.js?v=2";document.head.appendChild(_p)}catch(e){}}
 
 if(!window.EMPush){try{var _n=document.createElement("script");_n.src="push.js?v=3";document.head.appendChild(_n)}catch(e){}}

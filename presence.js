@@ -1,7 +1,7 @@
 /* Online status + roles. Loaded by auth.js on every page. */
 (function(){
 if(window.EMPresence)return;
-var ROLES={official_middleman:{n:"Official Middleman",c:"#8b4dff"},moderator:{n:"Moderator",c:"#2e8bff"},donator:{n:"Donator",c:"#ff5fa2"},top_trader:{n:"Top Trader",c:"#e8b422"},tester:{n:"Tester",c:"#1fc2a5"}};
+var ROLES={official_middleman:{n:"Official Middleman",c:"#8b4dff"},moderator:{n:"Moderator",c:"#2e8bff"},donator:{n:"Donator",c:"#ff5fa2"},top_trader:{n:"Top Trader",c:"#e8b422"},tester:{n:"Tester",c:"#1fc2a5"},value_handler:{n:"Value Handler",c:"#ff8a3d"}};
 var ST={online:{n:"Online",c:"#3bb26b"},idle:{n:"Idle",c:"#f0b232"},dnd:{n:"Do not disturb",c:"#e5484d"},offline:{n:"Offline",c:"#80848e"}};
 var FRESH=150000; /* seen within 2.5 minutes = connected */
 function eff(r){var t=r&&r.last_seen?Date.parse(r.last_seen):0;if(!t||Date.now()-t>FRESH)return"offline";return r.status||"online"}
