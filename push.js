@@ -153,16 +153,84 @@ function askOnce() {
   el.querySelector("[data-y]").onclick = function () { el.remove(); openPanel(); };
 }
 
+/* ---------- the guide: pick your device, read a few basic steps and fixes ---------- */
+var GUIDE = {
+  windows: { t: "Windows PC", steps: [
+    "Log in, open <b>\u2699 Settings</b>, press <b>Turn on</b>, then <b>Allow</b> when the browser asks.",
+    "Press <b>Manage</b>, then <b>Send a test</b>. A notification should pop up in the corner of your screen."
+  ], fix: [
+    ["Nothing shows up", "Windows: Settings, System, Notifications. Turn <b>Notifications</b> on, turn <b>Do not disturb</b> off, and make sure your browser (Chrome, Edge...) is switched on in the list."],
+    ["It says \"Blocked\"", "Click the lock icon left of the address, set <b>Notifications</b> to <b>Allow</b>, then reload the page."],
+    ["Only works while the browser is open", "In Chrome: Settings, System, turn on <b>Continue running background apps when Chrome is closed</b>."]
+  ] },
+  mac: { t: "Mac", steps: [
+    "Log in, open <b>\u2699 Settings</b>, press <b>Turn on</b>, then <b>Allow</b> when the browser asks.",
+    "Press <b>Manage</b>, then <b>Send a test</b>. A notification should appear at the top right of your screen."
+  ], fix: [
+    ["Nothing shows up", "Mac: System Settings, Notifications, pick your browser and allow notifications. Turn <b>Focus</b> / Do not disturb off."],
+    ["It says \"Blocked\"", "Click the lock icon left of the address (in Safari: Safari, Settings, Websites, Notifications), set this site to <b>Allow</b>, then reload."]
+  ] },
+  android: { t: "Android phone", steps: [
+    "Open the site in <b>Chrome</b>, log in, open <b>\u2699 Settings</b>, press <b>Turn on</b>, then <b>Allow</b>.",
+    "Press <b>Manage</b>, then <b>Send a test</b>. You should get a notification, even with the browser closed."
+  ], fix: [
+    ["Nothing shows up", "Android Settings, Apps, Chrome, Notifications: make sure they are on. Turn <b>Do not disturb</b> off."],
+    ["It arrives late or never", "Android Settings, Battery, Chrome: choose <b>Unrestricted</b> (battery saving can delay notifications)."],
+    ["It says \"Blocked\"", "Tap the lock icon next to the address, then Permissions, Notifications, <b>Allow</b>. Reload the page."]
+  ] },
+  ios: { t: "iPhone / iPad", steps: [
+    "Needs iOS 16.4 or newer. Open the site in <b>Safari</b>, tap <b>Share</b>, then <b>Add to Home Screen</b>.",
+    "Open the site from the <b>new icon on your Home Screen</b> (not from Safari), log in, open <b>\u2699 Settings</b>, press <b>Turn on</b>, then <b>Allow</b>.",
+    "Press <b>Manage</b>, then <b>Send a test</b>."
+  ], fix: [
+    ["The box says \"Needs the Home Screen app\"", "You are still in Safari. Close it and open the site from the Home Screen icon."],
+    ["Nothing shows up", "iPhone Settings, Notifications, find the site's icon and allow notifications. Turn <b>Focus</b> / Do not disturb off."],
+    ["It stopped working", "Delete the Home Screen icon, add it again, log in and press Turn on again."]
+  ] }
+};
+var guideEl = null;
+function openGuide() {
+  if (!guideEl) {
+    guideEl = document.createElement("div"); guideEl.className = "pn-mo"; guideEl.hidden = true; document.body.appendChild(guideEl);
+    guideEl.addEventListener("click", function (e) { if (e.target === guideEl || e.target.closest(".pn-x")) guideEl.hidden = true; });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape" && guideEl) guideEl.hidden = true; });
+  }
+  guideEl.hidden = false;
+  var phone = /android|iphone|ipad|ipod/i.test(navigator.userAgent) || ios;
+  var opts = phone ? [["android", "Android"], ["ios", "iPhone / iPad"]] : [["windows", "Windows"], ["mac", "Mac"]];
+  function home() {
+    guideEl.innerHTML = '<div class="pn-box" role="dialog" aria-modal="true"><button class="pn-x" type="button" aria-label="Close">\u2715</button><h3>How notifications work</h3>' +
+      '<p class="pn-sub">You get a notification on your ' + (phone ? "phone" : "computer") + ' when something happens while you are away from the site.</p>' +
+      '<ul style="margin:0 0 14px;padding-left:18px;line-height:1.6;font-weight:500"><li>New private, trade, group and middleman messages.</li><li>New value votes.</li><li>The first message from someone notifies you. If they keep writing, you are notified again after 2 minutes.</li><li>No notification while you are looking at the site or while your status is Do not disturb.</li></ul>' +
+      '<div class="stt" style="font:700 13px Montserrat,Inter,system-ui,sans-serif;margin-bottom:8px">What device are you using?</div>' +
+      '<div class="pn-acts" style="margin-top:0">' + opts.map(function (o) { return '<button class="pn-btn" type="button" data-d="' + o[0] + '" style="flex:1;padding:14px">' + o[1] + "</button>"; }).join("") + "</div></div>";
+    guideEl.querySelectorAll("[data-d]").forEach(function (b) { b.onclick = function () { show(b.dataset.d); }; });
+  }
+  function show(k) {
+    var g = GUIDE[k];
+    guideEl.innerHTML = '<div class="pn-box" role="dialog" aria-modal="true"><button class="pn-x" type="button" aria-label="Close">\u2715</button><h3>' + g.t + "</h3>" +
+      '<p class="pn-sub">Set it up in a few steps</p><ol style="margin:0 0 14px;padding-left:20px;line-height:1.6;font-weight:500">' + g.steps.map(function (s) { return "<li>" + s + "</li>"; }).join("") + "</ol>" +
+      '<div class="stt" style="font:700 13px Montserrat,Inter,system-ui,sans-serif;margin-bottom:4px">If it does not work</div>' +
+      g.fix.map(function (f) { return '<div class="pn-row" style="cursor:default;display:block"><b>' + f[0] + "</b><small>" + f[1] + "</small></div>"; }).join("") +
+      '<p class="pn-note">When the site is closed, your device plays its own notification sound. The EM sound only plays while the site is open in another tab.</p>' +
+      '<div class="pn-acts"><button class="pn-btn alt" type="button" data-b>\u2190 Back</button></div></div>';
+    guideEl.querySelector("[data-b]").onclick = home;
+  }
+  home();
+}
+
 /* The "Get notified?" box now lives in Settings (catalog Settings menu and the gear on the other pages) */
+function hookGuide(el) { var g = el.querySelector("[data-g]"); if (g) g.onclick = function () { var host = el.closest(".stp,.em-setp"); if (host) host.hidden = true; openGuide(); }; }
 async function paintNotif(el) {
-  if (!A.user()) { el.innerHTML = "Log in to get notifications."; return; }
+  if (!A.user()) { el.innerHTML = 'Log in to get notifications.<br><button class="alt" type="button" data-g>Guide</button>'; hookGuide(el); return; }
   var st = await API.state(), h;
   if (st === "on") h = '<span class="sd on"></span>On for this device<br><button class="alt" type="button" data-m>Manage</button>';
   else if (st === "off") h = '<b>Get notified?</b><small>We can tell you about new messages and value votes when you are away from the site.</small><button type="button" data-y>Turn on</button><div class="er"></div>';
   else if (st === "blocked") h = '<span class="sd bad"></span>Blocked in your browser settings<small>Click the lock icon next to the address, allow Notifications for this site, then reload.</small>';
   else if (st === "ios-install") h = 'Needs the Home Screen app on iPhone/iPad<small>Tap Share, then Add to Home Screen, open the site from the new icon, and turn notifications on there.</small>';
   else h = "Not supported in this browser";
-  el.innerHTML = h;
+  el.innerHTML = h + '<br><button class="alt" type="button" data-g>Guide: how it works</button>';
+  hookGuide(el);
   var y = el.querySelector("[data-y]"), m = el.querySelector("[data-m]");
   if (y) y.onclick = function () {
     var er = el.querySelector(".er"); y.disabled = true; er.textContent = "";
@@ -172,7 +240,7 @@ async function paintNotif(el) {
 }
 function mountAll() { document.querySelectorAll(".em-setnotif").forEach(function (el) { paintNotif(el).catch(function (x) { el.textContent = "Could not check notifications: " + (x && x.message ? x.message : "unknown error"); }); }); }
 setTimeout(mountAll, 1500);
-API.openPanel = openPanel; API.mount = mountAll;
+API.openPanel = openPanel; API.openGuide = openGuide; API.mount = mountAll;
 document.addEventListener("click", function (e) { if (e.target.closest("#setb,.em-setb")) setTimeout(mountAll, 0); }, true);
 
 function start() {
