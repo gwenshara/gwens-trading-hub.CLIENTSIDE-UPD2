@@ -299,3 +299,10 @@
 .dm-cca{justify-content:flex-start}
 .dm-ccr{padding:8px;border-radius:9px;border:1px solid var(--bl,#3a3a42);background:transparent;color:var(--text);font:700 12px Montserrat,sans-serif;cursor:pointer}.dm-ccr:hover{border-color:#fff}
 .dm-ccn{font:500 11px/1.4 Inter,system-ui,sans-serif;opacity:.65}
+
+.dm-cct{font:800 11px Montserrat,sans-serif;letter-spacing:.05em;text-transform:uppercase;opacity:.75}
+.dm-ccp{max-height:calc(100vh - 16px);overflow:auto}
+.dm-r .dm-msgs{background:var(--cbg,transparent)}
+.dm-r.hasbg .dm-m.in:not(.wlm):not(.stk):not(.adm){background:color-mix(in srgb,var(--cbt) 14%,transparent);color:var(--cbt)}
+.dm-r.hasbg .dm-day,.dm-r.hasbg .dm-none,.dm-r.hasbg .dm-seen,.dm-r.hasbg .g-sys{color:var(--cbt);background:color-mix(in srgb,var(--cbt) 10%,transparent)}
+.dm-r.hasbg .dm-m.in time{color:var(--cbt)}

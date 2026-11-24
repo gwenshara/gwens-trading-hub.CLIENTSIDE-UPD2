@@ -332,7 +332,7 @@ button:hover,select:hover{border-color:var(--accent)}
 .m .tr.mid img{width:100%;height:100%;object-fit:contain}
 .m .tr.mid::after{bottom:auto;top:calc(100% + 6px);right:50%;transform:translateX(50%);font-size:13px;padding:4px 10px;z-index:9}
 .m .tp:has(.tr.mid) .tl{max-width:none;flex:1 1 0;min-width:0}
-.m .tp .tr.mid+.pr{margin-left:0}
+.m .prw{display:flex;flex-direction:column;align-items:flex-end;gap:6px;margin-left:auto}.m .tp .tr.mid+.prw{margin-left:0}
 
 
 /* ===== Montserrat from the supplied font files ===== */
@@ -423,8 +423,8 @@ button:hover,select:hover{border-color:var(--accent)}
 .m .mwb.on,.m .mwb.on:hover,.m .ft .mwb.on,.m .ft .mwb.on:hover{color:#ffd34d}.m .mwb.on svg path:first-child{fill:currentColor}.m .mwb.on svg path+path{stroke:#1a1405}
 .m .mwb::after{content:attr(data-tip);position:absolute;left:0;bottom:calc(100% + 8px);transform:translateY(4px);background:#000d;color:#fff;font:700 12px Montserrat,sans-serif;white-space:nowrap;padding:5px 9px;border-radius:7px;opacity:0;pointer-events:none;transition:opacity .15s,transform .15s;z-index:6}
 .m .mwb:hover::after,.m .mwb:focus-visible::after,.m .mwb.pop::after{opacity:1;transform:none}
-.m .pr .mwb{width:28px;height:28px;padding:4px;margin-top:1px}.m .pr .mwb svg{width:18px;height:18px}
-.m .pr .mwb::after{left:auto;right:0;bottom:auto;top:calc(100% + 8px)}
+.m .prw .mwb{width:32px;height:32px;padding:5px;background:#00000040;border-radius:10px}.m .prw .mwb:hover{background:#0006}.m .prw .mwb svg{width:19px;height:19px}
+.m .prw .mwb::after{left:auto;right:0;bottom:auto;top:calc(100% + 8px)}
 @media (prefers-reduced-motion:reduce){.m .mwb:hover{transform:none}}
 .mlr{margin-top:20px}.mlr .mlg{grid-template-columns:repeat(auto-fill,minmax(96px,110px))}
 
@@ -1030,7 +1030,7 @@ function openM(id){
  m.innerHTML=`<button class="x" id="mx" aria-label="Close">\u2715</button>
  <div class="tabs" role="tablist"><button class="tab on" data-tab="main" role="tab">Main Info</button><button class="tab" data-tab="show" role="tab">Showcase</button><button class="tab" data-tab="fact" role="tab">Fun Fact</button></div>
  <div class="mc"><div class="mv" id="mv">
- <div class="tp"><div class="tl">${i.t==="t"&&!PIC(i.n)?"":`<h2>${esc(i.n)}</h2>`}${inf.aka?`<div class="ak">AKA ${esc(inf.aka)}</div>`:""}${inf.copies?`<div class="cp">${esc(inf.copies)}</div>`:""}</div>${SET.trend?trd(i.n,"mid"):""}<div class="pr"><div class="pv${dc(i)}"${ptC(i)}><b></b>${esc(i.p)}${bang(i)}</div>${stars}${wishBtn(i.n,"mw2")}</div></div>
+ <div class="tp"><div class="tl">${i.t==="t"&&!PIC(i.n)?"":`<h2>${esc(i.n)}</h2>`}${inf.aka?`<div class="ak">AKA ${esc(inf.aka)}</div>`:""}${inf.copies?`<div class="cp">${esc(inf.copies)}</div>`:""}</div>${SET.trend?trd(i.n,"mid"):""}<div class="prw"><div class="pr"><div class="pv${dc(i)}"${ptC(i)}><b></b>${esc(i.p)}${bang(i)}</div>${stars}</div>${wishBtn(i.n,"mw2")}</div></div>
  <div class="mi"${ptT(i)} style="${imS(i.n)}">${art}${inf.credit?`<span class="cr">${esc(inf.credit)}</span>`:""}</div>
  ${lines}${chips?`<div class="pcs">${chips}</div>`:""}${inf.odds?`<div class="pcs"><span class="pc od">${esc(inf.odds)}</span></div>`:""}${inf.exp?`<div class="xp">[EXPIRED] "${esc(inf.exp)}"</div>`:""}
  ${isES(i)?'<div class="esr"><span class="bd es">Easily sellable</span></div>':""}
