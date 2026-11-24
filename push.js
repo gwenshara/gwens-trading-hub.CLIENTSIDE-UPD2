@@ -170,7 +170,8 @@ async function paintNotif(el) {
   };
   if (m) m.onclick = function () { var host = el.closest(".stp,.em-setp"); if (host) host.hidden = true; openPanel(); };
 }
-function mountAll() { document.querySelectorAll(".em-setnotif").forEach(function (el) { paintNotif(el).catch(function () {}); }); }
+function mountAll() { document.querySelectorAll(".em-setnotif").forEach(function (el) { paintNotif(el).catch(function (x) { el.textContent = "Could not check notifications: " + (x && x.message ? x.message : "unknown error"); }); }); }
+setTimeout(mountAll, 1500);
 API.openPanel = openPanel; API.mount = mountAll;
 document.addEventListener("click", function (e) { if (e.target.closest("#setb,.em-setb")) setTimeout(mountAll, 0); }, true);
 

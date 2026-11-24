@@ -29,11 +29,12 @@ ready(function(){
  document.head.appendChild(st);
  var b=document.createElement("button");b.type="button";b.className="em-setb";b.setAttribute("aria-haspopup","true");b.setAttribute("aria-expanded","false");b.title="Settings";b.textContent="\u2699 Settings";
  var p=document.createElement("div");p.className="em-setp";p.hidden=true;
- p.innerHTML='<div class="sec"><div class="stt">Notifications</div><div class="sn em-setnotif">Log in to get notifications.</div></div><div class="sec"><div class="stt">Appearance</div><button type="button" class="thr" aria-label="Switch between light and dark mode"><span>Theme: <b class="thv"></b></span><span class="thi" aria-hidden="true"></span></button></div>';
+ p.innerHTML='<div class="sec"><div class="stt">Notifications</div><div class="sn em-setnotif">Loading\u2026</div></div><div class="sec"><div class="stt">Appearance</div><button type="button" class="thr" aria-label="Switch between light and dark mode"><span>Theme: <b class="thv"></b></span><span class="thi" aria-hidden="true"></span></button></div>';
  function open(o){p.hidden=!o;b.setAttribute("aria-expanded",o)}
  b.onclick=function(e){e.stopPropagation();open(p.hidden)};
  p.querySelector(".thr").onclick=function(){R.setAttribute("data-theme",light()?"dark":"light")};
  document.addEventListener("click",function(e){if(!e.target.closest(".em-setp,.em-setb"))open(false)});
  document.addEventListener("keydown",function(e){if(e.key==="Escape")open(false)});
+ setTimeout(function(){var n=document.querySelector(".em-setnotif");if(n&&n.textContent==="Loading\u2026")n.textContent="Notifications could not load. Refresh the page with Ctrl+Shift+R."},4000);
  document.body.appendChild(b);document.body.appendChild(p)});
 })();

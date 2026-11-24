@@ -167,4 +167,4 @@ if(!window.__emBadges){try{var _b=document.createElement("script");_b.src="badge
 
 if(!window.EMPresence){try{var _p=document.createElement("script");_p.src="presence.js?v=1";document.head.appendChild(_p)}catch(e){}}
 
-if(!window.EMPush){try{var _n=document.createElement("script");_n.src="push.js?v=1";document.head.appendChild(_n)}catch(e){}}
+if(!window.EMPush){try{var _n=document.createElement("script");_n.src="push.js?v=2";document.head.appendChild(_n)}catch(e){}}
