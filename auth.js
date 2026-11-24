@@ -170,3 +170,5 @@ if(!window.EMPresence){try{var _p=document.createElement("script");_p.src="prese
 if(!window.EMPush){try{var _n=document.createElement("script");_n.src="push.js?v=3";document.head.appendChild(_n)}catch(e){}}
 
 if(!window.__emWarn){try{var _w=document.createElement("script");_w.src="modwarn.js?v=2";document.head.appendChild(_w)}catch(e){}}
+
+if(!window.__emPop){try{var _m=document.createElement("script");_m.src="msgpop.js?v=1";document.head.appendChild(_m)}catch(e){}}

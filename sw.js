@@ -13,11 +13,20 @@ self.addEventListener("push", function (e) {
     if (!test && wins.some(function (c) { return c.visibilityState === "visible" && c.focused; })) return;
     /* a tab is open in the background: ask it to play the custom sound */
     wins.forEach(function (c) { try { c.postMessage({ type: "em-sound" }); } catch (_) {} });
+    /* messages: use the sender's profile picture; if they have none (or it cannot load), keep the normal icon */
+    var icon = "icon-192.png";
+    if (d.icon) {
+      try {
+        var ctl = new AbortController(), tm = setTimeout(function () { ctl.abort(); }, 2500);
+        var r = await fetch(d.icon, { signal: ctl.signal }); clearTimeout(tm);
+        if (r.ok) icon = d.icon;
+      } catch (_) {}
+    }
     await self.registration.showNotification(d.title || "EM Wiki", {
       body: d.body || "",
       tag: d.tag || "em",
       renotify: true,
-      icon: "icon-192.png",
+      icon: icon,
       badge: "icon-192.png",
       vibrate: [120, 60, 120],
       data: { url: d.url || "forum-discussions.html" }

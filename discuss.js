@@ -49,7 +49,7 @@ const adm=id=>prof[id]&&prof[id].role==="admin"?'<i class="dm-ad">ADMIN</i>':"";
 const isFr=id=>!!(window.EMSocial&&EMSocial.loaded&&EMSocial.rel(id).kind==="friend");
 const frTag=id=>isFr(id)?'<i class="dm-fr">Friend</i>':"";
 const pname=id=>(prof[id]&&prof[id].username)||"";
-let ALL=[],CONV=[],cur=null,MSGS=[],draft=null,q="",people=[],lastSig="",pendImg=null,tk=0,NEW8=true;
+let ALL=[],CONV=[],cur=null,MSGS=[],draft=null,q="",people=[],lastSig="",pendImg=null,tk=0,NEW8=true;window.EMCurChat=()=>cur;
 const BASE="id,sender_id,recipient_id,sender_name,recipient_name,text,created_at",EXT=BASE+",kind,iname:payload->>n",EXT9=EXT+",edited_at,mm:payload->>mm,ms:payload->>s,mr:payload->>r,md:payload->>done,mst:payload->>st,mgid:payload->>gid,mat:payload->>at",EXT10=EXT9+",channel",EXT11=EXT10+",read_at";
 let COLS=EXT11,NEW11=true,NEW10=true,TAB=ld("dm_tab","friends"),NEW9=true,NOTIF=[],notifOk=true;
 const NEED13="Run supabase-setup-13.sql in Supabase first.",NEED9="Run supabase-setup-9.sql in Supabase first.";
@@ -528,7 +528,7 @@ let tm;$("#dm-q").addEventListener("input",e=>{q=e.target.value;clearTimeout(tm)
   people=r.filter(p=>p.id!==UID);people.forEach(p=>prof[p.id]=p);paintList()}catch(err){}},250)});
 {const lh=$(".dm-lh");if(lh){lh.insertAdjacentHTML("beforeend",'<div class="dm-tabs" id="dm-tabs"></div>');$("#dm-tabs").addEventListener("click",e=>{const tb=e.target.closest("[data-tab]");if(tb){TAB=tb.dataset.tab;sv("dm_tab",TAB);paintList()}})}}
 paintChat();
-tick(true).then(async()=>{const P=new URLSearchParams(location.search),u=P.get("u"),ch=P.get("ch"),ad=P.get("ad");
+tick(true).then(async()=>{const P=new URLSearchParams(location.search),u=P.get("u"),ch=P.get("ch"),ad=P.get("ad");const gq=P.get("g");if(gq&&/^[0-9a-f-]{36}$/i.test(gq)){try{openGroup(gq)}catch(e){}}
  if(u&&u.toLowerCase()!==ME.toLowerCase()){try{const r=await EMAuth.rest("profiles?select=id,username,role,avatar&username=ilike."+encodeURIComponent(u.replace(/[*%,()]/g,"")));
   if(r&&r[0]){prof[r[0].id]=r[0];let pre="";
    if(ch==="trade"&&ad&&/^[0-9a-f-]{36}$/i.test(ad)){try{const a=await EMAuth.rest("ads?id=eq."+ad+"&select=id,username,offering,looking,note");
