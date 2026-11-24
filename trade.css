@@ -59,3 +59,5 @@ ul.nt{margin:10px 0 0;padding-left:18px;color:var(--mute);font-size:13px}
 .talk-m[hidden]{display:none}
 .talk-m a{padding:9px 12px;border-radius:7px;color:inherit;text-decoration:none;font-weight:700;font-size:13px}
 .talk-m a:hover{background:#7aa7ff22}
+
+.tagsec{border-top:1px solid var(--line,rgba(128,128,128,.3));margin-top:6px;padding-top:8px}.tagsec h4{margin:0 0 2px;font-size:14px;text-align:center}.tagsec h4 small{display:block;font-weight:400;opacity:.7;font-size:12px;margin-top:2px}.tagrow .lim,.lim{display:inline-flex;align-items:center;gap:6px}.lim b{font-size:12px;opacity:.85}
