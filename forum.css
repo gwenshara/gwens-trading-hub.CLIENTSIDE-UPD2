@@ -5,16 +5,16 @@
 .fh .crumb:hover{border-color:var(--accent);color:#fff}
 .ft{position:relative;display:block;max-width:100%;margin:0;font:400 clamp(38px,7vw,76px)/1.05 Bangers,"Luckiest Guy",Impact,"Arial Black",sans-serif;letter-spacing:2px;text-transform:uppercase}
 .ft .fs{position:absolute;left:0;top:0;width:100%;color:#17123a;-webkit-text-stroke:9px #17123a}
-.ft .ff{position:relative;display:block;color:transparent;background:linear-gradient(180deg,#c77dff 12%,#7c7bff 55%,#4d9bff 100%);-webkit-background-clip:text;background-clip:text}
+.ft .ff{position:relative;display:block;color:#4d9bff}
 .fw{max-width:1180px;margin:0 auto;padding:30px 16px 60px}
 .fg{display:grid;grid-template-columns:repeat(2,1fr);gap:22px}
 .fc{--c:#7aa7ff;display:flex;flex-direction:column;justify-content:center;gap:14px;min-height:280px;padding:32px 34px;border-radius:20px;background:var(--b3);border:2px solid var(--bl);color:var(--text);text-decoration:none;position:relative;overflow:hidden;transition:border-color .15s,transform .15s}
 .fc:hover,.fc:focus-visible{border-color:var(--c);transform:translateY(-3px);outline:none}
 .fc .ico{width:76px;height:76px;border-radius:20px;display:grid;place-items:center;background:color-mix(in srgb,var(--c) 18%,transparent);border:2px solid var(--c);color:var(--c)}
 .fc .ico svg{width:42px;height:42px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.fc h2,.fsoon h2,.vt-grad{margin:0;font:800 30px Montserrat,sans-serif;background:linear-gradient(180deg,#c77dff,#4d9bff);-webkit-background-clip:text;background-clip:text;color:transparent;width:fit-content}
+.fc h2,.fsoon h2,.vt-grad{margin:0;font:800 30px Montserrat,sans-serif;color:#4d9bff;width:fit-content}
 .fc p{margin:0;font:500 16px/1.5 Inter,"Segoe UI",system-ui,sans-serif;color:var(--mute);max-width:46ch}
-.fc .go{margin-top:auto;font:700 14px Montserrat,sans-serif;background:linear-gradient(180deg,#c77dff,#4d9bff);-webkit-background-clip:text;background-clip:text;color:transparent;width:fit-content}
+.fc .go{margin-top:auto;font:700 14px Montserrat,sans-serif;color:#4d9bff;width:fit-content}
 .fsoon{max-width:760px;margin:10px auto 0;text-align:center;background:var(--b3);border:2px dashed var(--bl);border-radius:20px;padding:56px 24px}
 .fsoon h2{margin:0 0 10px;font-size:26px}
 .fsoon p{margin:0;color:var(--mute);font:500 16px/1.6 Inter,"Segoe UI",system-ui,sans-serif}
