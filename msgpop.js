@@ -41,7 +41,7 @@ function toast(m,grp){
  var sub=grp?' <small>in '+esc(gname[m.group_id]||"a group")+'</small>':(m.channel==="trade"?' <small>(trade)</small>':"");
  var url=grp?"forum-discussions.html?g="+encodeURIComponent(m.group_id):"forum-discussions.html?u="+encodeURIComponent(n)+(m.channel==="trade"?"&ch=trade":"");
  var el=document.createElement("div");el.className="em-pp";el.setAttribute("role","status");
- el.innerHTML='<span class="pa" style="background:'+(okImg(p.avatar)?"#2a2a30":col(n))+'">'+(okImg(p.avatar)?'<img src="'+esc(p.avatar)+'" alt="">':esc(n.charAt(0).toUpperCase()))+'</span>'
+ el.innerHTML='<span class="pa" style="background:#2a2a30"><img src="'+(okImg(p.avatar)?esc(p.avatar):emDefAv(n))+'" alt=""></span>'
   +'<div class="pt"><div class="pn">'+esc(n)+sub+'</div><div class="pm">'+esc(pretty(m))+'</div></div><button class="px" type="button" aria-label="Close">\u2715</button>';
  var tm=setTimeout(function(){gone(el)},SHOW);
  el.onmouseenter=function(){clearTimeout(tm)};el.onmouseleave=function(){tm=setTimeout(function(){gone(el)},2500)};

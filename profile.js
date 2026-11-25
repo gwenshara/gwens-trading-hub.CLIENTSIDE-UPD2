@@ -13,7 +13,7 @@ let P=null,mine=false;
 function paint(){
  $("#pf-name").innerHTML=esc(P.nickname||P.username)+(P.role==="admin"?'<i class="mb-ad">ADMIN</i>':"");
  $("#pf-sub").textContent=(P.nickname?"@"+P.username+" · ":"")+(P.role==="admin"?"Moderator":"Member")+" · Joined "+day(P.created_at);
- $("#pf-av").innerHTML=P.avatar?'<img src="'+esc(P.avatar)+'" alt="">':esc(P.username.charAt(0));$("#pf-av").style.background=P.avatar?"#2a2a30":color(P.username);
+ $("#pf-av").innerHTML='<img src="'+(P.avatar?esc(P.avatar):emDefAv(P.username))+'" alt="">';$("#pf-av").style.background="#2a2a30";
  $("#pf-ban").style.background=P.banner?"url("+P.banner+") center/cover":"linear-gradient(120deg,"+color(P.username)+",#2a2a30)";
  const b=$("#pf-bio");b.textContent=P.bio||(mine?"Nothing here yet. Tell people about yourself.":"No bio yet.");b.className=P.bio?"":"mt";paintDc()}
 const ADMIN=EMAuth.isAdmin&&EMAuth.isAdmin();
@@ -37,7 +37,7 @@ async function load(){
   try{const x=(await EMAuth.rest("profiles?id=eq."+encodeURIComponent(r.id)+"&select=roblox_id,roblox_name"))[0];if(x)Object.assign(r,x)}catch(e){r.__norb=1}
   P=r;$("#pf").hidden=false;$("#pf-msg").hidden=true;$("#pf-n").textContent="#"+(idx+1);
   try{$("#pf-ads").textContent=(await EMAuth.rest("ads?select=id&username=eq."+encodeURIComponent(P.username)+"&limit=1000")).length}catch(e){}
-  paint();paintPres();paintMod();paintBan();paintRb();paintDel();
+  paint();paintPres();paintMod();paintRb();paintDel();
   if(window.EMSocial)EMSocial.mount($("#pf-soc"),P.id,P.username);
   if(mine){["#pf-bb","#pf-ab","#pf-bx","#pf-hint","#pf-nx"].forEach(s=>$(s).hidden=false);$("#pf-un").textContent=P.username;if(P.__nodc)$("#pf-hint").textContent="Nickname and Discord can't be saved yet: run supabase-setup-7.sql in Supabase first.";
    if(P.__old)$("#pf-hint").textContent="Pictures can't be saved yet: run supabase-setup-4.sql in Supabase first."}
@@ -97,31 +97,30 @@ function say(t,ok){const s=$("#pf-st");if(!s)return;s.style.color=ok?"#3bb26b":"
 async function paintBan(){
  if(mine||!P||!EMAuth.canMod||!EMAuth.canMod())return;
  if(P.role==="admin"||((P.roles||[]).includes("moderator")&&!ADMIN))return;
- let w=$("#pf-bn");if(!w){w=document.createElement("div");w.id="pf-bn";w.className="pf-box";w.style.borderColor="#e5484d";($("#pf-md")||$("#pf-bio").closest(".pf-box")).insertAdjacentElement("afterend",w)}
+ let w=$("#pf-bn");if(!w)return;
  if(BANS===null){try{BANS=await EMAuth.rest("rpc/list_bans","POST",{})}catch(e){w.innerHTML='<h4>Ban</h4><p class="pf-hint" style="margin:0">'+esc(setupMsg(e))+'</p>';return}}
  const isB=BANS.some(b=>b.kind==="user"&&String(b.username).toLowerCase()===P.username.toLowerCase());
- let h='<h4>Ban</h4>';
+ let h='';
  if(isB)h+='<p style="margin:0 0 10px;color:#ff7b7b;font-weight:700">This member is banned.</p><button type="button" id="pf-unban" class="pri" style="'+BTNA+'">Unban this member</button>';
- else h+='<button type="button" id="pf-bnb" class="pri" style="'+BTNR+'">'+(_bnOpen?"Hide":"Ban this member")+'</button>'
-  +'<div style="display:'+(_bnOpen?"block":"none")+';margin-top:12px"><input id="pf-bnr" maxlength="200" placeholder="Reason (they will see it)" style="width:100%;box-sizing:border-box;padding:9px 12px;border-radius:10px;border:1px solid var(--bl,#3a3a42);background:var(--b3,#1c1c20);color:inherit">'
-  +'<label style="display:flex;gap:6px;align-items:center;font-weight:700;font-size:13px;margin-top:10px;cursor:pointer"><input type="checkbox" id="pf-bni" checked>Also ban their IP address</label>'
-  +'<p class="pf-hint" style="margin:6px 0 0">An IP ban also blocks everyone else on the same network (family, school, a mobile carrier). Use it only for people who keep coming back. Their account is banned either way.</p>'
-  +'<div class="pf-row" style="margin-top:12px"><button type="button" id="pf-bngo" class="pri" style="'+BTNR+'">Ban now</button></div></div>';
+ else h+='<textarea id="pf-bnr" maxlength="200" rows="3" placeholder="Your message to them (they read it when they try to log in)" style="width:100%;box-sizing:border-box;padding:9px 12px;border-radius:10px;border:1px solid var(--bl,#3a3a42);background:var(--b3,#1c1c20);color:inherit;font:inherit;resize:vertical"></textarea>'
+  +'<div style="display:grid;gap:14px;margin-top:12px">'
+  +'<div><button type="button" id="pf-bngo" class="pri" style="'+BTNR+'">Ban account</button><p class="pf-hint" style="margin:6px 0 0">Blocks only this account. Their IP address is not touched.</p></div>'
+  +'<div><button type="button" id="pf-bnip" class="pri" style="'+BTNR+';background:#a31d22;border-color:#a31d22">IP ban (account + IP address)</button><p class="pf-hint" style="margin:6px 0 0"><b>This is the IP ban.</b> It bans the account and blocks their IP address too, so it also blocks everyone else on the same network (family, school, a mobile carrier). Use it only for people who keep coming back. If they have no IP on record yet, only the account is banned.</p></div></div>';
  h+='<div style="margin-top:14px"><button type="button" id="pf-bll" class="pf-link" style="margin:0">'+(_bnList?"Hide the banned list":"Show the banned list ("+BANS.length+")")+'</button></div>';
- if(_bnList)h+='<div style="margin-top:8px">'+(BANS.length?BANS.map(b=>'<div style="display:flex;gap:10px;align-items:center;padding:7px 0;border-top:1px solid var(--bl,#3a3a42);font-size:13px"><span style="flex:1;min-width:0;overflow-wrap:anywhere"><b>'+(b.kind==="user"?esc(b.username):"IP "+esc(b.ip))+'</b>'+(b.kind==="ip"&&b.username?' <i style="opacity:.6">(from '+esc(b.username)+')</i>':"")+'<br><span style="opacity:.65">'+(b.reason?esc(b.reason)+" \u00b7 ":"")+'by '+esc(b.banned_by)+' \u00b7 '+esc(new Date(b.created_at).toLocaleDateString())+'</span></span><button type="button" data-ub="'+esc(b.kind)+'" data-k="'+esc(b.key)+'" class="pri" style="'+BTNA+';padding:6px 12px">Unban</button></div>').join(""):'<p class="pf-hint" style="margin:0">Nobody is banned.</p>')+'</div>';
- if(ADMIN)h+='<div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--bl,#3a3a42)"><button type="button" id="pf-dlu" class="pri" style="'+BTNR+'">'+(_dlOpen?"Hide":"Delete this account permanently")+'</button>'
+ if(_bnList)h+='<div style="margin-top:8px">'+(BANS.length?BANS.map(b=>'<div style="display:flex;gap:10px;align-items:center;padding:7px 0;border-top:1px solid var(--bl,#3a3a42);font-size:13px"><span style="flex:1;min-width:0;overflow-wrap:anywhere"><b>'+(b.kind==="user"?esc(b.username):'<span style="background:#e5484d;color:#fff;border-radius:6px;padding:1px 6px;font-size:11px">IP BAN</span> '+esc(b.ip))+'</b>'+(b.kind==="ip"&&b.username?' <i style="opacity:.6">(from '+esc(b.username)+')</i>':"")+'<br><span style="opacity:.65">'+(b.reason?esc(b.reason)+" \u00b7 ":"")+'by '+esc(b.banned_by)+' \u00b7 '+esc(new Date(b.created_at).toLocaleDateString())+'</span></span><button type="button" data-ub="'+esc(b.kind)+'" data-k="'+esc(b.key)+'" class="pri" style="'+BTNA+';padding:6px 12px">Unban</button></div>').join(""):'<p class="pf-hint" style="margin:0">Nobody is banned.</p>')+'</div>';
+ let hd="";if(ADMIN)hd+='<div><button type="button" id="pf-dlu" class="pri" style="'+BTNR+'">'+(_dlOpen?"Hide":"Delete this account permanently")+'</button>'
   +'<div style="display:'+(_dlOpen?"block":"none")+';margin-top:10px"><p class="pf-hint" style="margin:0 0 8px">This removes '+esc(P.username)+' and everything of theirs for good. It can\'t be undone. Type their username to confirm.</p><input id="pf-dlt" placeholder="'+esc(P.username)+'" style="width:100%;box-sizing:border-box;padding:9px 12px;border-radius:10px;border:1px solid var(--bl,#3a3a42);background:var(--b3,#1c1c20);color:inherit"><div class="pf-row" style="margin-top:10px"><button type="button" id="pf-dlgo" class="pri" style="'+BTNR+'">Delete forever</button></div></div></div>';
- w.innerHTML=h;
+ w.innerHTML=h;const dd=$("#pf-bdel");if(dd)dd.innerHTML=hd;
  const re=()=>{BANS=null;paintBan()};
- const q=s=>w.querySelector(s);
- if(q("#pf-bnb"))q("#pf-bnb").onclick=()=>{_bnOpen=!_bnOpen;paintBan()};
+ const q=s=>$("#pf-md").querySelector(s);
  if(q("#pf-bll"))q("#pf-bll").onclick=()=>{_bnList=!_bnList;paintBan()};
  if(q("#pf-dlu"))q("#pf-dlu").onclick=()=>{_dlOpen=!_dlOpen;paintBan()};
- if(q("#pf-bngo"))q("#pf-bngo").onclick=async()=>{const wantIp=q("#pf-bni").checked,why=q("#pf-bnr").value.trim();
-  if(!confirm("Ban "+P.username+(wantIp?" and their IP address?":"?")))return;say("Saving…",true);
+ const doBan=async wantIp=>{const why=q("#pf-bnr").value.trim();
+  if(!confirm((wantIp?"IP BAN: ban ":"Ban ")+P.username+(wantIp?" and their IP address? This can also block other people on the same network.":"?")))return;say("Saving…",true);
   try{const r=await EMAuth.rest("rpc/ban_user","POST",{target:P.username,reason:why,ban_ip:wantIp});_bnOpen=false;
    say("Banned."+(r&&r.ip_banned?" Their IP is banned too.":(wantIp?" No IP on record for them yet, so only the account is banned.":"")),true);re()}
   catch(e){say(setupMsg(e))}};
+ if(q("#pf-bngo"))q("#pf-bngo").onclick=()=>doBan(false);if(q("#pf-bnip"))q("#pf-bnip").onclick=()=>doBan(true);
  if(q("#pf-unban"))q("#pf-unban").onclick=async()=>{if(!confirm("Unban "+P.username+" (and their IP)?"))return;
   try{await EMAuth.rest("rpc/unban_member","POST",{target:P.username});say("Unbanned.",true);re()}catch(e){say(setupMsg(e))}};
  w.querySelectorAll("[data-ub]").forEach(b=>b.onclick=async()=>{if(!confirm("Remove this ban?"))return;
@@ -170,27 +169,37 @@ function paintRoleMgr(){
   if(await rpc("set_roles",{target:P.username,r:r},"Roles updated.")){P.roles=r}paintPres()})}
 
 /* moderation: admins and moderators can reset parts of someone else's profile and send a warning */
-let _mdOpen=false;
+let _mdOpen=false,_mdTab="warn";
 function paintMod(){
  if(mine||!P||!EMAuth.canMod||!EMAuth.canMod())return;
  if(P.role==="admin"||((P.roles||[]).includes("moderator")&&!ADMIN))return;
  let w=$("#pf-md");if(!w){w=document.createElement("div");w.id="pf-md";w.className="pf-box";w.style.borderColor="#e5484d";$("#pf-bio").closest(".pf-box").insertAdjacentElement("afterend",w)}
  const opts=[["avatar","Profile picture"],["banner","Banner"],["nickname","Nickname"],["bio","About me"],["username","Username (they must pick a new one)"]];
- w.innerHTML='<h4>Moderation</h4><button type="button" id="pf-mdb" class="pri" style="padding:8px 16px;border-radius:10px;font-weight:700;cursor:pointer;background:#e5484d;border-color:#e5484d;color:#fff">'+(_mdOpen?"Hide":"Reset profile / send warning")+'</button>'
-  +'<div id="pf-mdf" style="display:'+(_mdOpen?"block":"none")+';margin-top:12px"><p class="pf-hint" style="margin:0 0 8px">Tick what to reset. Nickname: only the nickname is cleared. Username: they get a temporary name and must choose a new one.</p>'
+ const tabs=[["warn","Warn / reset"],["ban","Ban"]].concat(ADMIN?[["del","Delete account"]]:[]);
+ if(!tabs.some(t=>t[0]===_mdTab))_mdTab="warn";
+ const TB='padding:7px 14px;border-radius:10px;font-weight:700;cursor:pointer',inp='width:100%;box-sizing:border-box;padding:9px 12px;border-radius:10px;border:1px solid var(--bl,#3a3a42);background:var(--b3,#1c1c20);color:inherit;font:inherit';
+ w.innerHTML='<h4>Moderation</h4><button type="button" id="pf-mdb" class="pri" style="padding:8px 16px;border-radius:10px;font-weight:700;cursor:pointer;background:#e5484d;border-color:#e5484d;color:#fff">'+(_mdOpen?"Close moderation":"Open moderation")+'</button>'
+  +'<div id="pf-mdf" style="display:'+(_mdOpen?"block":"none")+';margin-top:14px">'
+  +'<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">'+tabs.map(t=>'<button type="button" class="pri" data-mt="'+t[0]+'" style="'+TB+(t[0]===_mdTab?';background:#e5484d;border-color:#e5484d;color:#fff':'')+'">'+t[1]+'</button>').join("")+'</div>'
+  +'<div id="pf-mw" style="display:'+(_mdTab==="warn"?"block":"none")+'"><p class="pf-hint" style="margin:0 0 8px">Tick what to reset. Nickname: only the nickname is cleared. Username: they get a temporary name and must choose a new one.</p>'
   +'<div style="display:flex;flex-wrap:wrap;gap:12px 18px">'+opts.map(o=>'<label style="display:flex;gap:6px;align-items:center;font-weight:700;font-size:13px;cursor:pointer"><input type="checkbox" data-w="'+o[0]+'">'+o[1]+'</label>').join("")+'</div>'
-  +'<label style="display:flex;gap:6px;align-items:center;font-weight:700;font-size:13px;margin-top:12px;cursor:pointer"><input type="checkbox" id="pf-mdw" checked>Send them a warning ("don\'t choose anything inappropriate")</label>'
-  +'<div class="pf-row" style="margin-top:12px"><button type="button" id="pf-mdgo" class="pri" style="padding:8px 16px;border-radius:10px;font-weight:700;cursor:pointer">Reset now</button></div></div>';
+  +'<label style="display:block;font-weight:700;font-size:13px;margin:14px 0 6px">Your message to them (optional)</label><textarea id="pf-mdm" maxlength="500" rows="3" placeholder="Write what you want them to read. If you leave it empty, the standard warning is sent." style="'+inp+';resize:vertical"></textarea>'
+  +'<label style="display:flex;gap:6px;align-items:center;font-weight:700;font-size:13px;margin-top:10px;cursor:pointer"><input type="checkbox" id="pf-mdw" checked>Send them a warning</label>'
+  +'<div class="pf-row" style="margin-top:12px"><button type="button" id="pf-mdgo" class="pri" style="padding:8px 16px;border-radius:10px;font-weight:700;cursor:pointer">Send / reset now</button></div></div>'
+  +'<div id="pf-bn" style="display:'+(_mdTab==="ban"?"block":"none")+'"></div>'
+  +'<div id="pf-bdel" style="display:'+(_mdTab==="del"?"block":"none")+'"></div></div>';
  $("#pf-mdb").onclick=()=>{_mdOpen=!_mdOpen;paintMod()};
+ w.querySelectorAll("[data-mt]").forEach(b=>b.onclick=()=>{_mdTab=b.dataset.mt;paintMod()});
  const go=$("#pf-mdgo");if(go)go.onclick=async()=>{
-  const what=[...w.querySelectorAll("[data-w]:checked")].map(i=>i.dataset.w),warn=$("#pf-mdw").checked;
+  const what=[...w.querySelectorAll("[data-w]:checked")].map(i=>i.dataset.w),msgT=$("#pf-mdm").value.trim(),warn=$("#pf-mdw").checked||!!msgT;
   if(!what.length&&!warn)return;
-  if(!confirm("Reset "+(what.length?what.join(", "):"nothing")+" for "+P.username+(warn?" and send a warning?":"?")))return;
+  if(!confirm((what.length?"Reset "+what.join(", ")+" for ":"Send a warning to ")+P.username+(what.length&&warn?" and send a warning?":"?")))return;
   const st=$("#pf-st");st.style.color="";st.textContent="Saving…";let nu=null;
-  try{nu=await EMAuth.rest("rpc/mod_reset","POST",{target:P.username,what:what,warn:warn});st.style.color="#3bb26b";st.textContent="Done."+(warn?" Warning sent.":"")}
-  catch(e){st.style.color="#ff6b6b";st.textContent=/does not exist|schema cache/i.test(e.message)?"Run supabase-setup-22.sql in Supabase first.":e.message}
+  try{nu=await EMAuth.rest("rpc/mod_reset","POST",{target:P.username,what:what,warn:warn,p_message:msgT});st.style.color="#3bb26b";st.textContent="Done."+(warn?" Warning sent.":"")}
+  catch(e){st.style.color="#ff6b6b";st.textContent=/does not exist|schema cache|Could not find/i.test(e.message)?"Run supabase-setup-26.sql in Supabase first.":e.message}
   if(nu!==null){
    if(typeof nu==="string"&&nu){location.href="profile.html?u="+encodeURIComponent(nu);return}
    if(what.includes("avatar"))P.avatar=null;if(what.includes("banner"))P.banner=null;if(what.includes("nickname"))P.nickname=null;if(what.includes("bio"))P.bio=null;
-   paint();paintMod()}}}
+   paint();paintMod()}};
+ paintBan()}
 document.addEventListener("click",()=>{const m=$("#pf-stp");if(m)m.hidden=true});

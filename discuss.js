@@ -44,7 +44,7 @@ function itemInfo(i){const f=Object.assign({},INFO[i.n]||{}),o=i.o||{};
 /* ---------- people ---------- */
 const color=n=>{let h=0;for(const c of n)h=(h*31+c.charCodeAt(0))%360;return"hsl("+h+",55%,45%)"};
 const prof={};
-const av=(id,n)=>{const p=prof[id];return'<span class="dm-av" style="background:'+color(n)+'">'+(p&&p.avatar?'<img src="'+esc(p.avatar)+'" alt="">':esc(n.charAt(0).toUpperCase()))+"</span>"};
+const av=(id,n)=>{const p=prof[id];return'<span class="dm-av" style="background:'+color(n)+'">'+'<img src="'+(p&&p.avatar?esc(p.avatar):emDefAv(n))+'" alt="">'+"</span>"};
 const adm=id=>prof[id]&&prof[id].role==="admin"?'<i class="dm-ad">ADMIN</i>':"";
 const isFr=id=>!!(window.EMSocial&&EMSocial.loaded&&EMSocial.rel(id).kind==="friend");
 const frTag=id=>isFr(id)?'<i class="dm-fr">Friend</i>':"";

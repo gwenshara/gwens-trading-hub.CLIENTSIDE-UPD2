@@ -4,7 +4,7 @@ const grid=$("#mb"),note=$("#mb-n"),mo=$("#mb-mo"),card=$("#mb-card"),q=$("#mb-q
 let M=[],ADS=[];
 const color=n=>{let h=0;for(const c of n.toLowerCase())h=(h*31+c.charCodeAt(0))%360;return "hsl("+h+",55%,45%)"};
 const PR=window.EMPresence;
-const av0=(n,u)=>u?'<span class="mb-av has"><img src="'+esc(u)+'" alt=""></span>':'<span class="mb-av" style="background:'+color(n)+'">'+esc(n.charAt(0))+'</span>';
+const av0=(n,u)=>u?'<span class="mb-av has"><img src="'+esc(u)+'" alt=""></span>':'<span class="mb-av has"><img src="'+emDefAv(n)+'" alt=""></span>';
 const av=(n,u,m)=>PR&&m?'<span class="em-avd">'+av0(n,u)+PR.dot(m)+'</span>':av0(n,u);
 const day=t=>new Date(t).toLocaleDateString(undefined,{year:"numeric",month:"long",day:"numeric"});
 const ago=t=>{const m=Math.round((Date.now()-t)/6e4);return m<1?"just now":m<60?m+" min ago":m<1440?Math.round(m/60)+" h ago":Math.round(m/1440)+" d ago"};

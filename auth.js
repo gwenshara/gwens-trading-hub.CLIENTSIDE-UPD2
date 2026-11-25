@@ -1,3 +1,7 @@
+/* default profile picture for people without one: a silhouette on a colour that is random per person but always the same for them */
+window.emDefAv=function(n){n=String(n||"?").toLowerCase();var h=7;for(var i=0;i<n.length;i++)h=(h*131+n.charCodeAt(i))%100003;var hue=(h*137)%360;
+var svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="hsl('+hue+',70%,82%)"/><circle cx="50" cy="38" r="19" fill="#1d1d1f"/><path d="M13 100c0-23 16-35 37-35s37 12 37 35z" fill="#1d1d1f"/></svg>';
+return "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg)};
 if(!window.__emTheme){try{var _t=document.createElement("script");_t.src="theme.js?v=1";document.head.appendChild(_t)}catch(e){}}
 /* EM Wiki accounts, stored on a real server (Supabase) so they work on every device and every visit.
    Passwords are handled and hashed by Supabase Auth; this file never sees a stored password.
@@ -138,7 +142,7 @@ function build(){
  const box=document.createElement("div");box.className="em-auth";host.appendChild(box);
  const modal=document.createElement("div");modal.className="em-mo";modal.hidden=true;document.body.appendChild(modal);
  const avKey=()=>"em_av_"+API.uid(),cached=()=>{try{return localStorage.getItem(avKey())||""}catch(e){return""}};
- const pfp=u=>{const c=cached(),n=u.replace(/[<>&"]/g,"");return c?'<span class="em-pfp"><img src="'+c.replace(/"/g,"")+'" alt=""></span>':'<span class="em-pfp" style="background:'+((h=>"hsl("+h+",55%,45%)")([...n.toLowerCase()].reduce((h,ch)=>(h*31+ch.charCodeAt(0))%360,0)))+'">'+n.charAt(0)+'</span>'};
+ const pfp=u=>{const c=cached(),n=u.replace(/[<>&"]/g,"");return '<span class="em-pfp"><img src="'+(c?c.replace(/"/g,""):window.emDefAv(n))+'" alt=""></span>'};
  const paint=()=>{const u=API.user();
   box.innerHTML='<div class="em-row">'+(u?`<button id="em-me">${pfp(u)} ${u.replace(/[<>&"]/g,"")}${API.isAdmin()?' <i class="em-ad">ADMIN</i>':""} ▾</button><div class="em-menu" hidden><button id="em-vp">View profile</button><button id="em-out">Log out</button></div>`:'<button id="em-in">👤 Log in</button>')+'</div>'};
  let mode="in";
@@ -171,5 +175,6 @@ if(!window.EMPush){try{var _n=document.createElement("script");_n.src="push.js?v
 
 if(!window.__emWarn){try{var _w=document.createElement("script");_w.src="modwarn.js?v=2";document.head.appendChild(_w)}catch(e){}}
 
-if(!window.__emPop){try{var _m=document.createElement("script");_m.src="msgpop.js?v=1";document.head.appendChild(_m)}catch(e){}}
+if(!window.__emNP){try{var _q=document.createElement("script");_q.src="notifprompt.js?v=1";document.head.appendChild(_q)}catch(e){}}
+if(!window.__emPop){try{var _m=document.createElement("script");_m.src="msgpop.js?v=2";document.head.appendChild(_m)}catch(e){}}
 if(!window.__emBan){try{var _b=document.createElement("script");_b.src="banguard.js?v=1";document.head.appendChild(_b)}catch(e){}}
