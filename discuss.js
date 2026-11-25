@@ -159,7 +159,7 @@ async function react(id,k){const grp=!!(cur&&cur.grp),m=RX[id]=RX[id]||{},a=m[k]
  if(i>=0)a.splice(i,1);else a.push(UID);rxBusy++;repaintCur();
  try{await EMAuth.rest("rpc/msg_react","POST",{p_scope:grp?"grp":"dm",p_id:id,p_emoji:k});rxSig=""}
  catch(e){const j=a.indexOf(UID);if(i>=0){if(j<0)a.push(UID)}else if(j>=0)a.splice(j,1);repaintCur();
-  errEl().textContent=setup(e)||/function|schema cache/i.test(e.message)?NEED17:"Couldn't react: "+e.message}
+  errEl().textContent="Couldn't react: "+e.message}
  finally{rxBusy--}}
 function placePop(btn,out){const r=btn.getBoundingClientRect();pop.style.top=Math.max(8,Math.min(innerHeight-pop.offsetHeight-8,r.bottom+4))+"px";
  pop.style.left=Math.max(8,Math.min(innerWidth-pop.offsetWidth-8,out?r.right-pop.offsetWidth:r.left))+"px"}
@@ -282,7 +282,7 @@ async function sendItem(n){
  closeOv();if(!cur)return;errEl().textContent="";
  try{if(cur.grp){if(!GNEW)throw new Error(NEED17);await postG({kind:"item",text:"",payload:{n}});return}
   if(!NEW8)throw new Error(NEED8);await post({kind:"item",text:"",payload:{n}})}
- catch(e){errEl().textContent=/dms_content_check|group_msgs_content_check|violates check|row-level/i.test(e.message)?(cur&&cur.grp?NEED17:"The server refused it. Run supabase-setup-8.sql in Supabase first."):"Couldn't send: "+e.message}}
+ catch(e){errEl().textContent="Couldn't send: "+e.message}}
 function paintPend(){const p=$(cur&&cur.grp?"#gp-pend":"#dm-pend");if(!p)return;
  if(!pendImg&&!replyTo){p.hidden=true;p.innerHTML="";return}
  let h="";
@@ -423,7 +423,7 @@ async function postG(f){
  (GM[cur.id]=GM[cur.id]||[]).push(m);paintGroup(true);gRead();buildG();paintList()}
 async function sendG(){const i=$("#gp-in"),b=$("#gp-send");if(!i||!cur||!cur.grp)return;const t=i.value.trim();if(!t&&!pendImg)return;b.disabled=true;$("#gp-err").textContent="";
  try{if(pendImg){if(!GNEW)throw new Error(NEED17);await postG({kind:"image",text:t,payload:Object.assign({img:pendImg},rq())});pendImg=null;paintPend()}else await postG(Object.assign({kind:"text",text:t},rf()));i.value="";replyTo=null;paintPend()}
- catch(e){$("#gp-err").textContent=/group_msgs_content_check|violates check|row-level/i.test(e.message)?NEED17:"Couldn't send: "+e.message}
+ catch(e){$("#gp-err").textContent="Couldn't send: "+e.message}
  b.disabled=false;i.focus()}
 function openGmo(btn){closePop();const el=btn.closest(".dm-m"),x=(GM[cur.id]||[]).find(m=>m.id===el.dataset.id);if(!x)return;
  pop=document.createElement("div");pop.className="dm-pop";
@@ -435,7 +435,7 @@ async function saveGEdit(){if(!gediting)return;const t=$("#gp-ed"),x=(GM[cur.id]
  if(v===(x.text||"").trim()){gediting=null;paintGroup(false);return}
  if(!v&&x.kind==="text"){er.textContent="A message can't be empty. Use Delete instead.";return}
  try{const r=await EMAuth.rest("rpc/group_msg_edit","POST",{p_id:x.id,p_text:v});x.text=v;x.edited_at=(typeof r==="string"&&r)||new Date().toISOString();gediting=null;paintGroup(false);buildG();paintList()}
- catch(err){er.textContent=setup(err)||/function|schema cache/i.test(err.message)?NEED17:"Couldn't save: "+err.message}}
+ catch(err){er.textContent="Couldn't save: "+err.message}}
 async function delG(id){if(!id||!confirm("Delete this message for everyone in the group?"))return;
  try{const r=await EMAuth.rest("group_msgs?id=eq."+encodeURIComponent(id),"DELETE",null,{Prefer:"return=representation"});if(!r||!r.length)throw new Error("the server refused it.");
   GM[cur.id]=(GM[cur.id]||[]).filter(m=>m.id!==id);paintGroup(false);buildG();paintList()}
