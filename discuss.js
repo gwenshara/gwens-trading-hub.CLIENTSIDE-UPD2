@@ -245,7 +245,7 @@ async function tick(first){
  catch(e){if(first){$("#dm-list").innerHTML=setup(e)?SETUPMSG:'<div class="dm-none">Couldn\'t load messages: '+esc(e.message)+"</div>"}}}
 async function open(id,name,ch,pre){ch=ch==="trade"?"trade":"personal";
  if(ch==="trade"&&!NEW10){alert(NEED10);ch="personal"}
- cur={id,name,ch};RX={};rxSig="";editing=null;gediting=null;lastSig="";MSGS=[];root.classList.add("chat");draft=CONV.some(c=>c.key===key(id,ch))?draft:{id,name,ch};
+ cur={id,name,ch};RX={};rxSig="";editing=null;gediting=null;lastSig="";MSGS=[];root.classList.add("chat");phoneFit();draft=CONV.some(c=>c.key===key(id,ch))?draft:{id,name,ch};
  if(ch==="trade")TAB="trade";else TAB=isFr(id)?"friends":"others";sv("dm_tab",TAB);
  await loadProfiles([id]);paintChat(true);build();paintList();
  try{MSGS=vis(await rest(()=>EMAuth.rest(pair(id,ch))));lastSig=sigOf(MSGS);markRead(key(id,ch));paintChat(true);build();paintList();seenPing()}
@@ -424,6 +424,7 @@ function gHtml0(x){const out=x.sender_id===UID;
   return'<div class="dm-m itm '+c+'" data-id="'+id+'">'+mo+nm+'<button class="dm-it" data-item="'+esc(n)+'" type="button">'+(i?thumb(n):'<span class="th g">?</span>')+'<span class="dm-itx"><b>'+esc(n)+"</b><span>"+(i?esc(price(i.p))+(i.stars?" \u00b7 "+stars(i.stars):""):"Item not found")+"</span><em>Tap to see the item info</em></span></button>"+tm+"</div>"}
  return'<div class="dm-m '+c+'" data-id="'+id+'">'+mo+nm+qHtml(x)+esc(x.text)+tm+"</div>"}
 let gProfBusy=false;
+function phoneFit(){if(innerWidth<=820)setTimeout(()=>{try{root.scrollIntoView({block:"start"})}catch(e){}},60)}
 function gTrade(g){const t=g&&g.kind==="mm"&&g.trade;if(!t||(!t.give&&!t.get))return"";
  return'<div class="g-trade"><div class="gt-h">What is being traded</div><div class="gt-r"><div><small>'+esc(t.an||"Trader 1")+' gives</small><span>'+esc(t.give||"\u2014")+'</span></div><div><small>'+esc(t.bn||"Trader 2")+' gives</small><span>'+esc(t.get||"\u2014")+'</span></div></div></div>'}
 function paintGroup(stick){const r=$("#dm-r");if(!cur||!cur.grp)return;
@@ -438,7 +439,7 @@ function paintGroup(stick){const r=$("#dm-r");if(!cur||!cur.grp)return;
  box.innerHTML=h;if(stick||near)box.scrollTop=box.scrollHeight;gSig=sigG(cur.id);loadPics();
  if(gediting){const t=$("#gp-ed");if(t&&document.activeElement!==t){t.focus();t.setSelectionRange(t.value.length,t.value.length)}}}
 function openGroup(id){const g=GL.find(x=>x.id===id);if(!g)return;
- cur={grp:true,id,name:g.name};replyTo=null;RX={};rxSig="";gediting=null;editing=null;TAB="group";sv("dm_tab",TAB);root.classList.add("chat");paintChat(true);gRead();buildG();paintList();
+ cur={grp:true,id,name:g.name};replyTo=null;RX={};rxSig="";gediting=null;editing=null;TAB="group";sv("dm_tab",TAB);root.classList.add("chat");phoneFit();paintChat(true);gRead();buildG();paintList();
  const i=$("#gp-in");if(i&&innerWidth>820)i.focus();loadRx().then(c=>{if(c&&cur&&cur.grp&&cur.id===id)paintGroup(false)})}
 async function postG(f){
  const r=await EMAuth.rest("group_msgs?select="+(GNEW?GCOLS:GOLD),"POST",Object.assign({group_id:cur.id,sender_id:UID,sender_name:ME},f),{Prefer:"return=representation"});const m=r[0];

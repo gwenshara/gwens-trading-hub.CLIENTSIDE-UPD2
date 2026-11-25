@@ -225,7 +225,7 @@
 .g-sys{align-self:center;max-width:90%;text-align:center;font:600 12px/1.4 Montserrat,sans-serif;color:var(--mute);background:#00000024;border-radius:10px;padding:6px 12px}
 
 /* group maker, official banner */
-.g-off{background:#8b4dff;color:#fff;text-align:center;font:800 13px/1 Montserrat,sans-serif;letter-spacing:.12em;padding:11px 12px}
+.g-off{background:var(--cc,#7aa7ff);color:var(--cct,#fff);text-align:center;font:800 13px/1 Montserrat,sans-serif;letter-spacing:.12em;padding:11px 12px}
 .dm-hb.dg{background:#7aa7ff;border-color:#7aa7ff;color:#fff}.dm-hb.dg:hover{filter:brightness(1.1)}
 .dm-newg{width:100%;padding:11px;margin-bottom:6px;border:2px dashed #7aa7ff88;border-radius:12px;background:transparent;color:#7aa7ff;font:800 13px Montserrat,sans-serif;cursor:pointer}
 .dm-newg:hover{background:#7aa7ff22}
@@ -332,8 +332,38 @@
 
 /* middleman group chat: what is being traded (black rectangle on top) */
 .g-trade{background:#000;color:#fff;padding:12px 18px;border-bottom:1px solid #2a2a30}
-.gt-h{font:800 11px Montserrat,sans-serif;text-transform:uppercase;letter-spacing:.1em;color:#e0a43a;margin-bottom:8px}
+.gt-h{font:800 11px Montserrat,sans-serif;text-transform:uppercase;letter-spacing:.1em;color:#7aa7ff;margin-bottom:8px}
 .gt-r{display:flex;gap:10px;flex-wrap:wrap}
 .gt-r>div{flex:1 1 200px;min-width:0;padding:8px 11px;border-radius:10px;border:1px solid #3a3a42;background:#0d0d0f}
 .gt-r small{display:block;font:800 10px Montserrat,sans-serif;text-transform:uppercase;letter-spacing:.06em;color:#9a9aa5;margin-bottom:2px}
 .gt-r span{display:block;font:700 14px/1.35 Montserrat,sans-serif;overflow-wrap:anywhere;white-space:pre-wrap;max-height:90px;overflow:auto}
+
+/* ===== phones: the chat fits the screen, nothing is pushed off to the side ===== */
+@media(max-width:820px){
+ .dm{height:calc(100vh - 130px);height:calc(100dvh - 130px);min-height:420px}
+ .dm.chat{height:calc(100vh - 12px);height:calc(100dvh - 12px);margin:0 6px 6px;border-radius:14px}
+ .dm-rh{flex-wrap:wrap;gap:6px 8px;padding:8px 10px}
+ .dm-rh .dm-av{width:34px;height:34px;font-size:14px}
+ .dm-rh b{flex:1 1 80px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:15px}
+ .dm-rh .dm-fr{font-size:9px}
+ .dm-rh .dm-ccb{order:2;margin-left:auto;width:34px;height:34px}
+ .dm-rh .dm-ha{order:3;flex:1 1 100%;margin-left:0;flex-wrap:wrap;justify-content:flex-start;gap:6px}
+ .dm-ha .dm-hb{white-space:normal;text-align:center}
+ .dm-ha .dm-hb.dg{flex:1 1 100%;padding:9px 10px;font-size:12px}
+ .g-off{font-size:11px;letter-spacing:.06em;padding:8px 10px}
+ .g-trade{padding:8px 10px;max-height:34vh;overflow:auto}
+ .gt-h{margin-bottom:6px;font-size:10px}
+ .gt-r{gap:6px}.gt-r>div{flex:1 1 100%;padding:6px 9px}.gt-r span{font-size:13px;max-height:70px}
+ .g-mem{padding:6px 12px;font-size:11px;max-height:34px;overflow:hidden}
+ .dm-msgs{padding:10px 8px}
+ .dm-m{max-width:80%}
+ .dm-m.mmq{width:min(330px,80%)}
+ .dm-f{padding:8px 8px;gap:6px}
+ .dm-f textarea{min-height:42px;padding:10px 12px;font-size:16px}
+ .dm-f button{padding:0 14px;height:42px;font-size:14px}
+ .dm-plus{width:42px;height:42px}.dm-plus svg{width:26px;height:26px}
+ .dm-menu{max-width:calc(100vw - 24px)}
+ .dm-ccp{width:min(236px,calc(100vw - 16px));max-height:calc(100dvh - 16px)}
+ .dm-err{padding:0 10px 6px}
+}
+@media(max-width:380px){.dm-rh .dm-fr{display:none}.dm-f button{padding:0 10px}}
