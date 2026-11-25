@@ -306,3 +306,14 @@
 .dm-r.hasbg .dm-m.in:not(.wlm):not(.stk):not(.adm){background:color-mix(in srgb,var(--cbt) 14%,transparent);color:var(--cbt)}
 .dm-r.hasbg .dm-day,.dm-r.hasbg .dm-none,.dm-r.hasbg .dm-seen,.dm-r.hasbg .g-sys{color:var(--cbt);background:color-mix(in srgb,var(--cbt) 10%,transparent)}
 .dm-r.hasbg .dm-m.in time{color:var(--cbt)}
+
+/* replies */
+.dm-pend{flex-wrap:wrap}
+.dm-rp{flex:1 0 100%;display:flex;align-items:center;gap:10px;border-left:3px solid #7aa7ff;padding:2px 0 2px 10px;font:600 13px Montserrat,sans-serif;min-width:0}
+.dm-rp span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dm-rp b{color:var(--text)}
+.dm-q{display:block;margin:0 0 6px;padding:5px 9px;border-left:3px solid rgba(255,255,255,.65);background:rgba(0,0,0,.22);border-radius:8px;font:500 12.5px/1.35 Inter,"Segoe UI",system-ui,sans-serif;cursor:pointer;white-space:normal;text-align:left}
+.dm-q b{display:block;font-weight:800;opacity:.95;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dm-q span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;opacity:.85}
+.dm-m.flash{animation:dmFlash 1.3s ease-out}
+@keyframes dmFlash{0%,35%{box-shadow:0 0 0 3px #7aa7ff}100%{box-shadow:0 0 0 0 #7aa7ff00}}

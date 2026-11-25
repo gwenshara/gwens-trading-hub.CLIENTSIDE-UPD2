@@ -172,3 +172,4 @@ if(!window.EMPush){try{var _n=document.createElement("script");_n.src="push.js?v
 if(!window.__emWarn){try{var _w=document.createElement("script");_w.src="modwarn.js?v=2";document.head.appendChild(_w)}catch(e){}}
 
 if(!window.__emPop){try{var _m=document.createElement("script");_m.src="msgpop.js?v=1";document.head.appendChild(_m)}catch(e){}}
+if(!window.__emBan){try{var _b=document.createElement("script");_b.src="banguard.js?v=1";document.head.appendChild(_b)}catch(e){}}

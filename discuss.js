@@ -49,8 +49,8 @@ const adm=id=>prof[id]&&prof[id].role==="admin"?'<i class="dm-ad">ADMIN</i>':"";
 const isFr=id=>!!(window.EMSocial&&EMSocial.loaded&&EMSocial.rel(id).kind==="friend");
 const frTag=id=>isFr(id)?'<i class="dm-fr">Friend</i>':"";
 const pname=id=>(prof[id]&&prof[id].username)||"";
-let ALL=[],CONV=[],cur=null,MSGS=[],draft=null,q="",people=[],lastSig="",pendImg=null,tk=0,NEW8=true;window.EMCurChat=()=>cur;
-const BASE="id,sender_id,recipient_id,sender_name,recipient_name,text,created_at",EXT=BASE+",kind,iname:payload->>n",EXT9=EXT+",edited_at,mm:payload->>mm,ms:payload->>s,mr:payload->>r,md:payload->>done,mst:payload->>st,mgid:payload->>gid,mat:payload->>at",EXT10=EXT9+",channel",EXT11=EXT10+",read_at";
+let ALL=[],CONV=[],cur=null,MSGS=[],draft=null,q="",people=[],lastSig="",pendImg=null,tk=0,NEW8=true,replyTo=null;window.EMCurChat=()=>cur;
+const BASE="id,sender_id,recipient_id,sender_name,recipient_name,text,created_at",EXT=BASE+",kind,iname:payload->>n,rn:payload->>rn,rt:payload->>rt,ri:payload->>ri",EXT9=EXT+",edited_at,mm:payload->>mm,ms:payload->>s,mr:payload->>r,md:payload->>done,mst:payload->>st,mgid:payload->>gid,mat:payload->>at",EXT10=EXT9+",channel",EXT11=EXT10+",read_at";
 let COLS=EXT11,NEW11=true,NEW10=true,TAB=ld("dm_tab","friends"),NEW9=true,NOTIF=[],notifOk=true;
 const NEED13="Run supabase-setup-13.sql in Supabase first.",NEED9="Run supabase-setup-9.sql in Supabase first.";
 const HK="dm_hid:"+UID,hid=ld(HK,{}),vis=a=>a.filter(x=>!hid[x.id]);
@@ -59,7 +59,7 @@ const NEED17="Run supabase-setup-17.sql in Supabase first.",MMT=6e5;
 const RXE={laugh:"\u{1F602}",heart:"\u2764\uFE0F",check:"\u2705",cross:"\u274C"},RXK=Object.keys(RXE);
 let RX={},rxOk=true,rxBusy=0,rxSig="";
 const SMILE='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8.5 14c1 1.5 2.2 2.2 3.5 2.2s2.5-.7 3.5-2.2M9 9.6h.01M15 9.6h.01"/></svg>';
-const GCOLS="id,group_id,sender_id,sender_name,kind,text,created_at,edited_at,iname:payload->>n",GOLD="id,group_id,sender_id,sender_name,kind,text,created_at",GQ="&order=created_at.desc&limit=500";
+const GCOLS="id,group_id,sender_id,sender_name,kind,text,created_at,edited_at,iname:payload->>n,rn:payload->>rn,rt:payload->>rt,ri:payload->>ri",GOLD="id,group_id,sender_id,sender_name,kind,text,created_at",GQ="&order=created_at.desc&limit=500";
 const errEl=()=>$(cur&&cur.grp?"#gp-err":"#dm-err")||{},stp=()=>$(cur&&cur.grp?"#gp-stp":"#dm-stp");
 const IMG={},PICREQ={};
 const RK="dm_read:"+UID,reads=ld(RK,{});
@@ -180,16 +180,16 @@ function msgHtml0(x){
   {const aid=adOf(x);if(aid)return`<div class="dm-m adm ${out?"out":"in"}" data-id="${id}">${mo}<div class="dm-adc" data-adc="${aid}">${ADC[aid]!==undefined?adBox(ADC[aid],"Trade ad"):'<div class="dm-adc-n">Loading trade ad\u2026</div>'}</div>${tm}</div>`}
  if(editing&&editing.id===x.id)return`<div class="dm-m ${out?"out":"in"} ed-box" data-id="${id}"><textarea id="dm-ed" maxlength="1000" rows="2">${esc(editing.text)}</textarea><div class="ed-b"><button type="button" data-edsave>Save</button><button type="button" data-edcancel class="sec">Cancel</button></div><div class="ed-e" id="dm-ede"></div></div>`;
  if(x.kind==="image"){const u=IMG[x.id];
-  return`<div class="dm-m pic ${out?"out":"in"}" data-id="${id}">${mo}${u?'<img class="dm-pic" data-pic="'+id+'" src="'+esc(u)+'" alt="Picture">':'<div class="dm-pic ph" data-pic="'+id+'">Loading picture\u2026</div>'}${x.text?'<div class="dm-cap">'+esc(x.text)+"</div>":""}${tm}</div>`}
+  return`<div class="dm-m pic ${out?"out":"in"}" data-id="${id}">${mo}${qHtml(x)}${u?'<img class="dm-pic" data-pic="'+id+'" src="'+esc(u)+'" alt="Picture">':'<div class="dm-pic ph" data-pic="'+id+'">Loading picture\u2026</div>'}${x.text?'<div class="dm-cap">'+esc(x.text)+"</div>":""}${tm}</div>`}
  if(x.kind==="item"){const n=x.iname||"",i=BYN[n];
   return`<div class="dm-m itm ${out?"out":"in"}" data-id="${id}">${mo}<button class="dm-it" data-item="${esc(n)}" type="button">${i?thumb(n):'<span class="th g">?</span>'}<span class="dm-itx"><b>${esc(n)}</b><span>${i?esc(price(i.p))+(i.stars?" \u00b7 "+stars(i.stars):""):"Item not found"}</span><em>Tap to see the item info</em></span></button>${tm}</div>`}
- return`<div class="dm-m ${out?"out":"in"}" data-id="${id}">${mo}${esc(x.text)}${tm}</div>`}
+ return`<div class="dm-m ${out?"out":"in"}" data-id="${id}">${mo}${qHtml(x)}${esc(x.text)}${tm}</div>`}
 function paintChat(stick){
  const r=$("#dm-r");
  if(!cur){r.innerHTML='<div class="dm-empty"><div>'+ICON+'<h3>Your messages</h3>Pick a conversation on the left,<br>or search a member to start a new one.</div></div>';root.classList.remove("chat");return}
  if(cur.grp)return paintGroup(stick);
  if(!$("#dm-msgs")||r.dataset.id!==key(cur.id,cur.ch)){
-  r.dataset.id=key(cur.id,cur.ch);pendImg=null;
+  r.dataset.id=key(cur.id,cur.ch);pendImg=null;replyTo=null;
   r.innerHTML=`<div class="dm-rh"><button class="dm-back" id="dm-back" type="button">\u2039 Back</button>${av(cur.id,cur.name)}<b>${esc(cur.name)}</b>${adm(cur.id)}${cur.ch==="trade"?'<i class="dm-fr tr">Trading chat</i>':""}<span class="dm-ha" id="dm-ha"></span></div><div class="dm-adb" id="dm-adb" hidden></div><div class="dm-msgs" id="dm-msgs"></div><div class="dm-err" id="dm-err"></div><div class="dm-pend" id="dm-pend" hidden></div><div class="dm-f"><div class="dm-pw"><button class="dm-plus" id="dm-plus" type="button" aria-label="Send a picture or an item">${PLUS}</button><div class="dm-menu" id="dm-menu" hidden><button type="button" data-add="img">Send a picture</button><button type="button" data-add="item">Send an item</button><button type="button" data-add="wl">Send my wishlist</button><button type="button" data-add="inv">Send my inventory</button><button type="button" data-add="stk">Stickers</button><button type="button" data-add="mm">Request a middleman</button></div><div class="dm-stp" id="dm-stp" hidden></div></div><textarea id="dm-in" maxlength="1000" rows="1" placeholder="Message ${esc(cur.name)}\u2026"></textarea><button id="dm-send" type="button">Send</button></div><input type="file" id="dm-file" accept="image/*" hidden>`;stick=true;paintHead();paintAdb()}
  const box=$("#dm-msgs"),near=box.scrollHeight-box.scrollTop-box.clientHeight<90;
  const lo=[...MSGS].reverse().find(m=>m.sender_id===UID),SEENID=lo&&lo.read_at?lo.id:null;let h="",d="";MSGS.forEach(x=>{const k=day(x.created_at);if(k!==d){d=k;h+='<div class="dm-day">'+k+"</div>"}h+=msgHtml(x)+(x.id===SEENID?'<div class="dm-seen">Seen '+fmtT(x.read_at)+"</div>":"")});
@@ -273,9 +273,9 @@ async function sendAdMark(){const a=adCtx;if(!a||!cur||cur.ch!=="trade"||a.uid!=
 async function send(){
  const i=$("#dm-in"),b=$("#dm-send"),t=i.value.trim();if(!cur)return;if(!t&&!pendImg)return;$("#dm-err").textContent="";b.disabled=true;
  try{
-  if(pendImg){if(!NEW8)throw new Error(NEED8);await post({kind:"image",text:t,payload:{img:pendImg}});pendImg=null;paintPend()}
-  else{await sendAdMark();await post(NEW8?{kind:"text",text:t}:{text:t})}
-  i.value=""}
+  if(pendImg){if(!NEW8)throw new Error(NEED8);await post({kind:"image",text:t,payload:Object.assign({img:pendImg},rq())});pendImg=null;paintPend()}
+  else{await sendAdMark();await post(NEW8?Object.assign({kind:"text",text:t},rf()):{text:t})}
+  i.value="";replyTo=null;paintPend()}
  catch(e){$("#dm-err").textContent=setup(e)||/dms_content_check|violates check/i.test(e.message)?(/dms_content_check|violates check/i.test(e.message)?"The server refused it. Run supabase-setup-8.sql in Supabase first.":"Run supabase-setup-6.sql in Supabase first."):"Couldn't send: "+e.message}
  b.disabled=false;i.focus()}
 async function sendItem(n){
@@ -284,8 +284,18 @@ async function sendItem(n){
   if(!NEW8)throw new Error(NEED8);await post({kind:"item",text:"",payload:{n}})}
  catch(e){errEl().textContent=/dms_content_check|group_msgs_content_check|violates check|row-level/i.test(e.message)?(cur&&cur.grp?NEED17:"The server refused it. Run supabase-setup-8.sql in Supabase first."):"Couldn't send: "+e.message}}
 function paintPend(){const p=$(cur&&cur.grp?"#gp-pend":"#dm-pend");if(!p)return;
- if(!pendImg){p.hidden=true;p.innerHTML="";return}
- p.hidden=false;p.innerHTML='<img src="'+esc(pendImg)+'" alt="Picture to send"><span>Picture ready. Add a message if you want, then press Send.</span><button type="button" data-unpic aria-label="Remove picture">\u2715</button>'}
+ if(!pendImg&&!replyTo){p.hidden=true;p.innerHTML="";return}
+ let h="";
+ if(replyTo)h+='<div class="dm-rp"><span>Replying to <b>'+esc(replyTo.name||"message")+'</b>: '+esc(replyTo.text)+'</span><button type="button" data-unreply aria-label="Cancel reply">\u2715</button></div>';
+ if(pendImg)h+='<img src="'+esc(pendImg)+'" alt="Picture to send"><span>Picture ready. Add a message if you want, then press Send.</span><button type="button" data-unpic aria-label="Remove picture">\u2715</button>';
+ p.hidden=false;p.innerHTML=h}
+/* replies: the quoted message is saved inside the new message (payload rn / rt / ri), so no SQL is needed */
+function snip(x){if(x.kind==="image")return"Picture";if(x.kind==="item")return x.iname||"Item";if(x.kind==="mm")return"Middleman request";if(stOf(x))return"Sticker";if(wlOf(x))return"Wishlist";if(adOf(x))return"Trade ad";return String(x.text||"").replace(/\s+/g," ").trim().slice(0,80)}
+const rq=()=>replyTo?{rn:String(replyTo.name||"").slice(0,40),rt:String(replyTo.text||"").slice(0,80),ri:replyTo.id}:{};
+const rf=()=>replyTo?{payload:rq()}:{};
+function setReply(x){replyTo={id:x.id,name:x.sender_name||"",text:snip(x)};paintPend();const i=$(cur&&cur.grp?"#gp-in":"#dm-in");if(i)i.focus()}
+function qHtml(x){if(!x.rn&&!x.rt)return"";return'<div class="dm-q" data-q="'+esc(x.ri||"")+'"><b>'+esc(x.rn||"")+'</b><span>'+esc(x.rt||"")+'</span></div>'}
+function jumpQ(id){const el=id&&document.querySelector('.dm-m[data-id="'+String(id).replace(/[^0-9a-fA-F-]/g,"")+'"]');if(!el)return;el.scrollIntoView({block:"center",behavior:"smooth"});el.classList.remove("flash");void el.offsetWidth;el.classList.add("flash")}
 /* shrink a picture so it fits in the database (max 900 px, under about 400 KB) */
 function shrinkImg(file){return new Promise((ok,no)=>{const fr=new FileReader();fr.onerror=()=>no(new Error("Couldn't read that file."));
  fr.onload=()=>{const im=new Image();im.onerror=()=>no(new Error("That file isn't a picture I can open."));
@@ -343,12 +353,12 @@ function closePop(){if(pop){pop.remove();pop=null}}
 function openMo(btn){closePop();
  const el=btn.closest(".dm-m"),x=MSGS.find(m=>m.id===el.dataset.id);if(!x)return;const out=x.sender_id===UID;
  pop=document.createElement("div");pop.className="dm-pop";
- let h="";if(out&&!adOf(x)&&!stOf(x)&&!wlOf(x)&&(x.kind==="text"||x.kind==="image"))h+='<button type="button" data-a="edit">Edit message</button>';
+ let h='<button type="button" data-a="reply">Reply</button>';if(out&&!adOf(x)&&!stOf(x)&&!wlOf(x)&&(x.kind==="text"||x.kind==="image"))h+='<button type="button" data-a="edit">Edit message</button>';
  h+=out?'<button type="button" data-a="del" class="dg">Delete for both of us</button>':'<button type="button" data-a="hide" class="dg">Delete for me</button>';
  pop.innerHTML=h;document.body.appendChild(pop);
  const r=btn.getBoundingClientRect();pop.style.top=Math.min(innerHeight-pop.offsetHeight-8,r.bottom+4)+"px";
  pop.style.left=Math.max(8,Math.min(innerWidth-pop.offsetWidth-8,out?r.right-pop.offsetWidth:r.left))+"px";
- pop.onclick=async ev=>{const a=ev.target.closest("[data-a]");if(!a)return;closePop();const id=x.id;
+ pop.onclick=async ev=>{const a=ev.target.closest("[data-a]");if(!a)return;closePop();if(a.dataset.a==="reply"){setReply(x);return}const id=x.id;
   if(a.dataset.a==="edit"){if(!NEW9){$("#dm-err").textContent=NEED9;return}editing={id,text:x.text||""};paintChat(false);const t=$("#dm-ed");if(t){t.focus();t.setSelectionRange(t.value.length,t.value.length)}}
   else if(a.dataset.a==="hide"){hid[id]=1;sv(HK,hid);MSGS=MSGS.filter(m=>m.id!==id);ALL=ALL.filter(m=>m.id!==id);lastSig=sigOf(MSGS);paintChat(false);build();paintList()}
   else{if(!confirm("Delete this message for both of you?"))return;
@@ -380,7 +390,7 @@ function gHtml(x){const h=gHtml0(x);if(x.kind==="sys"||x.sender_id===UID||h.inde
  const a=av(x.sender_id,x.sender_name||"?").replace('class="dm-av"','class="dm-av gpf"');return h.replace(/^(<div[^>]*>)/,"$1"+a)}
 function gHtml0(x){const out=x.sender_id===UID;
  if(x.kind==="sys")return'<div class="g-sys">'+esc(x.text)+"</div>";
- const id=esc(x.id),c=out?"out":"in gin",mo=out?'<button class="mo" data-gmo type="button" aria-label="Message options" title="Options">\u22ef</button>':"",
+ const id=esc(x.id),c=out?"out":"in gin",mo=true?'<button class="mo" data-gmo type="button" aria-label="Message options" title="Options">\u22ef</button>':"",
   nm=out?"":'<b class="g-sn">'+esc(x.sender_name)+"</b>",
   tm="<time"+(x.edited_at?' title="Edited '+esc(new Date(x.edited_at).toLocaleString())+'"':"")+">"+fmtT(x.created_at)+(x.edited_at?' <em class="ed">\u00b7 edited</em>':"")+"</time>";
  if(gediting&&gediting.id===x.id)return'<div class="dm-m '+c+' ed-box" data-id="'+id+'"><textarea id="gp-ed" maxlength="1000" rows="2">'+esc(gediting.text)+'</textarea><div class="ed-b"><button type="button" data-gedsave>Save</button><button type="button" data-gedcancel class="sec">Cancel</button></div><div class="ed-e" id="gp-ede"></div></div>';
@@ -388,10 +398,10 @@ function gHtml0(x){const out=x.sender_id===UID;
  {const wl=wlOf(x);if(wl)return'<div class="dm-m wlm '+c+'" data-id="'+id+'">'+mo+nm+wlCard(wl)+tm+'</div>'}
  if(st)return'<div class="dm-m stk '+c+'" data-id="'+id+'">'+mo+nm+(st.src?'<img class="dm-stk" src="'+st.src+'" alt="Sticker">':'<span class="dm-stkx">Sticker</span>')+tm+"</div>";
  if(x.kind==="image"){const u=IMG[x.id];
-  return'<div class="dm-m pic '+c+'" data-id="'+id+'">'+mo+nm+(u?'<img class="dm-pic" data-pic="'+id+'" src="'+esc(u)+'" alt="Picture">':'<div class="dm-pic ph" data-pic="'+id+'">Loading picture\u2026</div>')+(x.text?'<div class="dm-cap">'+esc(x.text)+"</div>":"")+tm+"</div>"}
+  return'<div class="dm-m pic '+c+'" data-id="'+id+'">'+mo+nm+qHtml(x)+(u?'<img class="dm-pic" data-pic="'+id+'" src="'+esc(u)+'" alt="Picture">':'<div class="dm-pic ph" data-pic="'+id+'">Loading picture\u2026</div>')+(x.text?'<div class="dm-cap">'+esc(x.text)+"</div>":"")+tm+"</div>"}
  if(x.kind==="item"){const n=x.iname||"",i=BYN[n];
   return'<div class="dm-m itm '+c+'" data-id="'+id+'">'+mo+nm+'<button class="dm-it" data-item="'+esc(n)+'" type="button">'+(i?thumb(n):'<span class="th g">?</span>')+'<span class="dm-itx"><b>'+esc(n)+"</b><span>"+(i?esc(price(i.p))+(i.stars?" \u00b7 "+stars(i.stars):""):"Item not found")+"</span><em>Tap to see the item info</em></span></button>"+tm+"</div>"}
- return'<div class="dm-m '+c+'" data-id="'+id+'">'+mo+nm+esc(x.text)+tm+"</div>"}
+ return'<div class="dm-m '+c+'" data-id="'+id+'">'+mo+nm+qHtml(x)+esc(x.text)+tm+"</div>"}
 let gProfBusy=false;
 function paintGroup(stick){const r=$("#dm-r");if(!cur||!cur.grp)return;
  if(!$("#gp-msgs")||r.dataset.id!=="g:"+cur.id){r.dataset.id="g:"+cur.id;pendImg=null;
@@ -405,22 +415,22 @@ function paintGroup(stick){const r=$("#dm-r");if(!cur||!cur.grp)return;
  box.innerHTML=h;if(stick||near)box.scrollTop=box.scrollHeight;gSig=sigG(cur.id);loadPics();
  if(gediting){const t=$("#gp-ed");if(t&&document.activeElement!==t){t.focus();t.setSelectionRange(t.value.length,t.value.length)}}}
 function openGroup(id){const g=GL.find(x=>x.id===id);if(!g)return;
- cur={grp:true,id,name:g.name};RX={};rxSig="";gediting=null;editing=null;TAB="group";sv("dm_tab",TAB);root.classList.add("chat");paintChat(true);gRead();buildG();paintList();
+ cur={grp:true,id,name:g.name};replyTo=null;RX={};rxSig="";gediting=null;editing=null;TAB="group";sv("dm_tab",TAB);root.classList.add("chat");paintChat(true);gRead();buildG();paintList();
  const i=$("#gp-in");if(i&&innerWidth>820)i.focus();loadRx().then(c=>{if(c&&cur&&cur.grp&&cur.id===id)paintGroup(false)})}
 async function postG(f){
  const r=await EMAuth.rest("group_msgs?select="+(GNEW?GCOLS:GOLD),"POST",Object.assign({group_id:cur.id,sender_id:UID,sender_name:ME},f),{Prefer:"return=representation"});const m=r[0];
  if(f.kind==="image"&&m)IMG[m.id]=f.payload.img;if(f.kind==="item"&&m&&!m.iname)m.iname=f.payload.n;
  (GM[cur.id]=GM[cur.id]||[]).push(m);paintGroup(true);gRead();buildG();paintList()}
 async function sendG(){const i=$("#gp-in"),b=$("#gp-send");if(!i||!cur||!cur.grp)return;const t=i.value.trim();if(!t&&!pendImg)return;b.disabled=true;$("#gp-err").textContent="";
- try{if(pendImg){if(!GNEW)throw new Error(NEED17);await postG({kind:"image",text:t,payload:{img:pendImg}});pendImg=null;paintPend()}else await postG({kind:"text",text:t});i.value=""}
+ try{if(pendImg){if(!GNEW)throw new Error(NEED17);await postG({kind:"image",text:t,payload:Object.assign({img:pendImg},rq())});pendImg=null;paintPend()}else await postG(Object.assign({kind:"text",text:t},rf()));i.value="";replyTo=null;paintPend()}
  catch(e){$("#gp-err").textContent=/group_msgs_content_check|violates check|row-level/i.test(e.message)?NEED17:"Couldn't send: "+e.message}
  b.disabled=false;i.focus()}
 function openGmo(btn){closePop();const el=btn.closest(".dm-m"),x=(GM[cur.id]||[]).find(m=>m.id===el.dataset.id);if(!x)return;
  pop=document.createElement("div");pop.className="dm-pop";
- pop.innerHTML=((x.kind==="text"&&!stOf(x))||x.kind==="image"?'<button type="button" data-a="edit">Edit message</button>':"")+'<button type="button" data-a="del" class="dg">Delete for everyone</button>';
+ pop.innerHTML='<button type="button" data-a="reply">Reply</button>'+(x.sender_id===UID?(((x.kind==="text"&&!stOf(x))||x.kind==="image"?'<button type="button" data-a="edit">Edit message</button>':"")+'<button type="button" data-a="del" class="dg">Delete for everyone</button>'):"");
  document.body.appendChild(pop);placePop(btn,true);
  pop.onclick=ev=>{const a=ev.target.closest("[data-a]");if(!a)return;closePop();
-  if(a.dataset.a==="edit"){if(!GNEW){$("#gp-err").textContent=NEED17;return}gediting={id:x.id,text:x.text||""};paintGroup(false)}else delG(x.id)}}
+  if(a.dataset.a==="reply"){setReply(x);return}if(a.dataset.a==="edit"){if(!GNEW){$("#gp-err").textContent=NEED17;return}gediting={id:x.id,text:x.text||""};paintGroup(false)}else delG(x.id)}}
 async function saveGEdit(){if(!gediting)return;const t=$("#gp-ed"),x=(GM[cur.id]||[]).find(m=>m.id===gediting.id),er=$("#gp-ede");if(!t||!x)return;const v=t.value.trim();
  if(v===(x.text||"").trim()){gediting=null;paintGroup(false);return}
  if(!v&&x.kind==="text"){er.textContent="A message can't be empty. Use Delete instead.";return}
@@ -483,7 +493,7 @@ $("#dm-r").addEventListener("click",async e=>{
   else if(t.closest("[data-pack]")){stkPack=t.closest("[data-pack]").dataset.pack;paintStk()}
   else if(t.closest("[data-stkback]")){stkPack=null;paintStk()}
   else if(t.closest("[data-stk]")){const v=t.closest("[data-stk]").dataset.stk;$("#gp-stp").hidden=true;sendSticker(v)}
-  else if(t.closest("[data-unpic]")){pendImg=null;paintPend()}
+  else if(t.closest("[data-unpic]")){pendImg=null;paintPend()}else if(t.closest("[data-unreply]")){replyTo=null;paintPend()}else if(t.closest("[data-q]")){jumpQ(t.closest("[data-q]").dataset.q)}
   else if(t.closest("[data-item]"))openCard(t.closest("[data-item]").dataset.item);
   else if(t.closest(".dm-pic:not(.ph)")){const im=t.closest(".dm-pic");openPic(im.src)}
   else if(t.closest("[data-gmo]")){e.stopPropagation();openGmo(t.closest("[data-gmo]"))}
@@ -503,7 +513,7 @@ $("#dm-r").addEventListener("click",async e=>{
   if(a==="wl"||a==="inv"){sendWishlist(a);return}
   if(a==="mm"){if(!NEW9){$("#dm-err").textContent=NEED9;return}openMM();return}
   if(a==="img")$("#dm-file").click();else openPicker()}
- else if(t.closest("[data-unpic]")){pendImg=null;paintPend()}
+ else if(t.closest("[data-unpic]")){pendImg=null;paintPend()}else if(t.closest("[data-unreply]")){replyTo=null;paintPend()}else if(t.closest("[data-q]")){jumpQ(t.closest("[data-q]").dataset.q)}
  else if(t.closest("[data-item]"))openCard(t.closest("[data-item]").dataset.item);
  else if(t.closest(".dm-pic:not(.ph)")){const im=t.closest(".dm-pic");openPic(im.src)}
  else if(t.closest("[data-fr]")){const a=t.closest("[data-fr]").dataset.fr;

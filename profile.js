@@ -37,7 +37,7 @@ async function load(){
   try{const x=(await EMAuth.rest("profiles?id=eq."+encodeURIComponent(r.id)+"&select=roblox_id,roblox_name"))[0];if(x)Object.assign(r,x)}catch(e){r.__norb=1}
   P=r;$("#pf").hidden=false;$("#pf-msg").hidden=true;$("#pf-n").textContent="#"+(idx+1);
   try{$("#pf-ads").textContent=(await EMAuth.rest("ads?select=id&username=eq."+encodeURIComponent(P.username)+"&limit=1000")).length}catch(e){}
-  paint();paintPres();paintMod();paintRb();
+  paint();paintPres();paintMod();paintBan();paintRb();paintDel();
   if(window.EMSocial)EMSocial.mount($("#pf-soc"),P.id,P.username);
   if(mine){["#pf-bb","#pf-ab","#pf-bx","#pf-hint","#pf-nx"].forEach(s=>$(s).hidden=false);$("#pf-un").textContent=P.username;if(P.__nodc)$("#pf-hint").textContent="Nickname and Discord can't be saved yet: run supabase-setup-7.sql in Supabase first.";
    if(P.__old)$("#pf-hint").textContent="Pictures can't be saved yet: run supabase-setup-4.sql in Supabase first."}
@@ -66,7 +66,7 @@ $("#pf-ds").onclick=async()=>{const v=$("#pf-dt").value.trim().replace(/^@/,"");
 $("#pf-dok").onclick=async()=>{if(await rpc("verify_discord",{target:P.username,ok:true},"Discord confirmed.")){P.discord_verified=true;paintDc()}};
 $("#pf-dno").onclick=async()=>{if(await rpc("verify_discord",{target:P.username,ok:false},"Confirmation removed.")){P.discord_verified=false;paintDc()}};
 /* roblox: a one-time code typed into the Roblox game links the account. No Roblox password is ever used. */
-const ROBLOX_GAME_URL="https://www.roblox.com/fr/games/116396707306418/EM-Wiki-Revamp-Linking"; /* paste your game's link here, e.g. https://www.roblox.com/games/123456789/Your-Game */
+const ROBLOX_GAME_URL=""; /* paste your game's link here, e.g. https://www.roblox.com/games/123456789/Your-Game */
 let rbTimer=null,rbEnd=0;
 function rbStop(){clearInterval(rbTimer);rbTimer=null}
 function paintRb(){const v=$("#pf-rv");if(!v)return;
@@ -89,6 +89,59 @@ $("#pf-rx").onclick=async()=>{const s=$("#pf-st");s.style.color="";s.textContent
  catch(e){s.style.color="#ff6b6b";s.textContent=/does not exist|schema cache/i.test(e.message)?"Run supabase-setup-23.sql in Supabase first.":e.message}};
 $("#pf-ru").onclick=async()=>{if(!confirm("Unlink this Roblox account?"))return;
  if(await rpc("roblox_unlink",mine?{}:{target:P.username},"Roblox unlinked.")){P.roblox_id=null;P.roblox_name=null;paintRb()}};
+/* bans: admins and moderators can ban a member's account and (optionally) their IP address */
+let BANS=null,_bnOpen=false,_bnList=false,_dlOpen=false;
+const BTNR='padding:8px 16px;border-radius:10px;font-weight:700;cursor:pointer;background:#e5484d;border-color:#e5484d;color:#fff',BTNA='padding:8px 16px;border-radius:10px;font-weight:700;cursor:pointer';
+const setupMsg=e=>/does not exist|schema cache|Could not find/i.test(e.message)?"Run supabase-setup-24.sql in Supabase first.":e.message;
+function say(t,ok){const s=$("#pf-st");if(!s)return;s.style.color=ok?"#3bb26b":"#ff6b6b";s.textContent=t}
+async function paintBan(){
+ if(mine||!P||!EMAuth.canMod||!EMAuth.canMod())return;
+ if(P.role==="admin"||((P.roles||[]).includes("moderator")&&!ADMIN))return;
+ let w=$("#pf-bn");if(!w){w=document.createElement("div");w.id="pf-bn";w.className="pf-box";w.style.borderColor="#e5484d";($("#pf-md")||$("#pf-bio").closest(".pf-box")).insertAdjacentElement("afterend",w)}
+ if(BANS===null){try{BANS=await EMAuth.rest("rpc/list_bans","POST",{})}catch(e){w.innerHTML='<h4>Ban</h4><p class="pf-hint" style="margin:0">'+esc(setupMsg(e))+'</p>';return}}
+ const isB=BANS.some(b=>b.kind==="user"&&String(b.username).toLowerCase()===P.username.toLowerCase());
+ let h='<h4>Ban</h4>';
+ if(isB)h+='<p style="margin:0 0 10px;color:#ff7b7b;font-weight:700">This member is banned.</p><button type="button" id="pf-unban" class="pri" style="'+BTNA+'">Unban this member</button>';
+ else h+='<button type="button" id="pf-bnb" class="pri" style="'+BTNR+'">'+(_bnOpen?"Hide":"Ban this member")+'</button>'
+  +'<div style="display:'+(_bnOpen?"block":"none")+';margin-top:12px"><input id="pf-bnr" maxlength="200" placeholder="Reason (they will see it)" style="width:100%;box-sizing:border-box;padding:9px 12px;border-radius:10px;border:1px solid var(--bl,#3a3a42);background:var(--b3,#1c1c20);color:inherit">'
+  +'<label style="display:flex;gap:6px;align-items:center;font-weight:700;font-size:13px;margin-top:10px;cursor:pointer"><input type="checkbox" id="pf-bni" checked>Also ban their IP address</label>'
+  +'<p class="pf-hint" style="margin:6px 0 0">An IP ban also blocks everyone else on the same network (family, school, a mobile carrier). Use it only for people who keep coming back. Their account is banned either way.</p>'
+  +'<div class="pf-row" style="margin-top:12px"><button type="button" id="pf-bngo" class="pri" style="'+BTNR+'">Ban now</button></div></div>';
+ h+='<div style="margin-top:14px"><button type="button" id="pf-bll" class="pf-link" style="margin:0">'+(_bnList?"Hide the banned list":"Show the banned list ("+BANS.length+")")+'</button></div>';
+ if(_bnList)h+='<div style="margin-top:8px">'+(BANS.length?BANS.map(b=>'<div style="display:flex;gap:10px;align-items:center;padding:7px 0;border-top:1px solid var(--bl,#3a3a42);font-size:13px"><span style="flex:1;min-width:0;overflow-wrap:anywhere"><b>'+(b.kind==="user"?esc(b.username):"IP "+esc(b.ip))+'</b>'+(b.kind==="ip"&&b.username?' <i style="opacity:.6">(from '+esc(b.username)+')</i>':"")+'<br><span style="opacity:.65">'+(b.reason?esc(b.reason)+" \u00b7 ":"")+'by '+esc(b.banned_by)+' \u00b7 '+esc(new Date(b.created_at).toLocaleDateString())+'</span></span><button type="button" data-ub="'+esc(b.kind)+'" data-k="'+esc(b.key)+'" class="pri" style="'+BTNA+';padding:6px 12px">Unban</button></div>').join(""):'<p class="pf-hint" style="margin:0">Nobody is banned.</p>')+'</div>';
+ if(ADMIN)h+='<div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--bl,#3a3a42)"><button type="button" id="pf-dlu" class="pri" style="'+BTNR+'">'+(_dlOpen?"Hide":"Delete this account permanently")+'</button>'
+  +'<div style="display:'+(_dlOpen?"block":"none")+';margin-top:10px"><p class="pf-hint" style="margin:0 0 8px">This removes '+esc(P.username)+' and everything of theirs for good. It can\'t be undone. Type their username to confirm.</p><input id="pf-dlt" placeholder="'+esc(P.username)+'" style="width:100%;box-sizing:border-box;padding:9px 12px;border-radius:10px;border:1px solid var(--bl,#3a3a42);background:var(--b3,#1c1c20);color:inherit"><div class="pf-row" style="margin-top:10px"><button type="button" id="pf-dlgo" class="pri" style="'+BTNR+'">Delete forever</button></div></div></div>';
+ w.innerHTML=h;
+ const re=()=>{BANS=null;paintBan()};
+ const q=s=>w.querySelector(s);
+ if(q("#pf-bnb"))q("#pf-bnb").onclick=()=>{_bnOpen=!_bnOpen;paintBan()};
+ if(q("#pf-bll"))q("#pf-bll").onclick=()=>{_bnList=!_bnList;paintBan()};
+ if(q("#pf-dlu"))q("#pf-dlu").onclick=()=>{_dlOpen=!_dlOpen;paintBan()};
+ if(q("#pf-bngo"))q("#pf-bngo").onclick=async()=>{const wantIp=q("#pf-bni").checked,why=q("#pf-bnr").value.trim();
+  if(!confirm("Ban "+P.username+(wantIp?" and their IP address?":"?")))return;say("Saving…",true);
+  try{const r=await EMAuth.rest("rpc/ban_user","POST",{target:P.username,reason:why,ban_ip:wantIp});_bnOpen=false;
+   say("Banned."+(r&&r.ip_banned?" Their IP is banned too.":(wantIp?" No IP on record for them yet, so only the account is banned.":"")),true);re()}
+  catch(e){say(setupMsg(e))}};
+ if(q("#pf-unban"))q("#pf-unban").onclick=async()=>{if(!confirm("Unban "+P.username+" (and their IP)?"))return;
+  try{await EMAuth.rest("rpc/unban_member","POST",{target:P.username});say("Unbanned.",true);re()}catch(e){say(setupMsg(e))}};
+ w.querySelectorAll("[data-ub]").forEach(b=>b.onclick=async()=>{if(!confirm("Remove this ban?"))return;
+  try{await EMAuth.rest("rpc/unban_entry","POST",{p_kind:b.dataset.ub,p_key:b.dataset.k});say("Ban removed.",true);re()}catch(e){say(setupMsg(e))}});
+ if(q("#pf-dlgo"))q("#pf-dlgo").onclick=async()=>{if(q("#pf-dlt").value.trim().toLowerCase()!==P.username.toLowerCase()){say("Type their username exactly to confirm.");return}
+  if(!confirm("Delete "+P.username+" permanently? This cannot be undone."))return;say("Deleting…",true);
+  try{await EMAuth.rest("rpc/admin_delete_user","POST",{target:P.username});location.href="members.html"}catch(e){say(setupMsg(e))}}}
+/* delete my own account */
+function paintDel(){
+ const box=$("#pf-dl");if(!box)return;
+ if(!mine||!P||P.role==="admin"){box.hidden=true;return}
+ box.hidden=false;const b=$("#pf-dlb");
+ b.innerHTML='<p class="pf-hint" style="margin:0 0 10px">Deleting your account removes your profile, trade ads, votes, comments, friends and chats for good. Private messages disappear for the other person too. This cannot be undone.</p>'
+  +'<button type="button" id="pf-dm0" class="pri" style="'+BTNR+'">'+(_dlOpen?"Cancel":"Delete my account")+'</button>'
+  +'<div style="display:'+(_dlOpen?"block":"none")+';margin-top:12px"><p class="pf-hint" style="margin:0 0 8px">Type your username <b>'+esc(P.username)+'</b> to confirm.</p><input id="pf-dm1" autocomplete="off" style="width:100%;box-sizing:border-box;padding:9px 12px;border-radius:10px;border:1px solid var(--bl,#3a3a42);background:var(--b3,#1c1c20);color:inherit"><div class="pf-row" style="margin-top:10px"><button type="button" id="pf-dm2" class="pri" style="'+BTNR+'">Delete forever</button></div></div>';
+ $("#pf-dm0").onclick=()=>{_dlOpen=!_dlOpen;paintDel()};
+ $("#pf-dm2").onclick=async()=>{if($("#pf-dm1").value.trim().toLowerCase()!==P.username.toLowerCase()){say("Type your username exactly to confirm.");return}
+  if(!confirm("Last chance: delete your account permanently?"))return;say("Deleting…",true);
+  try{await EMAuth.rest("rpc/delete_my_account","POST",{});try{localStorage.removeItem("em_session")}catch(e){}alert("Your account was deleted.");location.href="index.html"}
+  catch(e){say(setupMsg(e))}}}
 msg("Loading…");load();
 
 /* online status + roles */
