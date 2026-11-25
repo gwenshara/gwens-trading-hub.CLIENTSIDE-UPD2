@@ -43,6 +43,16 @@ async function subscribe() {
   return { sub: sub, prefs: await save(sub) };
 }
 
+/* turns the browser's cryptic push errors into steps a person can follow */
+function friendly(x) {
+  var m = (x && x.message) ? String(x.message) : "Something went wrong.";
+  if (/push service|registration failed|AbortError/i.test(m)) {
+    if (navigator.brave) return "Brave blocks notifications by default. Open brave://settings/privacy, turn on \u201cUse Google Services for Push Messaging\u201d, restart Brave, then press Turn on again.";
+    return "Your browser couldn't reach its push service. Update the browser, turn off any VPN or ad blocker for this site, then try again. If it still fails, use Chrome.";
+  }
+  return m;
+}
+
 var API = window.EMPush = {
   supported: supported,
   async state() {
@@ -121,7 +131,7 @@ async function paint(err) {
   modal.innerHTML = h;
   var q = function (s) { return modal.querySelector(s); }, e = q("#pn-err");
   var busy = function (b, on) { if (b) { b.disabled = on; } };
-  if (q("#pn-on")) q("#pn-on").onclick = async function () { var b = this; busy(b, true); try { await API.enable(); paint(""); } catch (x) { busy(b, false); e.textContent = x.message; } };
+  if (q("#pn-on")) q("#pn-on").onclick = async function () { var b = this; busy(b, true); try { await API.enable(); paint(""); } catch (x) { busy(b, false); e.textContent = friendly(x); } };
   if (q("#pn-off")) q("#pn-off").onclick = async function () { busy(this, true); await API.disable(); paint(""); };
   if (q("#pn-test")) q("#pn-test").onclick = async function () { var b = this; busy(b, true); e.textContent = ""; try { await API.test(); e.style.color = "#3bb26b"; e.textContent = "Sent. It should arrive in a few seconds."; } catch (x) { e.style.color = "#e5484d"; e.textContent = x.message; } setTimeout(function () { busy(b, false); }, 4000); };
   if (q("#pn-snd")) q("#pn-snd").onchange = function () { sv("em_push_snd", this.checked ? "1" : "0"); if (this.checked) ding(); };
@@ -160,6 +170,7 @@ var GUIDE = {
     "Press <b>Manage</b>, then <b>Send a test</b>. A notification should pop up in the corner of your screen."
   ], fix: [
     ["Nothing shows up", "Windows: Settings, System, Notifications. Turn <b>Notifications</b> on, turn <b>Do not disturb</b> off, and make sure your browser (Chrome, Edge...) is switched on in the list."],
+    ["It says \"push service error\"", "Brave: open <b>brave://settings/privacy</b>, turn on <b>Use Google Services for Push Messaging</b> and restart Brave. Other browsers: update it and turn off any VPN or ad blocker for this site."],
     ["It says \"Blocked\"", "Click the lock icon left of the address, set <b>Notifications</b> to <b>Allow</b>, then reload the page."],
     ["Only works while the browser is open", "In Chrome: Settings, System, turn on <b>Continue running background apps when Chrome is closed</b>."]
   ] },
@@ -168,6 +179,7 @@ var GUIDE = {
     "Press <b>Manage</b>, then <b>Send a test</b>. A notification should appear at the top right of your screen."
   ], fix: [
     ["Nothing shows up", "Mac: System Settings, Notifications, pick your browser and allow notifications. Turn <b>Focus</b> / Do not disturb off."],
+    ["It says \"push service error\"", "Brave: open <b>brave://settings/privacy</b>, turn on <b>Use Google Services for Push Messaging</b> and restart Brave. Other browsers: update it and turn off any VPN or ad blocker for this site."],
     ["It says \"Blocked\"", "Click the lock icon left of the address (in Safari: Safari, Settings, Websites, Notifications), set this site to <b>Allow</b>, then reload."]
   ] },
   android: { t: "Android phone", steps: [
@@ -176,6 +188,7 @@ var GUIDE = {
   ], fix: [
     ["Nothing shows up", "Android Settings, Apps, Chrome, Notifications: make sure they are on. Turn <b>Do not disturb</b> off."],
     ["It arrives late or never", "Android Settings, Battery, Chrome: choose <b>Unrestricted</b> (battery saving can delay notifications)."],
+    ["It says \"push service error\"", "Brave: open <b>brave://settings/privacy</b>, turn on <b>Use Google Services for Push Messaging</b> and restart Brave. Other browsers: update it and turn off any VPN or ad blocker for this site."],
     ["It says \"Blocked\"", "Tap the lock icon next to the address, then Permissions, Notifications, <b>Allow</b>. Reload the page."]
   ] },
   ios: { t: "iPhone / iPad", steps: [
@@ -234,7 +247,7 @@ async function paintNotif(el) {
   var y = el.querySelector("[data-y]"), m = el.querySelector("[data-m]");
   if (y) y.onclick = function () {
     var er = el.querySelector(".er"); y.disabled = true; er.textContent = "";
-    API.enable().then(function () { paintNotif(el); }).catch(function (x) { y.disabled = false; er.textContent = x.message; });
+    API.enable().then(function () { paintNotif(el); }).catch(function (x) { y.disabled = false; er.textContent = friendly(x); });
   };
   if (m) m.onclick = function () { var host = el.closest(".stp,.em-setp"); if (host) host.hidden = true; openPanel(); };
 }
