@@ -352,3 +352,28 @@ body.dm-full .dm-rh{padding-top:calc(12px + env(safe-area-inset-top,0px))}
  body.dm-full .dm{border-radius:0}
 }
 @media(max-width:820px) and (orientation:landscape){.dm.chat .dm-rh{padding-top:6px;padding-bottom:6px}}
+
+/* ===== Phone fixes: nothing may be wider than the screen ===== */
+.dm-list{overflow-x:hidden}
+.dm-lt h2{flex:1;min-width:0}
+@media(max-width:820px){
+ .dm{grid-template-columns:minmax(0,1fr)}
+ .dm-l,.dm-r,.dm-lh,.dm-list,.dm-s,.dm-lt,.dm-msgs,.dm-f{min-width:0;max-width:100%;box-sizing:border-box}
+ .dm-s input{width:100%;box-sizing:border-box}
+ .dm-tabs{overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:10px 4px 4px;margin:2px -4px 0}
+ .dm-tabs::-webkit-scrollbar{display:none}
+ .dm-tabs button{flex:0 0 auto;padding:10px 18px;font-size:13px}
+ .dm-newg{box-sizing:border-box;display:block;text-align:center}
+ .dm-c{min-width:0;max-width:100%;box-sizing:border-box}
+ .dm-ct{min-width:0}
+ .dm-ct b{min-width:0}
+ .dm-ci{max-width:72px}
+ .dm-rh{flex-wrap:nowrap;min-width:0}
+ .dm-rh>b,.dm-rh .dm-ct{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .dm-rh .dm-av{flex:none}
+ .dm-ha{flex:none;gap:6px;margin-left:auto}
+ .dm-ha .dm-hb{white-space:nowrap}
+ .g-mem{padding:8px 12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none}
+ .g-mem::-webkit-scrollbar{display:none}
+ .dm-req{min-width:0;flex-wrap:wrap}
+}

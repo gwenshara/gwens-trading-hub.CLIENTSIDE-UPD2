@@ -606,8 +606,8 @@ const r0=R();if(r0){new MutationObserver(()=>{addBtn();apply()}).observe(r0,{chi
 /* ===== Full-screen toggle (the diagonal arrow button) + phone sizing ===== */
 (function(){
  var KEY="em_dm_full";
- function ld(){try{return localStorage.getItem(KEY)==="1"}catch(e){return false}}
- function sv(v){try{localStorage.setItem(KEY,v?"1":"0")}catch(e){}}
+ function ld(){try{localStorage.removeItem(KEY)}catch(e){}return false}
+ function sv(v){}
  var SVG='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h18M3 12l5-5M3 12l5 5M21 12l-5-5M21 12l-5 5"/></svg>';
  function apply(on){document.body.classList.toggle("dm-full",!!on);document.querySelectorAll(".dm-fs").forEach(function(b){var t=on?"Back to the normal view":"Fill the whole screen";b.title=t;b.setAttribute("aria-label",t)});if(on)window.scrollTo(0,0)}
  function navh(){var n=document.querySelector(".emnav");if(n)document.documentElement.style.setProperty("--navh",Math.ceil(n.getBoundingClientRect().height)+"px")}
