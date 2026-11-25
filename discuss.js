@@ -47,7 +47,7 @@ const prof={};
 const av=(id,n)=>{const p=prof[id];return'<span class="dm-av" style="background:'+color(n)+'">'+'<img src="'+(p&&p.avatar?esc(p.avatar):emDefAv(n))+'" alt="">'+"</span>"};
 const adm=id=>prof[id]&&prof[id].role==="admin"?'<i class="dm-ad">ADMIN</i>':"";
 const isFr=id=>!!(window.EMSocial&&EMSocial.loaded&&EMSocial.rel(id).kind==="friend");
-const frTag=id=>isFr(id)?'<i class="dm-fr">Friend</i>':"";
+const frTag=id=>"";
 const pname=id=>(prof[id]&&prof[id].username)||"";
 let ALL=[],CONV=[],cur=null,MSGS=[],draft=null,q="",people=[],lastSig="",pendImg=null,tk=0,NEW8=true,replyTo=null;window.EMCurChat=()=>cur;
 const BASE="id,sender_id,recipient_id,sender_name,recipient_name,text,created_at",EXT=BASE+",kind,iname:payload->>n,rn:payload->>rn,rt:payload->>rt,ri:payload->>ri",EXT9=EXT+",edited_at,mm:payload->>mm,ms:payload->>s,mr:payload->>r,md:payload->>done,mst:payload->>st,mgid:payload->>gid,mat:payload->>at",EXT10=EXT9+",channel",EXT11=EXT10+",read_at";
@@ -104,7 +104,7 @@ function paintList(){
  const s=q.trim().toLowerCase(),SO=window.EMSocial&&EMSocial.loaded&&!EMSocial.missing;
  const card=c=>`<button class="dm-c ${isCur(c.id,c.ch)?"on":""}" data-id="${esc(c.id)}" data-ch="${c.ch}" data-n="${esc(c.name)}">${av(c.id,c.name)}<span class="dm-ct"><b><span>${esc(c.name)}</span>${adm(c.id)}${c.ch==="trade"?'<i class="dm-fr tr">Trade</i>':frTag(c.id)}</b><small>${c.last?(c.last.sender_id===UID?"You: ":"")+esc(sum(c.last)):"New conversation"}</small></span><span class="dm-ci">${c.last?"<time>"+short(c.last.created_at)+"</time>":""}${c.unread?'<span class="dm-un">'+(c.unread>99?"99+":c.unread)+"</span>":""}</span></button>`;
  const gcard=c=>`<button class="dm-c ${cur&&cur.grp&&cur.id===c.id?"on":""}" data-grp="${esc(c.id)}"><span class="dm-av gav">${c.kind==="mm"?"MM":"G"}</span><span class="dm-ct"><b><span>${esc(c.name)}</span><i class="dm-fr gr">${c.kind==="mm"?"Middleman":"Group"}</i></b><small>${c.last?(c.last.kind==="sys"?"":esc(c.last.sender_name)+": ")+esc(gsum(c.last)):"New group"}</small></span><span class="dm-ci">${c.last?"<time>"+short(c.last.created_at)+"</time>":""}${c.unread?'<span class="dm-un">'+(c.unread>99?"99+":c.unread)+"</span>":""}</span></button>`;
- const fcard=(id,n)=>`<button class="dm-c ${cur&&cur.id===id?"on":""}" data-id="${esc(id)}" data-n="${esc(n)}">${av(id,n)}<span class="dm-ct"><b><span>${esc(n)}</span>${adm(id)}<i class="dm-fr">Friend</i></b><small>Friend, say hi</small></span></button>`;
+ const fcard=(id,n)=>`<button class="dm-c ${cur&&cur.id===id?"on":""}" data-id="${esc(id)}" data-n="${esc(n)}">${av(id,n)}<span class="dm-ct"><b><span>${esc(n)}</span>${adm(id)}</b><small>Friend, say hi</small></span></button>`;
  const req=r=>{const n=pname(r.requester_id)||"Member";return`<div class="dm-req" data-rid="${esc(r.id)}">${av(r.requester_id,n)}<span class="dm-ct"><b><span>${esc(n)}</span></b><small>wants to be your friend</small></span><span class="dm-rb"><button data-racc type="button">Accept</button><button data-rdec type="button" class="sec">Decline</button></span></div>`};
  const reqs=SO?EMSocial.incoming():[],inConv=new Set(CONV.filter(c=>c.ch!=="trade").map(c=>c.id));
  let fr=SO?EMSocial.friends().filter(id=>!inConv.has(id)&&pname(id)).map(id=>({id,n:pname(id)})):[];
