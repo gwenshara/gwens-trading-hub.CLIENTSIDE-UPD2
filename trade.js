@@ -21,7 +21,7 @@ const fx=i=>{let m=1;if(O.st&&stars(i))m*=1+(stars(i)-3)*.06;if(O.pl&&plus(i))m*
 const line=(i,q)=>(val(i)||0)*q*fx(i);
 const thumb=i=>{const t=TD.thumbs[i.n]||{};let h="";
  if(t.fx){if(t.m)h+=`<img class="fxm" src="${t.m}" alt="">`;h+=`<img class="fxa" src="${t.a}" alt="">`}
- else if(t.a)h=`<img src="${t.a}" alt="">`;else h="✨";
+ else if(t.a)h=`<img src="${t.a}" alt="">`;else h="";
  return`<span class="th ${i.t}">${h}</span>`};
 const meta=i=>`${esc(i.p)}${val(i)===null?" · unknown":""}${stars(i)?" · ★"+stars(i):""}${trend(i.n)?" · "+TL[trend(i.n)]:""}`;
 
@@ -123,19 +123,17 @@ const tot=L=>L.reduce((t,e)=>{const i=by(e.n);return i?t+line(i,e.q):t},0);
 function paintFeed(){const q=$("#h-q").value.trim().toLowerCase(),L=ADS.filter(a=>!q||a.u.toLowerCase().includes(q)||[...a.a,...a.b].some(e=>e.n.toLowerCase().includes(q)));
  const can=a=>EMAuth.isAdmin()||a.uid===EMAuth.uid();
  $("#feed").innerHTML=L.length?L.map(a=>{const A=tot(a.a),B=tot(a.b);
-  return`<div class="ad"><div class="ad-h"><b>${esc(a.u)}</b><span class="ad-r"><button type="button" class="heart${(HEARTS[a.id]||{}).me?" on":""}" data-heart="${esc(a.id)}" aria-pressed="${!!(HEARTS[a.id]||{}).me}" aria-label="Heart this ad" title="Heart this ad">${HEART}<span>${(HEARTS[a.id]||{}).n||0}</span></button>${ago(a.t)}</span></div><div class="cols"><div><div class="lab">Offering · ${fmt(A)}</div>${mini(a.a)}</div><div><div class="lab">Looking for · ${fmt(B)}</div>${tagsHTML(a.c)}${mini(a.b)}</div></div>${a.note?`<p>${esc(a.note)}</p>`:""}<div class="act"><button data-chk="${esc(a.id)}">⚖ Check this trade</button>${a.uid!==EMAuth.uid()?`<span class="talk"><button type="button" data-talk>Talk to the trader</button><span class="talk-m" hidden><a href="forum-discussions.html?u=${encodeURIComponent(a.u)}">Personal message</a><a href="forum-discussions.html?u=${encodeURIComponent(a.u)}&ch=trade&ad=${esc(a.id)}">Trading message</a></span></span>`:""}${can(a)?`<button data-del="${esc(a.id)}">${a.uid===EMAuth.uid()?"Delete my ad":"Delete ad (admin)"}</button>`:""}</div></div>`}).join(""):'<div class="em">No ads yet. Post the first one above.</div>'}
+  return`<div class="ad"><div class="ad-h"><b>${esc(a.u)}${(()=>{const o=ownerStats(a.uid);return o.n?` <span class="ad-st" title="${o.avg.toFixed(1)} from ${o.n} review${o.n>1?"s":""}">${starsHTML(o.avg)}</span>`:""})()}</b><span class="ad-r"><button type="button" class="heart${(HEARTS[a.id]||{}).me?" on":""}" data-heart="${esc(a.id)}" aria-pressed="${!!(HEARTS[a.id]||{}).me}" aria-label="Heart this ad" title="Heart this ad">${HEART}<span>${(HEARTS[a.id]||{}).n||0}</span></button>${ago(a.t)}</span></div><div class="cols"><div><div class="lab">Offering · ${fmt(A)}</div>${mini(a.a)}</div><div><div class="lab">Looking for · ${fmt(B)}</div>${tagsHTML(a.c)}${mini(a.b)}</div></div>${a.note?`<p>${esc(a.note)}</p>`:""}<div class="act"><button type="button" data-view="${esc(a.id)}">View Details</button><button data-chk="${esc(a.id)}">⚖ Check this trade</button>${a.uid!==EMAuth.uid()?`<span class="talk"><button type="button" data-talk>Talk to the trader</button><span class="talk-m" hidden><a href="forum-discussions.html?u=${encodeURIComponent(a.u)}">Personal message</a><a href="forum-discussions.html?u=${encodeURIComponent(a.u)}&ch=trade&ad=${esc(a.id)}">Trading message</a></span></span>`:""}${can(a)?`<button data-del="${esc(a.id)}">${a.uid===EMAuth.uid()?"Delete my ad":"Delete ad (admin)"}</button>`:""}</div></div>`}).join(""):'<div class="em">No ads yet. Post the first one above.</div>'}
 async function loadHearts(){if(!HOK)return;
  try{const r=await EMAuth.rest("ad_hearts?select=ad_id,user_id&limit=10000"),m={};r.forEach(h=>{const o=m[h.ad_id]||(m[h.ad_id]={n:0,me:false});o.n++;if(h.user_id===EMAuth.uid())o.me=true});HEARTS=m}
  catch(e){if(/does not exist|schema cache|Could not find/i.test(e.message))HOK=false}}
 async function feed(){if(!ME)return;
- try{ADS=await Ads.all();await loadHearts();paintFeed()}catch(e){$("#feed").innerHTML='<div class="em">Couldn\'t load ads: '+esc(e.message)+'</div>'}}
+ try{ADS=await Ads.all();await loadHearts();await loadReviews();paintFeed()}catch(e){$("#feed").innerHTML='<div class="em">Couldn\'t load ads: '+esc(e.message)+'</div>'}}
 $("#h-q").oninput=paintFeed;
-$("#feed").onclick=async e=>{const c=e.target.closest("[data-chk]"),d=e.target.closest("[data-del]"),hb=e.target.closest("[data-heart]"),tk=e.target.closest("[data-talk]");
+$("#feed").onclick=async e=>{const c=e.target.closest("[data-chk]"),d=e.target.closest("[data-del]"),hb=e.target.closest("[data-heart]"),tk=e.target.closest("[data-talk]"),vw=e.target.closest("[data-view]");
+ if(vw){openAd(vw.dataset.view);return}
  if(tk){const m=tk.nextElementSibling;const was=m.hidden;document.querySelectorAll(".talk-m").forEach(x=>x.hidden=true);m.hidden=!was;return}
- if(hb){if(!HOK){alert("Run supabase-setup-10.sql in Supabase first.");return}
-  const id=hb.dataset.heart,o=HEARTS[id]||(HEARTS[id]={n:0,me:false}),on=!o.me;o.me=on;o.n=Math.max(0,o.n+(on?1:-1));paintFeed();
-  try{if(on)await EMAuth.rest("ad_hearts","POST",{ad_id:id,user_id:EMAuth.uid()},{Prefer:"return=minimal"});else await EMAuth.rest("ad_hearts?ad_id=eq."+encodeURIComponent(id)+"&user_id=eq."+EMAuth.uid(),"DELETE",null,{Prefer:"return=minimal"})}
-  catch(x){if(!/duplicate|23505/i.test(x.message)){o.me=!on;o.n=Math.max(0,o.n+(on?-1:1));paintFeed();if(/does not exist|schema cache/i.test(x.message))HOK=false;alert("Couldn't heart: "+(HOK?x.message:"run supabase-setup-10.sql in Supabase first."))}}return}
+ if(hb){toggleHeart(hb.dataset.heart);return}
  if(c){const a=ADS.find(x=>x.id===c.dataset.chk);if(a){/* viewer gives what the poster wants */S.a=JSON.parse(JSON.stringify(a.b));S.b=JSON.parse(JSON.stringify(a.a));persist("a");persist("b");api.redraw();tab("chk");scrollTo(0,0)}}
  if(d&&confirm("Delete this ad?")){try{await Ads.del(d.dataset.del);await feed()}catch(x){alert("Couldn't delete: "+x.message)}}};
 api.redraw();tab(location.hash==="#hub"?"hub":"chk");
@@ -149,3 +147,48 @@ document.addEventListener("input",e=>{const r=e.target.closest&&e.target.closest
 document.addEventListener("input",e=>{const r=e.target.closest&&e.target.closest("[data-gem]");if(!r)return;const k=r.dataset.gem,v=Math.max(0,Math.min(99999999,parseInt(r.value,10)||0));
  S[k]=S[k].filter(x=>x.n!=="@m");if(v)S[k].push({n:"@m",q:v});persist(k);paintTags()});
 document.addEventListener("click",e=>{if(!e.target.closest(".talk"))document.querySelectorAll(".talk-m").forEach(x=>x.hidden=true)});
+async function toggleHeart(id0){const hb={dataset:{heart:id0}};
+if(!HOK){alert("Run supabase-setup-10.sql in Supabase first.");return}
+  const id=hb.dataset.heart,o=HEARTS[id]||(HEARTS[id]={n:0,me:false}),on=!o.me;o.me=on;o.n=Math.max(0,o.n+(on?1:-1));paintFeed();paintModalHeart();
+  try{if(on)await EMAuth.rest("ad_hearts","POST",{ad_id:id,user_id:EMAuth.uid()},{Prefer:"return=minimal"});else await EMAuth.rest("ad_hearts?ad_id=eq."+encodeURIComponent(id)+"&user_id=eq."+EMAuth.uid(),"DELETE",null,{Prefer:"return=minimal"})}
+  catch(x){if(!/duplicate|23505/i.test(x.message)){o.me=!on;o.n=Math.max(0,o.n+(on?-1:1));paintFeed();paintModalHeart();if(/does not exist|schema cache/i.test(x.message))HOK=false;alert("Couldn't heart: "+(HOK?x.message:"run supabase-setup-10.sql in Supabase first."))}}}
+
+/* ---- View details + star reviews ---- */
+let REV=[],ROK=true,CUR=null;
+const starsHTML=(n,sz)=>{n=Math.round(n);return`<span class="stars" style="${sz?"font-size:"+sz+"px":""}" aria-label="${n} out of 5">${"★".repeat(n)}<i>${"★".repeat(5-n)}</i></span>`};
+async function loadReviews(){if(!ROK)return;
+ try{REV=await EMAuth.rest("ad_reviews?select=id,ad_id,ad_owner,reviewer_id,reviewer_name,stars,comment,created_at&order=created_at.desc&limit=2000")}
+ catch(e){REV=[];if(/does not exist|schema cache|Could not find/i.test(e.message))ROK=false}}
+const ownerStats=uid=>{const L=REV.filter(r=>r.ad_owner===uid);return{n:L.length,avg:L.length?L.reduce((t,r)=>t+r.stars,0)/L.length:0}};
+function openAd(id){const a=ADS.find(x=>x.id===id);if(!a)return;CUR={id,pick:0};
+ let m=document.getElementById("ad-modal");if(!m){m=document.createElement("div");m.id="ad-modal";m.className="adm";document.body.appendChild(m);
+  m.addEventListener("click",modalClick)}
+ loadReviews().then(()=>paintModal());paintModal();m.hidden=false;document.body.style.overflow="hidden"}
+function closeAd(){const m=document.getElementById("ad-modal");if(m)m.hidden=true;document.body.style.overflow="";CUR=null}
+function paintModalHeart(){if(!CUR)return;const b=document.querySelector("#ad-modal [data-heart]");if(!b)return;const h=HEARTS[CUR.id]||{};b.classList.toggle("on",!!h.me);b.querySelector("span").textContent=h.n||0}
+function paintModal(){const m=document.getElementById("ad-modal");if(!m||!CUR)return;const a=ADS.find(x=>x.id===CUR.id);if(!a){closeAd();return}
+ const L=REV.filter(r=>r.ad_id===a.id),st=ownerStats(a.uid),mine=L.find(r=>r.reviewer_id===EMAuth.uid()),own=a.uid===EMAuth.uid(),h=HEARTS[a.id]||{};
+ if(CUR.pick===0&&mine&&!CUR.touched)CUR.pick=mine.stars;
+ const rev=ROK?(L.length?L.map(r=>`<div class="rv"><div class="rv-t"><b>${esc(r.reviewer_name)}</b>${starsHTML(r.stars)}${(r.reviewer_id===EMAuth.uid()||EMAuth.isAdmin())?`<button type="button" class="rv-x" data-rvdel="${esc(r.id)}" title="Delete review">✕</button>`:""}</div>${r.comment?`<p>${esc(r.comment)}</p>`:""}</div>`).join(""):'<div class="em" style="border:0;padding:8px 0">No reviews yet.</div>'):'<div class="em" style="border:0">Run supabase-setup-30.sql in Supabase to turn on reviews.</div>';
+ const form=!ROK?"":own?'<div class="rv-n">You can\'t review your own ad.</div>':`<div class="rv-f"><div class="rv-pick" role="radiogroup" aria-label="Your rating">${[1,2,3,4,5].map(n=>`<button type="button" data-star="${n}" class="${n<=CUR.pick?"on":""}" aria-label="${n} star${n>1?"s":""}">★</button>`).join("")}</div><textarea id="rv-c" maxlength="300" placeholder="Write a review (optional)">${mine&&!CUR.touched?esc(mine.comment):""}</textarea><div class="row"><button type="button" class="pri" data-rvsend>${mine?"Update my review":"Post review"}</button><span id="rv-m"></span></div></div>`;
+ m.innerHTML=`<div class="adm-b" role="dialog" aria-modal="true"><button type="button" class="adm-x" data-adclose aria-label="Close">✕</button>
+ <div class="adm-h"><div><b>${esc(a.u)}</b><div class="adm-s">${st.n?starsHTML(st.avg)+` <span>(${st.avg.toFixed(1)}) · ${st.n} review${st.n>1?"s":""}</span>`:'<span>No reviews yet</span>'}</div></div></div>
+ <div class="cols"><div class="adm-c"><div class="lab off">Offering · ${fmt(tot(a.a))}</div>${mini(a.a)}</div><div class="adm-c"><div class="lab lk">Looking for · ${fmt(tot(a.b))}</div>${tagsHTML(a.c)}${mini(a.b)||(a.c&&a.c.length?"":'<i class="mt">Open to offers</i>')}</div></div>
+ ${a.note?`<p class="adm-n">${esc(a.note)}</p>`:""}
+ <div class="adm-f"><span>Posted ${ago(a.t)}</span><button type="button" class="heart${h.me?" on":""}" data-heart="${esc(a.id)}" aria-label="Heart this ad">${HEART}<span>${h.n||0}</span></button></div>
+ <h4 class="adm-r">Reviews</h4>${rev}${form}</div>`}
+async function modalClick(e){const t=e.target;
+ if(t.id==="ad-modal"||t.closest("[data-adclose]")){closeAd();return}
+ const hb=t.closest("[data-heart]");if(hb){toggleHeart(hb.dataset.heart);return}
+ const sb=t.closest("[data-star]");if(sb){const c=document.getElementById("rv-c");CUR.pick=+sb.dataset.star;CUR.touched=1;const txt=c?c.value:"";paintModal();const c2=document.getElementById("rv-c");if(c2)c2.value=txt;return}
+ const dl=t.closest("[data-rvdel]");if(dl){if(!confirm("Delete this review?"))return;try{await EMAuth.rest("ad_reviews?id=eq."+encodeURIComponent(dl.dataset.rvdel),"DELETE",null,{Prefer:"return=minimal"});await loadReviews();paintModal()}catch(x){alert("Couldn't delete: "+x.message)}return}
+ if(t.closest("[data-rvsend]")){const a=ADS.find(x=>x.id===CUR.id),msgEl=document.getElementById("rv-m");msgEl.style.color="#ff6b6b";
+  if(!CUR.pick){msgEl.textContent="Pick 1 to 5 stars first.";return}
+  const row={ad_id:a.id,ad_owner:a.uid,reviewer_id:EMAuth.uid(),reviewer_name:ME,stars:CUR.pick,comment:document.getElementById("rv-c").value.trim().slice(0,300)};
+  msgEl.textContent="Saving…";
+  try{const had=REV.find(r=>r.ad_id===a.id&&r.reviewer_id===EMAuth.uid());
+   if(had)await EMAuth.rest("ad_reviews?id=eq."+encodeURIComponent(had.id),"PATCH",{stars:row.stars,comment:row.comment},{Prefer:"return=minimal"});
+   else await EMAuth.rest("ad_reviews","POST",row,{Prefer:"return=minimal"});
+   CUR.touched=0;await loadReviews();paintModal();paintFeed()}
+  catch(x){msgEl.textContent=/does not exist|schema cache/i.test(x.message)?"Run supabase-setup-30.sql in Supabase first.":"Couldn't save: "+x.message}}}
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&CUR)closeAd()});

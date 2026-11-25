@@ -61,3 +61,20 @@ ul.nt{margin:10px 0 0;padding-left:18px;color:var(--mute);font-size:13px}
 .talk-m a:hover{background:#7aa7ff22}
 
 .tagsec{border-top:1px solid var(--line,rgba(128,128,128,.3));margin-top:6px;padding-top:8px}.tagsec h4{margin:0 0 2px;font-size:14px;text-align:center}.tagsec h4 small{display:block;font-weight:400;opacity:.7;font-size:12px;margin-top:2px}.tagrow .lim,.lim{display:inline-flex;align-items:center;gap:6px}.lim b{font-size:12px;opacity:.85}
+
+/* view details + reviews */
+.stars{color:#f5b301;letter-spacing:1px;font-size:13px;white-space:nowrap}.stars i{font-style:normal;color:#4a4a52}
+.ad-st{margin-left:6px;font-weight:400}
+.adm{position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;padding:16px}.adm[hidden]{display:none}
+.adm-b{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:14px;width:min(560px,100%);max-height:calc(100vh - 32px);overflow:auto;padding:20px}
+.adm-x{position:absolute;top:10px;right:10px;width:32px;height:32px;border-radius:8px;border:1px solid var(--line);background:transparent;color:inherit;cursor:pointer}
+.adm-h{padding-right:40px;margin-bottom:12px;border-bottom:1px solid var(--line);padding-bottom:12px}.adm-h b{font-size:18px}.adm-s{margin-top:3px;color:var(--mute);font-size:13px}
+.adm .cols{display:grid;grid-template-columns:1fr 1fr;gap:10px}.adm-c{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:10px;padding:10px}
+.adm .lab.off{color:#3bb26b}.adm .lab.lk{color:#e0a030}
+.adm-n{margin:12px 0 0;color:var(--mute)}.adm-f{display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:12px;border-top:1px solid var(--line);color:var(--mute);font-size:13px}
+.adm-r{margin:16px 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute)}
+.rv{padding:9px 0;border-top:1px solid var(--line)}.rv-t{display:flex;align-items:center;gap:10px;justify-content:space-between}.rv-t b{flex:1}.rv p{margin:4px 0 0;color:var(--mute);font-size:14px;overflow-wrap:anywhere}
+.rv-x{background:none;border:0;color:var(--mute);cursor:pointer}.rv-x:hover{color:#ff6b6b}.rv-n{color:var(--mute);font-size:13px;margin-top:10px}
+.rv-f{margin-top:12px;border-top:1px solid var(--line);padding-top:12px}.rv-f textarea{width:100%;min-height:60px;margin:6px 0}
+.rv-pick button{background:none;border:0;font-size:28px;line-height:1;cursor:pointer;color:#4a4a52;padding:0 2px}.rv-pick button.on{color:#f5b301}
+@media(max-width:560px){.adm .cols{grid-template-columns:1fr}.adm{align-items:flex-end;padding:8px}}

@@ -37,7 +37,7 @@ async function load(){
   try{const x=(await EMAuth.rest("profiles?id=eq."+encodeURIComponent(r.id)+"&select=roblox_id,roblox_name"))[0];if(x)Object.assign(r,x)}catch(e){r.__norb=1}
   P=r;$("#pf").hidden=false;$("#pf-msg").hidden=true;$("#pf-n").textContent="#"+(idx+1);
   try{$("#pf-ads").textContent=(await EMAuth.rest("ads?select=id&username=eq."+encodeURIComponent(P.username)+"&limit=1000")).length}catch(e){}
-  paint();paintPres();paintMod();paintRb();paintDel();
+  paint();paintPres();paintMod();paintRb();paintDel();paintReviews();
   if(window.EMSocial)EMSocial.mount($("#pf-soc"),P.id,P.username);
   if(mine){["#pf-bb","#pf-ab","#pf-bx","#pf-hint","#pf-nx"].forEach(s=>$(s).hidden=false);$("#pf-un").textContent=P.username;if(P.__nodc)$("#pf-hint").textContent="Nickname and Discord can't be saved yet: run supabase-setup-7.sql in Supabase first.";
    if(P.__old)$("#pf-hint").textContent="Pictures can't be saved yet: run supabase-setup-4.sql in Supabase first."}
@@ -203,3 +203,12 @@ function paintMod(){
    paint();paintMod()}};
  paintBan()}
 document.addEventListener("click",()=>{const m=$("#pf-stp");if(m)m.hidden=true});
+
+/* star reviews other members left on this person's trade ads */
+async function paintReviews(){const b=$("#pf-revb");if(!b)return;
+ try{const L=await EMAuth.rest("ad_reviews?ad_owner=eq."+encodeURIComponent(P.id)+"&select=reviewer_name,stars,comment,created_at&order=created_at.desc&limit=100");
+  if(!L.length){b.innerHTML='<p class="mt">No reviews yet.</p>';return}
+  const st=n=>'<span class="stars">'+"\u2605".repeat(n)+"<i>"+"\u2605".repeat(5-n)+"</i></span>",avg=L.reduce((t,r)=>t+r.stars,0)/L.length;
+  b.innerHTML='<div style="margin-bottom:8px">'+st(Math.round(avg))+' <b>'+avg.toFixed(1)+'</b> <span class="mt">\u00b7 '+L.length+' review'+(L.length>1?'s':'')+'</span></div>'+
+   L.map(r=>'<div class="rv"><div class="rv-t"><b>'+esc(r.reviewer_name)+'</b>'+st(r.stars)+'</div>'+(r.comment?'<p>'+esc(r.comment)+'</p>':'')+'</div>').join("")}
+ catch(e){b.innerHTML='<p class="mt">'+(/does not exist|schema cache|Could not find/i.test(e.message)?(mine?"Reviews aren't ready yet: run supabase-setup-30.sql in Supabase first.":"No reviews yet."):"Couldn't load reviews.")+'</p>'}}
