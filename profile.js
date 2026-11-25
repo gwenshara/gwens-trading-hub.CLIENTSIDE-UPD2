@@ -66,7 +66,7 @@ $("#pf-ds").onclick=async()=>{const v=$("#pf-dt").value.trim().replace(/^@/,"");
 $("#pf-dok").onclick=async()=>{if(await rpc("verify_discord",{target:P.username,ok:true},"Discord confirmed.")){P.discord_verified=true;paintDc()}};
 $("#pf-dno").onclick=async()=>{if(await rpc("verify_discord",{target:P.username,ok:false},"Confirmation removed.")){P.discord_verified=false;paintDc()}};
 /* roblox: a one-time code typed into the Roblox game links the account. No Roblox password is ever used. */
-const ROBLOX_GAME_URL=""; /* paste your game's link here, e.g. https://www.roblox.com/games/123456789/Your-Game */
+const ROBLOX_GAME_URL="https://www.roblox.com/fr/games/116396707306418/EM-Wiki-Revamp-Linking"; /* paste your game's link here, e.g. https://www.roblox.com/games/123456789/Your-Game */
 let rbTimer=null,rbEnd=0;
 function rbStop(){clearInterval(rbTimer);rbTimer=null}
 function paintRb(){const v=$("#pf-rv");if(!v)return;
