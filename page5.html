@@ -480,7 +480,7 @@ button:hover,select:hover{border-color:var(--accent)}
  
  <div class="bar">
   <input id="q" type="search" placeholder="Search items…" aria-label="Search items">
-  <div class="dd"><button id="ddb" aria-haspopup="listbox" aria-expanded="false"><span id="ddl">Sort: Category</span><span aria-hidden="true">▾</span></button><div class="ddp" id="ddp" role="listbox" hidden></div><input type="hidden" id="sort" value="cat"></div>
+  <div class="dd"><button id="ddb" aria-haspopup="listbox" aria-expanded="false"><span id="ddl">Sort: Alphabetical (A to Z)</span><span aria-hidden="true">▾</span></button><div class="ddp" id="ddp" role="listbox" hidden></div><input type="hidden" id="sort" value="az"></div>
   <button id="lists" class="lst" aria-pressed="false">♥ My List<span id="lcount">0</span></button>
   <button id="exp" hidden title="Copy all your edits as text">\ud83d\udccb Edits</button><div class="st"><button id="setb" aria-haspopup="true" aria-expanded="false" title="Settings">⚙ Settings</button><div class="stp" id="stp" hidden><div class="sec"><div class="stt">Notifications</div><div class="sn em-setnotif">Loading…</div></div><div class="sec"><div class="stt">Appearance</div><button id="theme" class="thr" type="button" aria-label="Switch between light and dark mode"><span>Theme: <b class="thv"></b></span><span class="thi" aria-hidden="true"></span></button></div><div class="sec"><button class="stg" id="stg" type="button" aria-expanded="false" aria-controls="stbody"><span>Show on items</span><i aria-hidden="true">▸</i></button><div class="stbody" id="stbody" hidden><label class="ck2"><input type="checkbox" data-s="ret"> Retired tags</label><label class="ck2"><input type="checkbox" data-s="exo"> Exotic tags</label><label class="ck2"><input type="checkbox" data-s="code"> Code tags</label><label class="ck2"><input type="checkbox" data-s="trend"> Item demand (arrows and colors)</label><label class="ck2"><input type="checkbox" data-s="qty"> Inventory amounts (x1, x2…)</label></div></div><div class="sec"><div class="stt">Info card</div><label class="ck2"><input type="checkbox" data-s="stab"> Side tabs on info card (Main Info, Showcase, Fun Fact)</label><label class="ck2"><input type="checkbox" data-s="xbtn"> Close (X) button on info card</label></div></div></div>
  </div>
@@ -814,10 +814,8 @@ const num=s=>{const m=s.match(/([\d.]+)(?:-[\d.]+)?(k?)/);return m?parseFloat(m[
 const IMG={},FXM={},FXA={},VID={};
 const PAGE=5,PAGES=5,PGMAP={"Kawaii":2,"Exalted":2,"Millionaire":2,"Paladin":2,"Radical":2,"Stellar":2,"Haunted":2,"Elemental":2,"Malignant":2,"Emo":2,"Nonchalant":2,"Sleepy":2,"Eclectic":2,"Lazy":2,"Nightmare":2,"##########":2,"Usertag":2,"Angel":2,"Assassin":2,"Cryptic":2,"Finalist":2,"Glimmering":2,"Heckler":2,"Rat":2,"Zee's Cotton Candy":2,"Rainbow Wand":2,"Hen Plushie":2,"Dollie Duck":2,"Fluffy Bunny":2,"Easter Basket":2,"Sakura Parasol":2,"Pumpkin Puppy":2,"Stitch Bunny":2,"Ruby Reindeer":2,"Festive Teddy":2,"Big Pink Daisy":2,"Cora Cow":2,"Dance Grenade":2,"Holiday Ham":2,"Festive Penguin":2,"2025 Fireworks":2,"Bobo the Picnic Bear":2,"Ultimate Drive Speedster":2,"Zara Plushie":2,"Easter Gachapon":2,"Christmas Gachapon":2,"Lollipop Cat":2,"Clover Parasol":2,"Pink Coconut Drink":2,"Sakura Matcha":2,"TypicalToype":2,"Beach Gun":2,"Boba Tea":2,"Pumpkin Staff":2,"Skelefriend":2,"Summer Palooza Blaster":2,"Turkey Leg":2,"4-String Roblocaster":2,"Chepi the Mushroom Cat":2,"Overseer Teddy":2,"Stardust Mooncaster":2,"Vliec Plushie":2,"Korblox Deathspeaker's Spell Book":3,"2018 Fireworks":3,"2019 Fireworks":3,"Firecracker Rocket":3,"Fortune Cookie":3,"Liberty Snow Cone":3,"Lucky Harp":3,"Microphone":3,"Fireworks":3,"Top Secret Briefcase":3,"4th of July Fireworks":3,"Berry Sweet Boba":3,"Chocolate Gelt":3,"Heart Hammer":3,"Love Hurts Ray Gun":3,"Protest Sign: Blame John":3,"Protest Sign: Touch Grass":3,"Skull Gun":3,"Bubble Bunny Blaster":3,"Bucket":3,"Electronic Illumination Device":3,"Fire Breath Potion":3,"Flashlight":3,"Jet Ski":3,"Jollypop":3,"Mega Mallet":3,"Necromancer Staff":3,"ROBAR eXtreme Chocolate Crunch":3,"Slateskin Potion":3,"Strawberry Juice":3,"Bag O Christmas Tree Seeds":3,"Mini Naina":3,"Mini Nooby":3,"Mini Ry":3,"Mini Vliec":3,"Barry the Bear":3,"Mini Worthy":3,"Vampire Bat":3,"Hen Trio":3,"Chef Shrimp":3,"Batp0ny":3,"Mini Watsxn":3,"Diamond Kawaii Sword":3,"Shiny Star":3,"Ion Gem":3,"Poppy the Panda":3,"Mini Crolie":3,"Mini Val":3,"Sparkles the Flying Unicorn":3,"White Nova":3,"Autumn Spirit":3,"Selene the Swan":3,"Undead Gozthr":3,"Nova":3,"Jumbo Hamster":3,"Lucy the Leopard":3,"Owen the Orca":3,"Yasjee":3,"Darren the Dolphin":3,"Radiant Butterfly":3,"Ancient Horror":3,"Jumbo Elephant":3,"Spooky Scary Skull":4,"Wilfred the Whale":4,"Penelope P. Butters":4,"Ricky":4,"Silly Marshmallow":4,"Kawaii Sword":4,"Mini Zomebody":4,"Mr. Yeti":4,"Bambu the Red Panda":4,"Haunted Sleeping Bag":4,"Mochi The Wistful Dragon":4,"Cheerful Reindeer":4,"AristoCAT":4,"Blue Slime":4,"Chonky Seal":4,"Mini Arctic":4,"Pixel Cottontail":4,"Froggy Fawn":4,"Jerry the Jellyfish":4,"Little Bunny":4,"Mini Dawn":4,"Nancy":4,"Posh Poodle":4,"Ruu the Raccoon":4,"Box Turkey":4,"Cole":4,"Yeti":4,"Dazzling Heart":4,"Catalyst":4,"Green Axolotl":4,"Hampter":4,"Mini Steel":4,"Pink Axolotl":4,"Pumpkin Friend":4,"Sammy the Sea Otter":4,"Tomekeeper Cat":4,"Grim The Devil Kitty":4,"Halrek":4,"Horse":4,"Lil Warden":4,"Mummy Beast":4,"Nessie":4,"Pet Rock":4,"Skibidi Typical":4,"Zencoina":4,"Baby Lamb":4,"Diamond Hen":4,"Octopus":4,"Airborne Pup":4,"Arctic Wolf":4,"Bee":4,"Big Turkey":4,"Block Dragon":4,"Block Frog":4,"Blue Trooper":4,"Boat Car":4,"Carol the Crab":4,"Christmas Goat":4,"Hen":4,"Kangaroo":4,"Red Trooper":4,"Rudolph the Reindeer":4,"Sergio the Seahorse":5,"Star Buddy":5,"T-Posing Noob":5,"Airborne Bear":5,"Bookworm":5,"Dark Pegasus":5,"Elf":5,"Ellie the Emu":5,"Halrog":5,"Vampire Puppy":5,"Disconnect":5,"Big Bunny":5,"Lovely Explosion":5,"Halrog of Prey":5,"Sleigh of Prey":5,"Firecracker":5,"Bats":5,"Cupid's Arrow":5,"Caked":5,"Carrot Attack":5,"Coffin":5,"Jellied":5,"Spider":5,"Baublify":5,"Frostbite":5,"Gifted":5,"Avalanche":5,"Balloon":5,"Bowl Over":5,"Bullet Barrage":5,"Coconut":5,"Beef Wellington Launcher":5,"1st Place Trophy":5,"2nd Place Trophy":5,"3rd Place Trophy":5,"Air Wizard's Staff":5,"Anti Award":5,"Big Rainbow Wand":5,"Boba Gun":5,"Chocolate Award":5,"Epic Award":5,"Epic Duck Award":5,"Flora Award":5,"Giga Award":5,"Harvest Award":5,"Leafstorm Wand":5,"Oceana Award":5,"Opulent Award":5,"Ostentatious Award":5,"Otherworldly Sceptre":5,"Prime Award":5,"Prodigious Award":5,"Scrumptious Award":5,"Simmering Star Wand":5,"Stunning Award":5,"Stupendous Award":5,"Trowel":5,"Uber Award":5};
 const pgOfName=n=>PGMAP[n]||1;
-const CP=PAGE===1?Math.max(1,parseInt(new URLSearchParams(location.search).get("pg"))||1):PAGE;let NPG=5,PGL={};const PGCAP=200;
-function layoutPages(){const by={};items.slice().sort(catS).forEach(i=>(by[i.t]=by[i.t]||[]).push(i));const m={};let pg=1;
- Object.keys(TORD).sort((a,b)=>TORD[a]-TORD[b]).forEach(t=>{const a=by[t]||[];const n=Math.max(1,Math.ceil(a.length/PGCAP));a.forEach((i,k)=>{m[i.n]=pg+Math.floor(k/PGCAP)});pg+=n});
- PGL=m;NPG=pg-1}
+const CP=PAGE===1?Math.max(1,parseInt(new URLSearchParams(location.search).get("pg"))||1):PAGE;let NPG=5,PGL={};const PGCAP=200;const DEFSORT=(PAGE>1||/[?&](pg|c)=/.test(location.search))?"cat":"az";
+function layoutPages(){const m={};items.slice().sort(catS).forEach((i,k)=>{m[i.n]=1+Math.floor(k/PGCAP)});PGL=m;NPG=Math.max(1,Math.ceil(items.length/PGCAP))}
 function applyAssets(){(window.__ASSETS||[]).forEach(a=>{for(const k of["IMG","FXM","FXA","VID"]){const t={IMG,FXM,FXA,VID}[k];Object.assign(t,a[k]||{})}});window.__ASSETS=[]}
 applyAssets();
 const pgState={};pgState[PAGE]=2;
@@ -915,7 +913,7 @@ const updK=n=>{const o=OVR[n];return o&&o.t?o.t:(UPD[n]||0)},pupdK=n=>{const o=O
 const isOC=i=>/^\s*[0oO]\s*\/\s*C\s*$/i.test(i.p||""),sv=i=>isOC(i)?1e12:i.v,botU=i=>!!(i.u&&isOC(i));
 const catS=(a,b)=>TORD[a.t]-TORD[b.t]||pinC(a,b)||(+!!b.ub)-(+!!a.ub)||(+botU(a))-(+botU(b))||sv(b)-sv(a);const pinC=(a,b)=>{const pa=PINTOP.indexOf(a.n),pb=PINTOP.indexOf(b.n);if(pa<0&&pb<0)return 0;if(pa>=0&&pb>=0)return pa-pb;return pa>=0?-1:1};
 const cop=dir=>(a,b)=>{const x=cnum(a.n),y=cnum(b.n);if(x==null&&y==null)return catS(a,b);if(x==null)return 1;if(y==null)return -1;return (x-y)*dir||catS(a,b)};
-const S={cat:catS,
+const S={az:(a,b)=>a.n.localeCompare(b.n,undefined,{sensitivity:"base",numeric:true}),cat:catS,
  dem:(a,b)=>((INFO[b.n]||{}).stars||0)-((INFO[a.n]||{}).stars||0)||sv(b)-sv(a),
  upd:(a,b)=>updK(b.n)-updK(a.n)||catS(a,b),
  ph:(a,b)=>sv(b)-sv(a),pl:(a,b)=>sv(a)-sv(b),
@@ -923,7 +921,7 @@ const S={cat:catS,
  col:(a,b)=>RAIN[a.t]-RAIN[b.t]||sv(b)-sv(a),
  ch:cop(-1),cl:cop(1)};
 const PINTOP=["French", "German"];
-const SB=k=>(a,b)=>k==="cat"?catS(a,b):((+botU(a))-(+botU(b))||S[k](a,b));
+const SB=k=>(a,b)=>k==="cat"?catS(a,b):k==="az"?S.az(a,b):((+botU(a))-(+botU(b))||S[k](a,b));
 const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const SET=Object.assign({ret:true,exo:true,code:true,trend:true,qty:true,stab:true,xbtn:true},(()=>{try{return JSON.parse(localStorage.getItem("set")||"{}")}catch(e){return{}}})());
 const bang=i=>(SET.trend&&trend(i.n)==="infl")?"!":"";
@@ -941,7 +939,7 @@ function drawPager(on){
  const el=document.getElementById("pager");if(!el)return;
  if(!on){el.innerHTML="";el.hidden=true;return}
  el.hidden=false;
- const href=p=>p===1?"index.html":p<=5?"page"+p+".html":"index.html?pg="+p;
+ const href=p=>p===1?"index.html?c=1":p<=5?"page"+p+".html":"index.html?pg="+p;
  const a=(lbl,t,p,dis,cur)=>dis?`<span class="pg dis">${t}</span>`:`<a class="pg${cur?" on":""}" href="${href(p)}"${cur?' aria-current="page"':""} aria-label="${lbl}">${t}</a>`;
  let h=a("Previous page","&lsaquo;",CP-1,CP<2);
  for(let p=1;p<=NPG;p++)h+=a("Page "+p,p,p,false,p===CP);
@@ -1079,7 +1077,7 @@ document.addEventListener("keydown",e=>{
  if(e.key==="Enter"&&e.target.matches&&e.target.matches(".card"))openM(+e.target.dataset.open);
 });
 
-const SORTS=[["cat","Category"],["dem","Most Demanded"],["upd","Recently Updated"],"$",["ph","Price (High to Low)"],["pl","Price (Low to High)"],["pupd","Price (Recently Updated)"],["col","Color (Rainbow)"]];
+const SORTS=[["az","Alphabetical (A to Z)"],["cat","Category"],["dem","Most Demanded"],["upd","Recently Updated"],"$",["ph","Price (High to Low)"],["pl","Price (Low to High)"],["pupd","Price (Recently Updated)"],["col","Color (Rainbow)"]];
 const SORTS2=[["ch","Copies (High to Low)"],["cl","Copies (Low to High)"]];
 const sopt=o=>o==="$"?'<div class="dds"><span>$</span></div>':`<button class="o" role="option" data-v="${o[0]}">${o[1]}</button>`;
 $("#ddp").innerHTML=`<div class="ddc">${SORTS.map(sopt).join("")}</div><div class="ddc">${SORTS2.map(sopt).join("")}</div>`;
@@ -1095,7 +1093,7 @@ $("#ddb").onclick=e=>{e.stopPropagation();ddOpen($("#ddp").hidden)};
 $("#ddp").addEventListener("click",e=>{const b=e.target.closest(".o");if(b){setSort(b.dataset.v);ddOpen(false)}});
 document.addEventListener("click",e=>{if(!e.target.closest(".dd"))ddOpen(false)});
 document.addEventListener("keydown",e=>{if(e.key==="Escape")ddOpen(false)});
-setSort("cat");
+setSort(DEFSORT);
 render();
 function kickVids(){document.querySelectorAll("video.evt").forEach(v=>{v.muted=true;v.defaultMuted=true;v.loop=true;v.setAttribute("playsinline","");if(v.paused){const p=v.play();if(p&&p.catch)p.catch(()=>{})}})}
 ["pointerdown","touchstart","scroll","keydown"].forEach(ev=>addEventListener(ev,kickVids,{passive:true,once:false}));
@@ -1575,7 +1573,7 @@ document.addEventListener("click",async e=>{
 try{const S=JSON.parse(sessionStorage.getItem("em_pg_state")||"null");sessionStorage.removeItem("em_pg_state");
  if(S&&PAGE===1){$("#q").value=S.q||"";(S.types||[]).forEach(x=>typeOn.add(x));(S.stats||[]).forEach(x=>statOn.add(x));onlyList=!!S.onlyList;
   if(typeOn.size===1){const t=CAR.findIndex(c=>c[0]===[...typeOn][0]);if(t>=0){sel=t;rot=t;layout()}}
-  if(S.sort&&S.sort!=="cat")setSort(S.sort)}}catch(e){}
+  if(S.sort&&S.sort!==DEFSORT)setSort(S.sort)}}catch(e){}
 render();try{if(typeof updCG==="function")updCG()}catch(e){}
 </script><script>
 (function(){var r=document.getElementById("isz");if(!r)return;var K="em_icon_size",v=100;
