@@ -133,6 +133,16 @@ function paintHead(){const h=$("#dm-ha");if(!h||!cur)return;
  if(window.EMSocial&&EMSocial.loaded&&!EMSocial.missing){const r=EMSocial.rel(cur.id).kind;
   b+=r==="none"?'<button class="dm-hb pri" data-fr="req" type="button">Add friend</button>':r==="out"?'<span class="dm-hb mute">Request sent</span>':r==="in"?'<button class="dm-hb pri" data-fr="acc" type="button">Accept request</button>':'<span class="dm-hb ok">Friends</span>'}
  h.innerHTML=b}
+function askExcuse(id){
+ if(document.getElementById("mm-ex"))return;
+ const o=document.createElement("div");o.id="mm-ex";o.style.cssText="position:fixed;inset:0;z-index:99980;background:rgba(0,0,0,.7);display:grid;place-items:center;padding:16px";
+ o.innerHTML='<div style="background:var(--b2,#232327);color:var(--text,#fff);border:2px solid #e5484d;border-radius:16px;max-width:420px;width:100%;padding:20px;font-family:Montserrat,sans-serif"><div style="font-weight:800;font-size:18px;margin-bottom:6px">Why can\'t you be the middleman?</div><p style="margin:0 0 10px;font-size:13px;opacity:.8;line-height:1.45">Write your excuse. It is sent right away in a private message to both people who asked for a middleman.</p><textarea id="mm-ex-t" maxlength="400" rows="4" placeholder="Your excuse\u2026" style="width:100%;box-sizing:border-box;padding:10px;border-radius:10px;border:1px solid var(--bl,#3a3a42);background:var(--b3,#2a2a30);color:inherit;font:600 14px Montserrat,sans-serif;resize:vertical"></textarea><div id="mm-ex-e" style="color:#ff6b6b;font-size:13px;min-height:18px;margin:6px 0"></div><div style="display:flex;gap:10px"><button id="mm-ex-go" type="button" style="flex:1;padding:11px;border:none;border-radius:10px;background:#e5484d;color:#fff;font:800 14px Montserrat,sans-serif;cursor:pointer">Send excuse &amp; decline</button><button id="mm-ex-no" type="button" style="padding:11px 16px;border:1px solid var(--bl,#3a3a42);border-radius:10px;background:transparent;color:inherit;font:700 14px Montserrat,sans-serif;cursor:pointer">Cancel</button></div></div>';
+ document.body.appendChild(o);const t=o.querySelector("#mm-ex-t"),e=o.querySelector("#mm-ex-e"),g=o.querySelector("#mm-ex-go");t.focus();
+ o.querySelector("#mm-ex-no").onclick=()=>o.remove();
+ g.onclick=async()=>{const r=t.value.trim();if(r.length<3){e.textContent="Write an excuse first.";return}
+  e.textContent="";g.disabled=true;g.textContent="Sending\u2026";
+  try{await EMAuth.rest("rpc/mm_decline","POST",{p_nid:id,p_reason:r});NOTIF=NOTIF.filter(n=>n.id!==id);o.remove();paintList()}
+  catch(err){g.disabled=false;g.textContent="Send excuse & decline";e.textContent=/does not exist|schema cache|Could not find/i.test(err.message)?"Run supabase-setup-27.sql in Supabase first.":err.message}}}
 function mmTail(x,nm,both,mine,other){
  if(both){
   if(x.mst==="accepted")return'<div class="mm-d">'+esc(nm)+' accepted.</div>'+(x.mgid?'<button class="mm-go" data-go="'+esc(x.mgid)+'" type="button">Go to the group \u2192</button>':"");
@@ -477,7 +487,7 @@ $("#dm-list").addEventListener("click",async e=>{
  if(ra||rd){const row=EMSocial.incoming().find(r=>r.id===(ra||rd).closest("[data-rid]").dataset.rid);if(!row)return;
   try{if(ra)await EMSocial.accept(row);else await EMSocial.remove(row);await EMSocial.load();paintList();paintHead()}catch(err){alert("Couldn't do that: "+err.message)}return}
  const nm=e.target.closest("[data-nmsg]");if(nm){open(nm.dataset.nmsg,nm.dataset.nn);return}
- const nd=e.target.closest("[data-ndel]");if(nd){const id=nd.closest("[data-nid]").dataset.nid;try{try{await EMAuth.rest("rpc/mm_decline","POST",{p_nid:id})}catch(e0){if(!/function|schema cache|does not exist/i.test(e0.message))throw e0;await EMAuth.rest("notifications?id=eq."+encodeURIComponent(id),"DELETE")}NOTIF=NOTIF.filter(n=>n.id!==id);paintList()}catch(err){alert("Couldn't decline: "+err.message)}return}
+ const nd=e.target.closest("[data-ndel]");if(nd){const id=nd.closest("[data-nid]").dataset.nid;askExcuse(id);return}
  const tb=e.target.closest("[data-tab]");if(tb){TAB=tb.dataset.tab;sv("dm_tab",TAB);paintList();return}
  const c=e.target.closest(".dm-c");if(c){if(c.dataset.grp)openGroup(c.dataset.grp);else open(c.dataset.id,c.dataset.n,c.dataset.ch)}});
 $("#dm-r").addEventListener("click",async e=>{
