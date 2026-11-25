@@ -4,3 +4,5 @@
 .dn-btn{display:inline-block;background:var(--accent);color:#fff;text-decoration:none;border-radius:10px;padding:12px 22px;font:800 15px Montserrat,sans-serif}
 .dn-btn:hover{filter:brightness(1.1)}
 .dn-s{margin:18px 0 0!important;font-size:13px!important}
+.dn-or{margin:16px 0;color:var(--mute);font:700 12px Montserrat,sans-serif;text-transform:uppercase;letter-spacing:.1em}
+.dn-pp{background:#0070ba}
