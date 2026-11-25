@@ -5,7 +5,7 @@
 -- 1) "Tester" role (admins give it from Profile > Manage roles)
 create or replace function public.set_roles(target text, r text[]) returns void
 language plpgsql security definer set search_path = public as $$
-declare ok text[] := array['official_middleman','moderator','donator','top_trader','tester'];
+declare ok text[] := array['official_middleman','moderator','donator','top_trader','tester','value_handler'];
 begin
   if not public.is_admin() then raise exception 'Only admins can change roles.'; end if;
   if exists(select 1 from unnest(coalesce(r,'{}')) x where x <> all(ok)) then raise exception 'Unknown role.'; end if;

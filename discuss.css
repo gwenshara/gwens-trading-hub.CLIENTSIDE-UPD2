@@ -317,3 +317,23 @@
 .dm-q span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;opacity:.85}
 .dm-m.flash{animation:dmFlash 1.3s ease-out}
 @keyframes dmFlash{0%,35%{box-shadow:0 0 0 3px #7aa7ff}100%{box-shadow:0 0 0 0 #7aa7ff00}}
+
+/* middleman request: what is being traded */
+.mm-l{font:800 12px Montserrat,sans-serif;text-transform:uppercase;letter-spacing:.05em;color:var(--mute);margin-bottom:-4px}
+.mm-ta{width:100%;box-sizing:border-box;padding:10px 12px;border-radius:12px;border:2px solid var(--bl,#3a3a42);background:var(--b2,#232327);color:var(--text);font:600 14px/1.4 Montserrat,sans-serif;resize:vertical;min-height:64px}
+.mm-ta:focus{outline:none;border-color:#7aa7ff}
+.mm-e{min-height:16px;color:#ff6b6b;font:700 12px Montserrat,sans-serif}
+.mm-bar{display:flex;gap:8px}.mm-bar .mm-b{width:auto;flex:1}.mm-bar .mm-b.sec{flex:none;padding:11px 16px;background:transparent;border:1px solid var(--bl,#3a3a42);color:var(--text)}
+.mm-tr{display:flex;flex-direction:column;gap:6px;margin:0 0 10px}
+.mm-tr>div{padding:8px 10px;border-radius:10px;background:#0000002e;border:1px solid var(--bl,#3a3a42)}
+.mm-tr small{display:block;font:800 10px Montserrat,sans-serif;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);margin-bottom:2px}
+.mm-tr span{display:block;font:700 13px/1.35 Montserrat,sans-serif;color:var(--text);overflow-wrap:anywhere;white-space:pre-wrap}
+.dm-nt .mm-tr{margin:2px 0}
+
+/* middleman group chat: what is being traded (black rectangle on top) */
+.g-trade{background:#000;color:#fff;padding:12px 18px;border-bottom:1px solid #2a2a30}
+.gt-h{font:800 11px Montserrat,sans-serif;text-transform:uppercase;letter-spacing:.1em;color:#e0a43a;margin-bottom:8px}
+.gt-r{display:flex;gap:10px;flex-wrap:wrap}
+.gt-r>div{flex:1 1 200px;min-width:0;padding:8px 11px;border-radius:10px;border:1px solid #3a3a42;background:#0d0d0f}
+.gt-r small{display:block;font:800 10px Montserrat,sans-serif;text-transform:uppercase;letter-spacing:.06em;color:#9a9aa5;margin-bottom:2px}
+.gt-r span{display:block;font:700 14px/1.35 Montserrat,sans-serif;overflow-wrap:anywhere;white-space:pre-wrap;max-height:90px;overflow:auto}

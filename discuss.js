@@ -50,7 +50,7 @@ const isFr=id=>!!(window.EMSocial&&EMSocial.loaded&&EMSocial.rel(id).kind==="fri
 const frTag=id=>"";
 const pname=id=>(prof[id]&&prof[id].username)||"";
 let ALL=[],CONV=[],cur=null,MSGS=[],draft=null,q="",people=[],lastSig="",pendImg=null,tk=0,NEW8=true,replyTo=null;window.EMCurChat=()=>cur;
-const BASE="id,sender_id,recipient_id,sender_name,recipient_name,text,created_at",EXT=BASE+",kind,iname:payload->>n,rn:payload->>rn,rt:payload->>rt,ri:payload->>ri",EXT9=EXT+",edited_at,mm:payload->>mm,ms:payload->>s,mr:payload->>r,md:payload->>done,mst:payload->>st,mgid:payload->>gid,mat:payload->>at",EXT10=EXT9+",channel",EXT11=EXT10+",read_at";
+const BASE="id,sender_id,recipient_id,sender_name,recipient_name,text,created_at",EXT=BASE+",kind,iname:payload->>n,rn:payload->>rn,rt:payload->>rt,ri:payload->>ri",EXT9=EXT+",edited_at,mm:payload->>mm,ms:payload->>s,mr:payload->>r,md:payload->>done,mst:payload->>st,mgid:payload->>gid,mat:payload->>at,mgv:payload->>give,mgt:payload->>get",EXT10=EXT9+",channel",EXT11=EXT10+",read_at";
 let COLS=EXT11,NEW11=true,NEW10=true,TAB=ld("dm_tab","friends"),NEW9=true,NOTIF=[],notifOk=true;
 const NEED13="Run supabase-setup-13.sql in Supabase first.",NEED9="Run supabase-setup-9.sql in Supabase first.";
 const HK="dm_hid:"+UID,hid=ld(HK,{}),vis=a=>a.filter(x=>!hid[x.id]);
@@ -109,7 +109,7 @@ function paintList(){
  const reqs=SO?EMSocial.incoming():[],inConv=new Set(CONV.filter(c=>c.ch!=="trade").map(c=>c.id));
  let fr=SO?EMSocial.friends().filter(id=>!inConv.has(id)&&pname(id)).map(id=>({id,n:pname(id)})):[];
  let h="";
- if(NOTIF.length&&!s)h+='<div class="dm-sec">Middleman requests ('+NOTIF.length+')</div>'+NOTIF.map(n=>{const p=n.payload||{};return'<div class="dm-nt" data-nid="'+esc(n.id)+'"><b>'+esc(n.text)+'</b><small>'+esc(day(n.created_at)+", "+fmtT(n.created_at)+" \u00b7 accept within "+Math.max(1,Math.ceil((MMT-(Date.now()-Date.parse(n.created_at)))/6e4))+" min")+'</small><span class="dm-ntb"><button type="button" data-nacc>Accept</button>'+(p.a?'<button type="button" data-nmsg="'+esc(p.a)+'" data-nn="'+esc(p.an)+'">Message '+esc(p.an)+'</button>':"")+(p.b?'<button type="button" data-nmsg="'+esc(p.b)+'" data-nn="'+esc(p.bn)+'">Message '+esc(p.bn)+'</button>':"")+'<button type="button" class="sec" data-ndel>Decline</button></span></div>'}).join("");
+ if(NOTIF.length&&!s)h+='<div class="dm-sec">Middleman requests ('+NOTIF.length+')</div>'+NOTIF.map(n=>{const p=n.payload||{};return'<div class="dm-nt" data-nid="'+esc(n.id)+'"><b>'+esc(n.text)+'</b>'+mmTrade(p.give,p.get,p.an,p.bn)+'<small>'+esc(day(n.created_at)+", "+fmtT(n.created_at)+" \u00b7 accept within "+Math.max(1,Math.ceil((MMT-(Date.now()-Date.parse(n.created_at)))/6e4))+" min")+'</small><span class="dm-ntb"><button type="button" data-nacc>Accept</button>'+(p.a?'<button type="button" data-nmsg="'+esc(p.a)+'" data-nn="'+esc(p.an)+'">Message '+esc(p.an)+'</button>':"")+(p.b?'<button type="button" data-nmsg="'+esc(p.b)+'" data-nn="'+esc(p.bn)+'">Message '+esc(p.bn)+'</button>':"")+'<button type="button" class="sec" data-ndel>Decline</button></span></div>'}).join("");
  const mine=CONV.filter(c=>!s||c.name.toLowerCase().includes(s));
  if(s){fr=fr.filter(f=>f.n.toLowerCase().includes(s));
   h+=mine.length?'<div class="dm-sec">Conversations</div>'+mine.map(card).join(""):"";
@@ -143,6 +143,9 @@ function askExcuse(id){
   e.textContent="";g.disabled=true;g.textContent="Sending\u2026";
   try{await EMAuth.rest("rpc/mm_decline","POST",{p_nid:id,p_reason:r});NOTIF=NOTIF.filter(n=>n.id!==id);o.remove();paintList()}
   catch(err){g.disabled=false;g.textContent="Send excuse & decline";e.textContent=/does not exist|schema cache|Could not find/i.test(err.message)?"Run supabase-setup-27.sql in Supabase first.":err.message}}}
+function mmTrade(give,get,sn,rn){
+ if(!give&&!get)return"";
+ return'<div class="mm-tr"><div><small>'+esc(sn||"Requester")+' gives</small><span>'+esc(give||"\u2014")+'</span></div><div><small>'+esc(rn||"Other trader")+' gives</small><span>'+esc(get||"\u2014")+'</span></div></div>'}
 function mmTail(x,nm,both,mine,other){
  if(both){
   if(x.mst==="accepted")return'<div class="mm-d">'+esc(nm)+' accepted.</div>'+(x.mgid?'<button class="mm-go" data-go="'+esc(x.mgid)+'" type="button">Go to the group \u2192</button>':"");
@@ -184,7 +187,7 @@ function msgHtml0(x){
   tm="<time"+(x.edited_at?' title="Edited '+esc(new Date(x.edited_at).toLocaleString())+'"':"")+">"+fmtT(x.created_at)+(x.edited_at?' <em class="ed">\u00b7 edited</em>':"")+"</time>";
  if(x.kind==="mm"){const nm=x.mm||"",sOk=x.ms==="true",rOk=x.mr==="true",mine=out?sOk:rOk,both=sOk&&rOk,other=out?pname(x.recipient_id)||x.recipient_name:x.sender_name;
   const line=(n,ok)=>'<li class="'+(ok?"ok":"")+'"><i>'+(ok?"\u2713":"")+"</i>"+esc(n)+(ok?" confirmed":" waiting\u2026")+"</li>";
-  return`<div class="dm-m mmq ${out?"out":"in"}${both?" done":""}" data-id="${id}">${mo}<div class="mm-t">Middleman request</div><div class="mm-n">${esc(nm)}</div><ul>${line(x.sender_name,sOk)}${line(x.recipient_name,rOk)}</ul>${mmTail(x,nm,both,mine,other)}${tm}</div>`}
+  return`<div class="dm-m mmq ${out?"out":"in"}${both?" done":""}" data-id="${id}">${mo}<div class="mm-t">Middleman request</div><div class="mm-n">${esc(nm)}</div>${mmTrade(x.mgv,x.mgt,x.sender_name,x.recipient_name)}<ul>${line(x.sender_name,sOk)}${line(x.recipient_name,rOk)}</ul>${mmTail(x,nm,both,mine,other)}${tm}</div>`}
   {const wl=wlOf(x);if(wl)return`<div class="dm-m wlm ${out?"out":"in"}" data-id="${id}">${mo}${wlCard(wl)}${tm}</div>`}
   {const st=stOf(x);if(st)return`<div class="dm-m stk ${out?"out":"in"}" data-id="${id}">${mo}${st.src?'<img class="dm-stk" src="'+st.src+'" alt="Sticker">':'<span class="dm-stkx">Sticker</span>'}${tm}</div>`}
   {const aid=adOf(x);if(aid)return`<div class="dm-m adm ${out?"out":"in"}" data-id="${id}">${mo}<div class="dm-adc" data-adc="${aid}">${ADC[aid]!==undefined?adBox(ADC[aid],"Trade ad"):'<div class="dm-adc-n">Loading trade ad\u2026</div>'}</div>${tm}</div>`}
@@ -343,7 +346,7 @@ function openPic(src){openOv('<img class="dm-big" src="'+esc(src)+'" alt="Pictur
 /* ---------- middleman picker, message options, edit, delete ---------- */
 async function openMM(){
  const o=openOv('<div class="dm-box mmbox"><div class="dm-bh"><b>Request a middleman</b><button class="dm-cl" data-ovx type="button" aria-label="Close">\u2715</button></div><p class="mm-p">Pick an official middleman. A request is sent in this chat, and <b>both of you</b> have to click it to confirm. Then the middleman is notified and can accept.</p><div class="mm-g" id="mm-g"><div class="dm-none" style="grid-column:1/-1">Loading\u2026</div></div></div>');
- o.addEventListener("click",e=>{const b=e.target.closest("[data-pickmm]");if(b&&!b.disabled)sendMM(b.dataset.pickmm)});
+ o.addEventListener("click",e=>{const b=e.target.closest("[data-pickmm]");if(b&&!b.disabled)askTrade(o,b.dataset.pickmm)});
  let L=[];
  try{try{L=await EMAuth.rest("profiles?select=id,username,avatar,status,last_seen,roles,mm_status&roles=cs.%7Bofficial_middleman%7D&limit=60")}
   catch(e0){L=await EMAuth.rest("profiles?select=id,username,avatar,status,last_seen,roles&roles=cs.%7Bofficial_middleman%7D&limit=60");L.forEach(x=>x.mm_status=null)}}
@@ -355,9 +358,17 @@ async function openMM(){
  L.sort((a,b)=>{const r={ready:0,slow:1,cannot:2};return((r[a.mm_status]==null?0:r[a.mm_status])-(r[b.mm_status]==null?0:r[b.mm_status]))||a.username.localeCompare(b.username)});
  g.innerHTML=L.length?L.map(m=>{const a=m.mm_status,ok=a!=="cannot",s=PR?PR.eff(m):"offline";
   return'<button type="button" class="mm-sq'+(ok?"":" off")+'" data-pickmm="'+esc(m.username)+'"'+(ok?"":" disabled")+'>'+av(m.id,m.username)+'<b>'+esc(m.username)+'</b>'+(PR&&PR.STATUS[s]?'<em class="mm-on"><i class="em-dot" style="background:'+PR.STATUS[s].c+'"></i>'+PR.STATUS[s].n+'</em>':"")+(a&&M[a]?'<em class="mm-av" style="color:'+M[a].c+'">'+M[a].n+'</em>':"")+"</button>"}).join(""):'<div class="dm-none" style="grid-column:1/-1">No official middleman yet.</div>'}
-async function sendMM(n){
+function askTrade(o,n){
+ o.innerHTML='<div class="dm-box mmbox"><div class="dm-bh"><b>What is being traded?</b><button class="dm-cl" data-ovx type="button" aria-label="Close">\u2715</button></div><p class="mm-p">Middleman: <b>'+esc(n)+'</b>. Write what each side is giving. It is shown on the request and sent to the middleman.</p><label class="mm-l" for="mm-give">What you\'re giving:</label><textarea id="mm-give" class="mm-ta" maxlength="300" rows="3" placeholder="Example: Dominus Empyreus"></textarea><label class="mm-l" for="mm-get">What they\'re giving:</label><textarea id="mm-get" class="mm-ta" maxlength="300" rows="3" placeholder="Example: 5,000 Robux"></textarea><div class="mm-e" id="mm-te"></div><div class="mm-bar"><button class="mm-b" id="mm-tgo" type="button">Send middleman request</button><button class="mm-b sec" id="mm-tback" type="button">Back</button></div></div>';
+ const g=o.querySelector("#mm-give"),t=o.querySelector("#mm-get"),e=o.querySelector("#mm-te");g.focus();
+ o.querySelector("#mm-tback").onclick=()=>openMM();
+ o.querySelector("#mm-tgo").onclick=()=>{const a=g.value.trim(),b=t.value.trim();
+  if(!a){e.textContent="Write what you're giving.";g.focus();return}
+  if(!b){e.textContent="Write what they're giving.";t.focus();return}
+  sendMM(n,a,b)}}
+async function sendMM(n,give,get){
  closeOv();if(!cur)return;$("#dm-err").textContent="";
- try{await post({kind:"mm",text:"",payload:{mm:n,s:false,r:false}})}
+ try{await post({kind:"mm",text:"",payload:{mm:n,s:false,r:false,give:String(give||"").slice(0,300),get:String(get||"").slice(0,300)}})}
  catch(e){$("#dm-err").textContent=/dms_content_check|violates|row-level/i.test(e.message)?NEED9:"Couldn't send: "+e.message}}
 function closePop(){if(pop){pop.remove();pop=null}}
 function openMo(btn){closePop();
@@ -386,7 +397,7 @@ addEventListener("resize",closePop);
 
 /* ---------- group chats (requester + trader + middleman) ---------- */
 async function loadGroups(){if(!grpOk)return;
- try{const[gs,gm,ms]=await Promise.all([EMAuth.rest("groups?select=id,name,created_at,kind,owner_id&order=created_at.desc&limit=100").catch(()=>EMAuth.rest("groups?select=id,name,created_at&order=created_at.desc&limit=100")),EMAuth.rest("group_members?select=group_id,user_id,username,last_read&limit=600"),(async()=>{try{return await EMAuth.rest("group_msgs?select="+(GNEW?GCOLS:GOLD)+GQ)}catch(e){if(GNEW&&/edited_at|payload/i.test(e.message)){GNEW=false;return await EMAuth.rest("group_msgs?select="+GOLD+GQ)}throw e}})()]);
+ try{const[gs,gm,ms]=await Promise.all([EMAuth.rest("groups?select=id,name,created_at,kind,owner_id,trade&order=created_at.desc&limit=100").catch(()=>EMAuth.rest("groups?select=id,name,created_at,kind,owner_id&order=created_at.desc&limit=100")).catch(()=>EMAuth.rest("groups?select=id,name,created_at&order=created_at.desc&limit=100")),EMAuth.rest("group_members?select=group_id,user_id,username,last_read&limit=600"),(async()=>{try{return await EMAuth.rest("group_msgs?select="+(GNEW?GCOLS:GOLD)+GQ)}catch(e){if(GNEW&&/edited_at|payload/i.test(e.message)){GNEW=false;return await EMAuth.rest("group_msgs?select="+GOLD+GQ)}throw e}})()]);
   GL=gs;GMEM={};gm.forEach(x=>(GMEM[x.group_id]=GMEM[x.group_id]||[]).push(x));GM={};ms.reverse().forEach(x=>(GM[x.group_id]=GM[x.group_id]||[]).push(x))}
  catch(e){if(setup(e)){GL=[];GM={};GMEM={};grpOk=false}}}
 function buildG(){GCONV=GL.map(g=>{const L=GM[g.id]||[],me=(GMEM[g.id]||[]).find(x=>x.user_id===UID),lr=me?Date.parse(me.last_read):0,last=L[L.length-1]||null,open=cur&&cur.grp&&cur.id===g.id&&!document.hidden;
@@ -413,10 +424,12 @@ function gHtml0(x){const out=x.sender_id===UID;
   return'<div class="dm-m itm '+c+'" data-id="'+id+'">'+mo+nm+'<button class="dm-it" data-item="'+esc(n)+'" type="button">'+(i?thumb(n):'<span class="th g">?</span>')+'<span class="dm-itx"><b>'+esc(n)+"</b><span>"+(i?esc(price(i.p))+(i.stars?" \u00b7 "+stars(i.stars):""):"Item not found")+"</span><em>Tap to see the item info</em></span></button>"+tm+"</div>"}
  return'<div class="dm-m '+c+'" data-id="'+id+'">'+mo+nm+qHtml(x)+esc(x.text)+tm+"</div>"}
 let gProfBusy=false;
+function gTrade(g){const t=g&&g.kind==="mm"&&g.trade;if(!t||(!t.give&&!t.get))return"";
+ return'<div class="g-trade"><div class="gt-h">What is being traded</div><div class="gt-r"><div><small>'+esc(t.an||"Trader 1")+' gives</small><span>'+esc(t.give||"\u2014")+'</span></div><div><small>'+esc(t.bn||"Trader 2")+' gives</small><span>'+esc(t.get||"\u2014")+'</span></div></div></div>'}
 function paintGroup(stick){const r=$("#dm-r");if(!cur||!cur.grp)return;
  if(!$("#gp-msgs")||r.dataset.id!=="g:"+cur.id){r.dataset.id="g:"+cur.id;pendImg=null;
   const gg=GL.find(x=>x.id===cur.id)||{},mmg=gg.kind==="mm",own=gg.owner_id===UID;
-  r.innerHTML=(mmg?'<div class="g-off">OFFICIAL MIDDLEMAN INTERACTION</div>':"")+'<div class="dm-rh"><button class="dm-back" id="dm-back" type="button">\u2039 Back</button><span class="dm-av gav">'+(mmg?"MM":"G")+'</span><b>'+esc(cur.name)+'</b><i class="dm-fr gr">'+(mmg?"Middleman":"Group")+'</i>'+(own?'<span class="dm-ha"><button class="dm-hb dg" data-gclose type="button">'+(mmg?"Close chat (interaction over)":"Delete group")+'</button></span>':"")+'</div><div class="g-mem" id="gp-mem"></div><div class="dm-msgs" id="gp-msgs"></div><div class="dm-err" id="gp-err"></div><div class="dm-pend" id="gp-pend" hidden></div><div class="dm-f"><div class="dm-pw"><button class="dm-plus" id="gp-plus" type="button" aria-label="Send a picture or an item">'+PLUS+'</button><div class="dm-menu" id="gp-menu" hidden><button type="button" data-gadd="img">Send a picture</button><button type="button" data-gadd="item">Send an item</button><button type="button" data-gadd="wl">Send my wishlist</button><button type="button" data-gadd="inv">Send my inventory</button><button type="button" data-gadd="stk">Stickers</button></div><div class="dm-stp" id="gp-stp" hidden></div></div><textarea id="gp-in" maxlength="1000" rows="1" placeholder="Message the group\u2026"></textarea><button id="gp-send" type="button">Send</button></div><input type="file" id="gp-file" accept="image/*" hidden>';stick=true}
+  r.innerHTML=(mmg?'<div class="g-off">OFFICIAL MIDDLEMAN INTERACTION</div>':"")+'<div class="dm-rh"><button class="dm-back" id="dm-back" type="button">\u2039 Back</button><span class="dm-av gav">'+(mmg?"MM":"G")+'</span><b>'+esc(cur.name)+'</b><i class="dm-fr gr">'+(mmg?"Middleman":"Group")+'</i>'+(own?'<span class="dm-ha"><button class="dm-hb dg" data-gclose type="button">'+(mmg?"Close chat (interaction over)":"Delete group")+'</button></span>':"")+'</div>'+gTrade(gg)+'<div class="g-mem" id="gp-mem"></div><div class="dm-msgs" id="gp-msgs"></div><div class="dm-err" id="gp-err"></div><div class="dm-pend" id="gp-pend" hidden></div><div class="dm-f"><div class="dm-pw"><button class="dm-plus" id="gp-plus" type="button" aria-label="Send a picture or an item">'+PLUS+'</button><div class="dm-menu" id="gp-menu" hidden><button type="button" data-gadd="img">Send a picture</button><button type="button" data-gadd="item">Send an item</button><button type="button" data-gadd="wl">Send my wishlist</button><button type="button" data-gadd="inv">Send my inventory</button><button type="button" data-gadd="stk">Stickers</button></div><div class="dm-stp" id="gp-stp" hidden></div></div><textarea id="gp-in" maxlength="1000" rows="1" placeholder="Message the group\u2026"></textarea><button id="gp-send" type="button">Send</button></div><input type="file" id="gp-file" accept="image/*" hidden>';stick=true}
  $("#gp-mem").textContent="Members: "+(GMEM[cur.id]||[]).map(m=>m.username).join(", ");
  const box=$("#gp-msgs"),near=box.scrollHeight-box.scrollTop-box.clientHeight<90,L=GM[cur.id]||[];let h="",d="";
  {const need=[...new Set(L.map(x=>x.sender_id))].filter(i=>i&&i!==UID&&!prof[i]);if(need.length&&!gProfBusy){gProfBusy=true;loadProfiles(need).then(()=>{gProfBusy=false;if(cur&&cur.grp)paintGroup(false)},()=>{gProfBusy=false})}}
