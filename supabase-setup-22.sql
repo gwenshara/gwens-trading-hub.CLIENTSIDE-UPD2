@@ -50,10 +50,10 @@ begin
     raise exception 'Pick something to reset or send a warning.'; end if;
   select username into me from public.profiles where id = auth.uid();
 
-  if 'avatar'   = any(coalesce(what,'{}')) then update public.profiles set avatar   = null where id = t.id; parts := parts || 'profile picture'; end if;
-  if 'banner'   = any(coalesce(what,'{}')) then update public.profiles set banner   = null where id = t.id; parts := parts || 'banner'; end if;
-  if 'nickname' = any(coalesce(what,'{}')) then update public.profiles set nickname = null where id = t.id; parts := parts || 'nickname'; end if;
-  if 'bio'      = any(coalesce(what,'{}')) then update public.profiles set bio      = null where id = t.id; parts := parts || 'about me'; end if;
+  if 'avatar'   = any(coalesce(what,'{}')) then update public.profiles set avatar   = null where id = t.id; parts := array_append(parts, 'profile picture'::text); end if;
+  if 'banner'   = any(coalesce(what,'{}')) then update public.profiles set banner   = null where id = t.id; parts := array_append(parts, 'banner'::text); end if;
+  if 'nickname' = any(coalesce(what,'{}')) then update public.profiles set nickname = null where id = t.id; parts := array_append(parts, 'nickname'::text); end if;
+  if 'bio'      = any(coalesce(what,'{}')) then update public.profiles set bio      = null where id = t.id; parts := array_append(parts, 'about me'::text); end if;
   if 'username' = any(coalesce(what,'{}')) then
     loop
       tmp := 'user_' || substr(md5(random()::text || clock_timestamp()::text), 1, 6);
@@ -61,7 +61,7 @@ begin
     end loop;
     perform public.rename_user(t.id, tmp);
     update public.profiles set must_rename = true, nickname = null where id = t.id;
-    parts := parts || 'username';
+    parts := array_append(parts, 'username'::text);
   end if;
 
   if coalesce(warn,false) then
