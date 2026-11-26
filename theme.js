@@ -43,3 +43,6 @@ ready(function(){
 (function(){try{if(!/^https?:$/.test(location.protocol))return;var p=location.pathname,n=p;
 if(/\/index\.html$/.test(p))n=p.replace(/index\.html$/,"");else if(/\.html$/.test(p))n=p.replace(/\.html$/,"");
 if(n!==p)history.replaceState(history.state,"",n+location.search+location.hash)}catch(e){}})();
+
+/* Anti-clickjacking: if another site puts this one in a frame, break out of it. */
+(function(){try{if(window.top!==window.self){window.top.location=window.self.location.href}}catch(e){try{document.documentElement.style.display="none"}catch(_){}}})();
