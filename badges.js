@@ -5,7 +5,7 @@ var CFG=window.EM_SUPABASE||{},A=window.EMAuth;
 if(!CFG.url||!CFG.anonKey||/YOUR-/.test(CFG.url+CFG.anonKey))return;
 var ME=A&&A.user&&A.user(),UID=A&&A.uid&&A.uid();
 var path=(location.pathname.split("/").pop()||"index.html").toLowerCase();
-var here=/^(catalog|page\d)\.html$/.test(path)?"cat":path==="trade.html"?"trade":path==="log.html"?"log":path==="forum-voting.html"?"vote":"";
+var here=/^(catalog|page\d)\.html$/.test(path)?"cat":path==="trade.html"?"trade":path==="log.html"?"log":path==="forum-voting.html"?"vote":path==="forum-discussions.html"?"dm":"";
 var KEY=function(n){return"nb_seen_"+n};
 function ld(k){try{return localStorage.getItem(k)}catch(e){return null}}
 function sv(k,v){try{localStorage.setItem(k,v)}catch(e){}}
@@ -31,11 +31,15 @@ function put(sel,n){
     if(!n){if(b)b.remove();return}
     if(!b){b=document.createElement("i");b.className="nb";b.setAttribute("aria-label","new");el.appendChild(b)}
     b.textContent=n>99?"99+":n})}
+function dmKey(){return"nb_dm_"+UID}
+function dmDismiss(){sv(dmKey(),new Date().toISOString())}
 async function dmCount(){
   if(!UID)return 0;var n=0;
-  try{n+=(await get("dms?select=id&recipient_id=eq."+UID+"&read_at=is.null&limit=100")).length}catch(e){}
-  try{n+=(await get("friendships?select=id&addressee_id=eq."+UID+"&status=eq.pending&limit=50")).length}catch(e){}
-  try{n+=(await get("notifications?select=id&limit=50")).length}catch(e){}
+  if(here==="dm")dmDismiss();
+  var d=ld(dmKey()),gt=d?"&created_at=gt."+encodeURIComponent(d):"";
+  try{n+=(await get("dms?select=id&recipient_id=eq."+UID+"&read_at=is.null"+gt+"&limit=100")).length}catch(e){}
+  try{n+=(await get("friendships?select=id&addressee_id=eq."+UID+"&status=eq.pending"+gt+"&limit=50")).length}catch(e){}
+  try{n+=(await get("notifications?select=id"+gt+"&limit=50")).length}catch(e){}
   return n}
 async function run(){
   var out={cat:0,log:0,trade:0,vote:0,dm:0};
@@ -55,6 +59,13 @@ async function run(){
   put('.fc[href="forum-discussions.html"]',out.dm);
   put('.fc[href="forum-voting.html"]',out.vote);
 }
+/* clicking a category card makes its red number go away right away */
+document.addEventListener("click",function(e){
+  var c=e.target.closest&&e.target.closest(".fc");if(!c)return;
+  var h=c.getAttribute("href")||"";
+  if(h==="forum-discussions.html"&&UID){dmDismiss();put('.fc[href="forum-discussions.html"]',0)}
+  else if(h==="forum-voting.html")put('.fc[href="forum-voting.html"]',0);
+},true);
 function go(){run().catch(function(){})}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",go);else go();
 setInterval(function(){if(!document.hidden)go()},30000);
