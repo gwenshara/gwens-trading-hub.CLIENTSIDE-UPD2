@@ -1,0 +1,38 @@
+/* Home page */
+:root{--hb:var(--b3,#262629);--hl:var(--bl,#3a3a42)}
+.hm{max-width:1000px;margin:0 auto;padding:30px 16px 50px}
+.hm-hero{text-align:center;padding:26px 0 8px}
+.hm-hero h1{margin:0 0 10px;font:800 clamp(26px,5vw,40px)/1.15 Montserrat,sans-serif;color:var(--text,#f1f1f4)}
+.hm-hero p{margin:0 auto 22px;max-width:600px;color:var(--mute,#a0a0ab);font:600 clamp(14px,2.4vw,17px)/1.5 Montserrat,sans-serif}
+.hm-s{position:relative;max-width:640px;margin:0 auto;text-align:left}
+.hm-si{position:absolute;left:16px;top:15px;width:20px;height:20px;color:var(--mute,#a0a0ab);pointer-events:none}
+.hm-s input{width:100%;box-sizing:border-box;padding:14px 16px 14px 46px;border-radius:14px;border:1px solid var(--hl);background:var(--hb);color:var(--text,#f1f1f4);font:600 16px Montserrat,sans-serif;outline:none}
+.hm-s input:focus{border-color:var(--accent,#7aa7ff);box-shadow:0 0 0 3px rgba(122,167,255,.2)}
+.hm-r{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:30;background:var(--hb);border:1px solid var(--hl);border-radius:14px;box-shadow:0 14px 34px rgba(0,0,0,.4);overflow:hidden}
+.hm-r[hidden]{display:none}
+.hm-o{display:flex;align-items:center;gap:12px;width:100%;box-sizing:border-box;padding:9px 14px;border:0;background:transparent;color:var(--text,#f1f1f4);cursor:pointer;text-align:left;font-family:Montserrat,sans-serif}
+.hm-o:hover,.hm-o.on{background:rgba(122,167,255,.14)}
+.hm-o .th{width:42px;height:42px}
+.hm-on{flex:1;min-width:0;display:flex;flex-direction:column}
+.hm-on b{font:700 14px Montserrat,sans-serif;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hm-on small{font:600 11px Montserrat,sans-serif;color:var(--mute,#a0a0ab)}
+.hm-op{font:800 13px Montserrat,sans-serif;white-space:nowrap}
+.hm-all{display:block;width:100%;padding:11px;border:0;border-top:1px solid var(--hl);background:transparent;color:var(--accent,#7aa7ff);font:700 13px Montserrat,sans-serif;cursor:pointer}
+.hm-all:hover{background:rgba(122,167,255,.1)}
+.hm-n{padding:14px 16px;color:var(--mute,#a0a0ab);font:600 13px Montserrat,sans-serif}
+.hm-note{max-width:760px;margin:26px auto 0;padding:14px 18px;border-radius:14px;border:1px solid #e0a43a;background:rgba(224,164,58,.1);color:var(--text,#f1f1f4)}
+.hm-note b{display:block;font:800 11px Montserrat,sans-serif;text-transform:uppercase;letter-spacing:.1em;color:#e0a43a;margin-bottom:4px}
+.hm-note p{margin:0;font:600 13.5px/1.6 Montserrat,sans-serif}
+.hm-g{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:28px}
+.hm-c{display:flex;flex-direction:column;gap:6px;padding:18px 16px;border-radius:16px;border:1px solid var(--hl);background:var(--hb);color:var(--text,#f1f1f4);text-decoration:none;transition:transform .15s,border-color .15s,box-shadow .15s}
+.hm-c:hover,.hm-c:focus-visible{transform:translateY(-3px);border-color:var(--c);box-shadow:0 10px 24px rgba(0,0,0,.28);outline:none}
+.hm-i{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:color-mix(in srgb,var(--c) 18%,transparent);color:var(--c);margin-bottom:4px}
+.hm-i svg{width:24px;height:24px}
+.hm-c b{font:800 16px Montserrat,sans-serif}
+.hm-c>span:last-child{font:500 12.5px/1.45 Montserrat,sans-serif;color:var(--mute,#a0a0ab)}
+.hm-m{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;align-items:center;margin-top:24px;font:600 13px Montserrat,sans-serif;color:var(--mute,#a0a0ab)}
+.hm-m a{color:var(--accent,#7aa7ff);text-decoration:none;padding:6px 12px;border-radius:99px;border:1px solid var(--hl)}
+.hm-m a:hover{background:rgba(122,167,255,.12)}
+@media(max-width:860px){.hm-g{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:420px){.hm{padding:20px 12px 40px}.hm-g{gap:10px}.hm-c{padding:14px 12px}.hm-c>span:last-child{font-size:12px}}
+@media(prefers-reduced-motion:reduce){.hm-c{transition:none}}

@@ -167,7 +167,7 @@ function build(){
  if(API.user()){API.rest("profiles?id=eq."+encodeURIComponent(API.uid())+"&select=avatar").then(r=>{const a=(r&&r[0]&&r[0].avatar)||"";if(a!==cached()){try{if(a)localStorage.setItem(avKey(),a);else localStorage.removeItem(avKey())}catch(e){}paint()}}).catch(()=>{})}}
 document.addEventListener("DOMContentLoaded",build);
 })();
-if(!window.__emBadges){try{var _b=document.createElement("script");_b.src="badges.js?v=1";document.head.appendChild(_b)}catch(e){}}
+if(!window.__emBadges){try{var _b=document.createElement("script");_b.src="badges.js?v=2";document.head.appendChild(_b)}catch(e){}}
 
 if(!window.EMPresence){try{var _p=document.createElement("script");_p.src="presence.js?v=2";document.head.appendChild(_p)}catch(e){}}
 

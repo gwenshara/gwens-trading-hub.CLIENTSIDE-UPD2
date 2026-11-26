@@ -5,7 +5,7 @@ var CFG=window.EM_SUPABASE||{},A=window.EMAuth;
 if(!CFG.url||!CFG.anonKey||/YOUR-/.test(CFG.url+CFG.anonKey))return;
 var ME=A&&A.user&&A.user(),UID=A&&A.uid&&A.uid();
 var path=(location.pathname.split("/").pop()||"index.html").toLowerCase();
-var here=/^(index|page\d)\.html$/.test(path)?"cat":path==="trade.html"?"trade":path==="log.html"?"log":path==="forum-voting.html"?"vote":"";
+var here=/^(catalog|page\d)\.html$/.test(path)?"cat":path==="trade.html"?"trade":path==="log.html"?"log":path==="forum-voting.html"?"vote":"";
 var KEY=function(n){return"nb_seen_"+n};
 function ld(k){try{return localStorage.getItem(k)}catch(e){return null}}
 function sv(k,v){try{localStorage.setItem(k,v)}catch(e){}}
@@ -48,7 +48,7 @@ async function run(){
     try{if(here==="vote")await seenNow("polls","vote");else out.vote=await since("polls","vote","username")}catch(e){}
     out.dm=await dmCount();
   }
-  put('nav a[href="index.html"]',out.cat);
+  put('nav a[href="catalog.html"]',out.cat);
   put('nav a[href="log.html"]',out.log);
   put('nav a[href="trade.html"]',out.trade);
   put('nav a[href="forum.html"]',out.vote+out.dm);
