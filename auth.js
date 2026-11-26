@@ -175,7 +175,7 @@ function build(){
  if(API.user()){API.rest("profiles?id=eq."+encodeURIComponent(API.uid())+"&select=avatar").then(r=>{const a=(r&&r[0]&&r[0].avatar)||"";if(a!==cached()){try{if(a)localStorage.setItem(avKey(),a);else localStorage.removeItem(avKey())}catch(e){}paint()}}).catch(()=>{})}}
 document.addEventListener("DOMContentLoaded",build);
 })();
-if(!window.__emBadges){try{var _b=document.createElement("script");_b.src="badges.js?v=2";document.head.appendChild(_b)}catch(e){}}
+if(!window.__emBadges){try{var _b=document.createElement("script");_b.src="badges.js?v=3";document.head.appendChild(_b)}catch(e){}}
 
 if(!window.EMPresence){try{var _p=document.createElement("script");_p.src="presence.js?v=2";document.head.appendChild(_p)}catch(e){}}
 
@@ -187,3 +187,10 @@ if(!window.__emNP){try{var _q=document.createElement("script");_q.src="notifprom
 if(!window.__emPop){try{var _m=document.createElement("script");_m.src="msgpop.js?v=2";document.head.appendChild(_m)}catch(e){}}
 if(!window.__emMMA){try{var _a=document.createElement("script");_a.src="mmalert.js?v=2";document.head.appendChild(_a)}catch(e){}}
 if(!window.__emBan){try{var _b=document.createElement("script");_b.src="banguard.js?v=1";document.head.appendChild(_b)}catch(e){}}
+
+/* legal disclaimer at the bottom of every page */
+(function(){function add(){if(document.getElementById("em-legal"))return;var d=document.createElement("div");d.id="em-legal";
+d.style.cssText="max-width:900px;margin:40px auto 0;padding:18px 16px 28px;border-top:1px solid rgba(128,128,140,.3);text-align:center;font:500 12px/1.6 Montserrat,Inter,system-ui,sans-serif;opacity:.7;color:inherit";
+d.textContent="Legal disclaimer: EM Wiki is an unofficial, fan-made website. It is not an official website and is not affiliated with, endorsed by, sponsored by or connected to Epic Minigames, Roblox Corporation or their owners or developers. All game names, items, images and trademarks belong to their respective owners. Values and information on this site are community estimates and are provided as is.";
+document.body.appendChild(d)}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",add);else add()})();

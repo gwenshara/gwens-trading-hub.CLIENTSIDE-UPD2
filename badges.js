@@ -59,12 +59,18 @@ async function run(){
   put('.fc[href="forum-discussions.html"]',out.dm);
   put('.fc[href="forum-voting.html"]',out.vote);
 }
-/* clicking a category card makes its red number go away right away */
+/* clicking a menu tab or a category card makes its red number go away right away, and stay gone until something new arrives */
 document.addEventListener("click",function(e){
-  var c=e.target.closest&&e.target.closest(".fc");if(!c)return;
-  var h=c.getAttribute("href")||"";
-  if(h==="forum-discussions.html"&&UID){dmDismiss();put('.fc[href="forum-discussions.html"]',0)}
-  else if(h==="forum-voting.html")put('.fc[href="forum-voting.html"]',0);
+  var c=e.target.closest&&e.target.closest(".fc,nav a");if(!c)return;
+  var h=(c.getAttribute("href")||"").toLowerCase(),now=new Date().toISOString();
+  if(h==="forum-discussions.html"){if(UID)dmDismiss()}
+  else if(h==="forum-voting.html")sv(KEY("vote"),now);
+  else if(h==="forum.html"&&c.matches("nav a")){if(UID)dmDismiss();sv(KEY("vote"),now)}
+  else if(h==="catalog.html")sv(KEY("cat"),now);
+  else if(h==="log.html")sv(KEY("log"),now);
+  else if(h==="trade.html")sv(KEY("trade"),now);
+  else return;
+  var n=c.querySelector(":scope > .nb");if(n)n.remove();
 },true);
 function go(){run().catch(function(){})}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",go);else go();
