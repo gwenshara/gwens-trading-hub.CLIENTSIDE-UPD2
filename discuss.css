@@ -386,7 +386,6 @@ body.dm-full .dm-rh{padding-top:calc(12px + env(safe-area-inset-top,0px))}
 .mm-tr{display:flex;flex-direction:column;gap:6px;margin:8px 0;font:600 12px/1.35 Montserrat,sans-serif;overflow-wrap:anywhere}
 .mm-tr b{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--mute)}
 .dm-nt .mm-tr{background:#0000002e;border-radius:10px;padding:8px 10px}
-@media(max-width:600px){
 /* middleman: trade box */
 .g-trade{background:#000;color:#fff;padding:12px 16px 14px;border-bottom:1px solid #ffffff26;flex:0 0 auto}
 .g-trade .gt-h{font:800 11px Montserrat,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#f5c518;margin-bottom:9px;text-align:center}
@@ -395,7 +394,7 @@ body.dm-full .dm-rh{padding-top:calc(12px + env(safe-area-inset-top,0px))}
 .g-trade .gt-p b{display:block;font:800 11px Montserrat,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7aa7ff;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .g-trade .gt-p span{display:block;font:700 14px/1.35 Montserrat,sans-serif;overflow-wrap:anywhere;max-height:96px;overflow:auto}
 .g-trade .gt-x{flex:0 0 auto;align-self:center;width:34px;height:34px;border-radius:50%;background:#f5c518;color:#000;display:grid;place-items:center}
-.g-trade .gt-x svg{width:18px;height:18px}
+.g-trade .gt-x svg{width:18px;height:18px;max-width:18px}
 @media(max-width:600px){.g-trade{padding:10px 12px}.g-trade .gt-c{flex-direction:column;gap:6px}.g-trade .gt-x{width:28px;height:28px}.g-trade .gt-x svg{width:15px;height:15px;transform:rotate(90deg)}}
 /* group picture + settings */
 .dm-av.gav img{width:100%;height:100%;object-fit:cover;display:block}
