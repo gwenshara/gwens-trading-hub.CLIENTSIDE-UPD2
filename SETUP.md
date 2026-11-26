@@ -24,3 +24,10 @@ Still stored per browser: My List / wishlist / recently viewed.
 ## Fun Fact tab and Members page (no new SQL needed)
 - Fun facts: as admin, open an item, press Edit, write one fact per line in "Fun facts", press Apply. They are saved for everyone right away (stored in the same `site_state` table as your other edits, key `facts`). The item card shows them in the new Fun Fact tab.
 - Members page (members.html, replaces the Scammers menu entry): shows everyone who has an account, only to logged-in visitors. Click a name for their profile (member number, join date, trade ads posted, latest ads).
+
+## IP address view + max 3 accounts per IP (supabase-setup-33.sql)
+Run `supabase-setup-33.sql` in the SQL Editor (after supabase-setup-24.sql).
+- Admins and moderators see a member's IP on their profile: Moderation > **IP address** (last seen IP, IP at sign-up, other accounts on the same IP). Nobody else can read IPs.
+- Only 3 accounts can be created per IP. The 4th sign-up is refused with "You're not able to make more accounts." If an account still gets created beyond the 3rd (for example by calling the API directly), it is banned automatically and is never signed in.
+- Existing accounts count towards the limit with the last IP we saw for them. Admins are never banned.
+- IPv6 is counted per /64 block. People on one shared network (school, family, mobile carrier) share the 3 slots.

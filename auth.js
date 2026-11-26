@@ -11,6 +11,7 @@ const CFG=window.EM_SUPABASE||{};
 const ready=!!(CFG.url&&CFG.anonKey&&!/YOUR/i.test(CFG.url+CFG.anonKey));
 const ld=(k,d)=>{try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}};
 const sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+const LIMIT="You're not able to make more accounts.";
 const DOMAIN="@gwenvaluehub.com"; /* usernames are turned into a private login e-mail; nobody receives mail there */
 let S=ld("em_session",null);
 if(S&&!S.token){S=null;try{localStorage.removeItem("em_session")}catch(e){}} /* old browser-only sessions are not valid any more */
@@ -51,11 +52,18 @@ const API=window.EMAuth={
   u=u.trim();
   if(!/^[A-Za-z0-9_]{3,20}$/.test(u))throw new Error("Username: 3–20 letters, numbers or _.");
   if(pw.length<6)throw new Error("Password must be at least 6 characters.");
+  /* max 3 accounts per IP address: ask the server first (if the server has no such check yet, sign-up simply goes on) */
+  try{const c=await call("/rest/v1/rpc/can_signup",{method:"POST",headers:hdr(),body:"{}"});if(c&&c.ok===false)throw new Error(LIMIT)}catch(e){if(e.message===LIMIT)throw e}
   let j;try{j=await call("/auth/v1/signup",{method:"POST",headers:hdr(),body:JSON.stringify({email:u.toLowerCase()+DOMAIN,password:pw,data:{username:u}})})}
   catch(e){if(/already|registered|exists/i.test(e.message)||e.status===422&&/already/i.test(e.message))throw new Error("That username is taken.");
    if(/Database error/i.test(e.message))throw new Error("That username is taken or not allowed.");throw e}
   if(!j.access_token)throw new Error("Sign-up worked but e-mail confirmation is still ON in Supabase. Turn it off (see SETUP.md).");
-  const a=fromAuth(j),p=await loadProfile(a.uid,a.token);save(Object.assign({u:p.username,role:p.role,roles:p.roles||[]},a))},
+  const a=fromAuth(j);
+  /* the server remembers the IP of the new account; a 4th account on one IP is banned right away and never signed in */
+  try{const c=await call("/rest/v1/rpc/claim_signup_ip",{method:"POST",headers:hdr(a.token),body:"{}"});
+   if(c&&c.ok===false){fetch(CFG.url+"/auth/v1/logout",{method:"POST",headers:hdr(a.token)}).catch(()=>{});throw new Error(LIMIT)}}
+  catch(e){if(e.message===LIMIT)throw e}
+  const p=await loadProfile(a.uid,a.token);save(Object.assign({u:p.username,role:p.role,roles:p.roles||[]},a))},
  /* My List is stored per account; guests use the plain key. First sign-in copies the guest list so nothing is lost. */
  listKey(k){const u=API.user();if(!u)return k;const ak=k+":"+u.toLowerCase();
   try{if(localStorage.getItem(ak)===null&&localStorage.getItem(k)!==null)localStorage.setItem(ak,localStorage.getItem(k))}catch(e){}return ak},
