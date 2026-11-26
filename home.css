@@ -50,7 +50,8 @@
 
 /* sticky note */
 .hm{position:relative}
-.hm-pad{container-type:inline-size;position:relative;width:210px;margin:26px auto 0;transform:rotate(-3deg);filter:drop-shadow(0 8px 10px rgba(0,0,0,.45));pointer-events:none}
+.hm-pad{container-type:inline-size;position:relative;width:290px;max-width:82%;margin:30px auto 0;transform:rotate(-3deg);filter:drop-shadow(0 8px 10px rgba(0,0,0,.45));pointer-events:none}
 .hm-pad img{display:block;width:100%;height:auto}
 .hm-pad p{position:absolute;left:19%;right:6%;top:calc(17.4% + 8.2cqw);margin:0;font:600 9.4cqw/6.97cqw Caveat,"Segoe Script","Bradley Hand",cursive;color:#2b3a67;transform:rotate(.6deg)}
-@media(min-width:1100px){.hm-pad{position:absolute;right:0;top:44px;margin:0;width:150px;transform:rotate(4deg)}}
+@media(min-width:1100px){.hm-pad{position:absolute;right:-40px;top:26px;margin:0;width:200px;max-width:none;transform:rotate(4deg)}}
+@media(min-width:1600px){.hm-pad{right:auto;left:calc(100% + 22px);top:60px;width:280px}}
