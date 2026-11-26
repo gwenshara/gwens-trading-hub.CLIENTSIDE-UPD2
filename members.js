@@ -79,7 +79,7 @@ grid.innerHTML='<div class="mb-empty">Loading…</div>';load();
   const row=a=>'<label style="display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;padding:6px 0;border-top:1px solid var(--bl);font-size:13px'+(a.banned?";opacity:.55":"")+'"><input type="checkbox" data-s="'+esc(a.username)+'"'+(sel.has(a.username)?" checked":"")+(canBan(a)?"":" disabled")+'>'
    +'<a href="profile.html?u='+encodeURIComponent(a.username)+'" style="color:inherit;font-weight:700">'+esc(a.username)+'</a>'
    +(a.role==="admin"?'<i class="mb-ad">ADMIN</i>':(a.roles||[]).includes("moderator")?'<i class="mb-ad" style="background:#2f6fd1">MOD</i>':"")
-   +(a.banned?'<i class="mb-ad" style="background:#555">BANNED</i>':"")
+   +(a.banned?'<i class="mb-ad" style="background:#555">BANNED</i>':"")+(a.banned?'<button type="button" data-ub="'+esc(a.username)+'" style="'+B+';padding:3px 10px;font-size:12px;background:#2f9e5b;border-color:#2f9e5b;color:#fff">Unban</button>':"")
    +'<span style="margin-left:auto;color:var(--mute);font-size:12px">joined '+esc(new Date(a.created_at).toLocaleDateString())+(a.last_ip&&a.last_ip!==a.signup_ip?" \u00b7 last IP "+esc(a.last_ip):"")+'</span></label>';
   const grp=k=>{const R=G.get(k),pick=R.filter(canBan);return '<div style="margin-top:12px"><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><b style="font-size:14px;overflow-wrap:anywhere">'+(k==="unknown"?"IP not recorded":esc(k))+'</b>'
    +(k==="unknown"?"":'<span style="font-size:12px;color:var(--mute)">'+used(k)+"/3 slots used</span>")
@@ -97,6 +97,8 @@ grid.innerHTML='<div class="mb-empty">Loading…</div>';load();
  box.addEventListener("input",e=>{if(e.target.id==="st-q"){flt=e.target.value;const p=e.target.selectionStart;render();const q=box.querySelector("#st-q");q.focus();q.setSelectionRange(p,p)}});
  box.addEventListener("click",async e=>{
   const g=e.target.closest("[data-g]");if(g){A.filter(a=>(a.signup_ip||"unknown")===g.dataset.g&&canBan(a)).forEach(a=>sel.add(a.username));render();return}
+  const ub=e.target.closest("[data-ub]");if(ub){e.preventDefault();const nm=ub.dataset.ub;if(!confirm("Unban "+nm+"? Everything of theirs comes back."))return;ub.disabled=true;
+   try{await EMAuth.rest("rpc/unban_member","POST",{target:nm});msg=nm+" is unbanned.";err="";A=await EMAuth.rest("rpc/staff_accounts","POST",{})}catch(x){err=setup(x);msg=""}render();return}
   if(e.target.id==="st-clr"){sel.clear();render();return}
   if(e.target.id==="st-go"&&sel.size){
    const names=[...sel],why=box.querySelector("#st-r").value.trim();
