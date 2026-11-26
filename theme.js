@@ -38,3 +38,8 @@ ready(function(){
  setTimeout(function(){var n=document.querySelector(".em-setnotif");if(n&&n.textContent==="Loading\u2026")n.textContent="Notifications could not load. Refresh the page with Ctrl+Shift+R."},4000);
  document.body.appendChild(b);document.body.appendChild(p)});
 })();
+
+/* Hide ".html" in the address bar (the page still loads the same). */
+(function(){try{if(!/^https?:$/.test(location.protocol))return;var p=location.pathname,n=p;
+if(/\/index\.html$/.test(p))n=p.replace(/index\.html$/,"");else if(/\.html$/.test(p))n=p.replace(/\.html$/,"");
+if(n!==p)history.replaceState(history.state,"",n+location.search+location.hash)}catch(e){}})();
