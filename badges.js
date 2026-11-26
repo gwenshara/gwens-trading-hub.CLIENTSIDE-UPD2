@@ -31,12 +31,9 @@ function put(sel,n){
     if(!n){if(b)b.remove();return}
     if(!b){b=document.createElement("i");b.className="nb";b.setAttribute("aria-label","new");el.appendChild(b)}
     b.textContent=n>99?"99+":n})}
-function dmKey(){return"nb_dm_"+UID}
-function dmDismiss(){sv(dmKey(),new Date().toISOString())}
 async function dmCount(){
   if(!UID)return 0;var n=0;
-  if(here==="dm")dmDismiss();
-  var d=ld(dmKey()),gt=d?"&created_at=gt."+encodeURIComponent(d):"";
+  var gt="";
   try{n+=(await get("dms?select=id&recipient_id=eq."+UID+"&read_at=is.null"+gt+"&limit=100")).length}catch(e){}
   try{n+=(await get("friendships?select=id&addressee_id=eq."+UID+"&status=eq.pending"+gt+"&limit=50")).length}catch(e){}
   try{n+=(await get("notifications?select=id"+gt+"&limit=50")).length}catch(e){}
@@ -63,9 +60,7 @@ async function run(){
 document.addEventListener("click",function(e){
   var c=e.target.closest&&e.target.closest(".fc,nav a");if(!c)return;
   var h=(c.getAttribute("href")||"").toLowerCase(),now=new Date().toISOString();
-  if(h==="forum-discussions.html"){if(UID)dmDismiss()}
-  else if(h==="forum-voting.html")sv(KEY("vote"),now);
-  else if(h==="forum.html"&&c.matches("nav a")){if(UID)dmDismiss();sv(KEY("vote"),now)}
+  if(h==="forum-voting.html")sv(KEY("vote"),now);
   else if(h==="catalog.html")sv(KEY("cat"),now);
   else if(h==="log.html")sv(KEY("log"),now);
   else if(h==="trade.html")sv(KEY("trade"),now);

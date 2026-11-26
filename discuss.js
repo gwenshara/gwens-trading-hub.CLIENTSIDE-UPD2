@@ -63,6 +63,9 @@ const GCOLS="id,group_id,sender_id,sender_name,kind,text,created_at,edited_at,in
 const errEl=()=>$(cur&&cur.grp?"#gp-err":"#dm-err")||{},stp=()=>$(cur&&cur.grp?"#gp-stp":"#dm-stp");
 const IMG={},PICREQ={};
 const RK="dm_read:"+UID,reads=ld(RK,{});
+/* removing a conversation only hides it from YOUR list; it comes back if a new message arrives */
+const HDK="dm_hidden:"+UID,HID=ld(HDK,{});
+(function(){const s=document.createElement("style");s.textContent=".dm-c{position:relative}.dm-rm{position:absolute;top:4px;right:5px;width:15px;height:15px;border-radius:50%;font:700 8px/15px Montserrat,sans-serif;text-align:center;color:var(--mute,#999);background:#00000040;opacity:0;cursor:pointer;transition:opacity .12s}.dm-c:hover .dm-rm{opacity:.85}.dm-rm:hover{opacity:1;color:#fff;background:#e5484d}@media(hover:none){.dm-rm{opacity:.5}}";document.head.appendChild(s)})();
 const markRead=id=>{reads[id]=new Date().toISOString();sv(RK,reads)};
 const fmtT=t=>new Date(t).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
 const day=t=>{const d=new Date(t),n=new Date(),y=new Date(Date.now()-864e5);const k=x=>x.toDateString();return k(d)===k(n)?"Today":k(d)===k(y)?"Yesterday":d.toLocaleDateString([],{day:"numeric",month:"long",year:"numeric"})};
@@ -89,20 +92,27 @@ const gsum=x=>stOf(x)?"Sticker":wlOf(x)?wlNm(x):x.kind==="image"?(x.text?"Photo:
 const sum=x=>adOf(x)?"Trade ad":stOf(x)?"Sticker":wlOf(x)?wlNm(x):x.kind==="mm"?"Middleman request: "+(x.mm||""):x.kind==="image"?(x.text?"Photo: "+x.text:"Photo"):x.kind==="item"?"Item: "+(x.iname||""):x.text;
 async function loadProfiles(ids){ids=[...new Set(ids)].filter(i=>i&&!prof[i]);if(!ids.length)return;
  try{const r=await EMAuth.rest("profiles?select=id,username,role,avatar&id=in.("+ids.slice(0,60).join(",")+")");r.forEach(p=>prof[p.id]=p);ids.forEach(i=>{if(!prof[i])prof[i]={}})}catch(e){ids.forEach(i=>{prof[i]={}})}}
+async function hideConv(k){
+ const c=CONV.find(x=>x.key===k);if(!c||!c.last)return;
+ if(!confirm("Remove the conversation with "+c.name+" from your list?\n\nNothing is deleted. It comes back if they message you again."))return;
+ HID[k]=c.last.created_at;sv(HDK,HID);
+ if(NEW11&&c.unread){try{await EMAuth.rest("rpc/dm_mark_read","POST",{p_other:c.id,p_channel:c.ch})}catch(e){}ALL.forEach(m=>{if(m.sender_id===c.id&&chOf(m)===c.ch&&!m.read_at)m.read_at=new Date().toISOString()})}
+ if(cur&&!cur.grp&&key(cur.id,cur.ch)===k){cur=null;root.classList.remove("chat");paintChat(false)}
+ build();paintList();paintTabs()}
 function build(){
  const m=new Map();
  ALL.forEach(x=>{const out=x.sender_id===UID,oid=out?x.recipient_id:x.sender_id,on=out?x.recipient_name:x.sender_name,ch=chOf(x),k=key(oid,ch);
   let c=m.get(k);if(!c){c={key:k,id:oid,name:on,ch,last:x,unread:0};m.set(k,c)}
   if(!out&&(NEW11?!x.read_at:(!reads[k]||x.created_at>reads[k]))&&!isCur(oid,ch))c.unread++});
  if(draft){const k=key(draft.id,draft.ch);if(!m.has(k))m.set(k,{key:k,id:draft.id,name:draft.name,ch:draft.ch||"personal",last:null,unread:0})}
- CONV=[...m.values()]}
+ CONV=[...m.values()].filter(c=>!(c.last&&HID[c.key]&&c.last.created_at<=HID[c.key]&&!isCur(c.id,c.ch)))}
 function paintTabs(){const t=$("#dm-tabs");if(!t)return;
  const tabOf=c=>c.ch==="trade"?"trade":isFr(c.id)?"friends":"others",n={friends:0,others:0,trade:0,group:0};CONV.forEach(c=>n[tabOf(c)]+=c.unread);GCONV.forEach(c=>n.group+=c.unread);
  t.hidden=!!q.trim();
  t.innerHTML=[["friends","Friends"],["others","People"],["trade","Trade"],["group","Group"]].map(a=>'<button type="button" data-tab="'+a[0]+'" class="'+(TAB===a[0]?"on":"")+'">'+a[1]+(n[a[0]]?'<i>'+(n[a[0]]>99?"99+":n[a[0]])+"</i>":"")+"</button>").join("")}
 function paintList(){
  const s=q.trim().toLowerCase(),SO=window.EMSocial&&EMSocial.loaded&&!EMSocial.missing;
- const card=c=>`<button class="dm-c ${isCur(c.id,c.ch)?"on":""}" data-id="${esc(c.id)}" data-ch="${c.ch}" data-n="${esc(c.name)}">${av(c.id,c.name)}<span class="dm-ct"><b><span>${esc(c.name)}</span>${adm(c.id)}${c.ch==="trade"?'<i class="dm-fr tr">Trade</i>':frTag(c.id)}</b><small>${c.last?(c.last.sender_id===UID?"You: ":"")+esc(sum(c.last)):"New conversation"}</small></span><span class="dm-ci">${c.last?"<time>"+short(c.last.created_at)+"</time>":""}${c.unread?'<span class="dm-un">'+(c.unread>99?"99+":c.unread)+"</span>":""}</span></button>`;
+ const card=c=>`<button class="dm-c ${isCur(c.id,c.ch)?"on":""}" data-id="${esc(c.id)}" data-ch="${c.ch}" data-n="${esc(c.name)}">${av(c.id,c.name)}<span class="dm-ct"><b><span>${esc(c.name)}</span>${adm(c.id)}${c.ch==="trade"?'<i class="dm-fr tr">Trade</i>':frTag(c.id)}</b><small>${c.last?(c.last.sender_id===UID?"You: ":"")+esc(sum(c.last)):"New conversation"}</small></span><span class="dm-ci">${c.last?"<time>"+short(c.last.created_at)+"</time>":""}${c.unread?'<span class="dm-un">'+(c.unread>99?"99+":c.unread)+"</span>":""}</span>${c.last?`<span class="dm-rm" role="button" data-rm="${esc(c.key)}" title="Remove conversation" aria-label="Remove conversation">\u2715</span>`:""}</button>`;
  const gcard=c=>`<button class="dm-c ${cur&&cur.grp&&cur.id===c.id?"on":""}" data-grp="${esc(c.id)}"><span class="dm-av gav">${c.img?`<img src="${esc(c.img)}" alt="">`:c.kind==="mm"?"MM":"G"}</span><span class="dm-ct"><b><span>${esc(c.name)}</span><i class="dm-fr gr">${c.kind==="mm"?"Middleman":"Group"}</i></b><small>${c.last?(c.last.kind==="sys"?"":esc(c.last.sender_name)+": ")+esc(gsum(c.last)):"New group"}</small></span><span class="dm-ci">${c.last?"<time>"+short(c.last.created_at)+"</time>":""}${c.unread?'<span class="dm-un">'+(c.unread>99?"99+":c.unread)+"</span>":""}</span></button>`;
  const fcard=(id,n)=>`<button class="dm-c ${cur&&cur.id===id?"on":""}" data-id="${esc(id)}" data-n="${esc(n)}">${av(id,n)}<span class="dm-ct"><b><span>${esc(n)}</span>${adm(id)}</b><small>Friend, say hi</small></span></button>`;
  const req=r=>{const n=pname(r.requester_id)||"Member";return`<div class="dm-req" data-rid="${esc(r.id)}">${av(r.requester_id,n)}<span class="dm-ct"><b><span>${esc(n)}</span></b><small>wants to be your friend</small></span><span class="dm-rb"><button data-racc type="button">Accept</button><button data-rdec type="button" class="sec">Decline</button></span></div>`};
@@ -536,6 +546,7 @@ $("#dm-list").addEventListener("click",async e=>{
  const nm=e.target.closest("[data-nmsg]");if(nm){open(nm.dataset.nmsg,nm.dataset.nn);return}
  const nd=e.target.closest("[data-ndel]");if(nd){const id=nd.closest("[data-nid]").dataset.nid;askExcuse(id);return}
  const tb=e.target.closest("[data-tab]");if(tb){TAB=tb.dataset.tab;sv("dm_tab",TAB);paintList();return}
+ const rm=e.target.closest("[data-rm]");if(rm){e.stopPropagation();e.preventDefault();hideConv(rm.dataset.rm);return}
  const c=e.target.closest(".dm-c");if(c){if(c.dataset.grp)openGroup(c.dataset.grp);else open(c.dataset.id,c.dataset.n,c.dataset.ch)}});
 $("#dm-r").addEventListener("click",async e=>{
  const t=e.target;
