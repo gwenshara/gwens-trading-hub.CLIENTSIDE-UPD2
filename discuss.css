@@ -225,7 +225,7 @@
 .g-sys{align-self:center;max-width:90%;text-align:center;font:600 12px/1.4 Montserrat,sans-serif;color:var(--mute);background:#00000024;border-radius:10px;padding:6px 12px}
 
 /* group maker, official banner */
-.g-off{background:#8b4dff;color:#fff;text-align:center;font:800 13px/1 Montserrat,sans-serif;letter-spacing:.12em;padding:11px 12px}
+.g-off{background:var(--cbg,#8b4dff);color:var(--cbt,#fff);border-bottom:1px solid #ffffff22;text-align:center;font:800 13px/1 Montserrat,sans-serif;letter-spacing:.12em;padding:11px 12px}
 .dm-hb.dg{background:#7aa7ff;border-color:#7aa7ff;color:#fff}.dm-hb.dg:hover{filter:brightness(1.1)}
 .dm-newg{width:100%;padding:11px;margin-bottom:6px;border:2px dashed #7aa7ff88;border-radius:12px;background:transparent;color:#7aa7ff;font:800 13px Montserrat,sans-serif;cursor:pointer}
 .dm-newg:hover{background:#7aa7ff22}
@@ -377,3 +377,18 @@ body.dm-full .dm-rh{padding-top:calc(12px + env(safe-area-inset-top,0px))}
  .g-mem::-webkit-scrollbar{display:none}
  .dm-req{min-width:0;flex-wrap:wrap}
 }
+
+/* middleman: what is being traded */
+.mm-lb{display:block;font:700 13px Montserrat,sans-serif;margin:0 0 10px;color:var(--text)}
+.mm-lb textarea{display:block;width:100%;box-sizing:border-box;margin-top:5px;padding:10px;border-radius:10px;border:1px solid var(--bl,#3a3a42);background:var(--b2,#2a2a30);color:var(--text);font:600 16px Montserrat,sans-serif;resize:vertical}
+.mm-fe{color:#ff6b6b;font-size:13px;min-height:18px;margin-bottom:6px}
+.mm-fb{display:flex;gap:10px}.mm-fb button{flex:1;padding:11px;border:none;border-radius:10px;background:#7aa7ff;color:#fff;font:800 14px Montserrat,sans-serif;cursor:pointer}.mm-fb button.sec{flex:0 0 auto;padding:11px 18px;background:transparent;border:1px solid var(--bl,#3a3a42);color:var(--text)}
+.mm-tr{display:flex;flex-direction:column;gap:6px;margin:8px 0;font:600 12px/1.35 Montserrat,sans-serif;overflow-wrap:anywhere}
+.mm-tr b{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--mute)}
+.dm-nt .mm-tr{background:#0000002e;border-radius:10px;padding:8px 10px}
+.g-trade{background:#000;color:#fff;padding:10px 16px;border-bottom:1px solid #ffffff26;flex:0 0 auto}
+.g-trade .gt-h{font:800 11px Montserrat,sans-serif;letter-spacing:.12em;color:#f5c518;margin-bottom:6px}
+.g-trade .gt-c{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g-trade b{display:block;font:700 10px Montserrat,sans-serif;text-transform:uppercase;letter-spacing:.07em;color:#9a9aa6}
+.g-trade span{display:block;font:600 13px/1.35 Montserrat,sans-serif;overflow-wrap:anywhere;max-height:84px;overflow:auto}
+@media(max-width:600px){.g-trade{padding:8px 12px}.g-trade .gt-c{grid-template-columns:1fr;gap:6px}}
