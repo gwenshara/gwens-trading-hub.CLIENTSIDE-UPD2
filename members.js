@@ -1,7 +1,7 @@
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const grid=$("#mb"),note=$("#mb-n"),mo=$("#mb-mo"),card=$("#mb-card"),q=$("#mb-q");
-let M=[],ADS=[];
+let M=[],ADS=[],hideB=false;
 const color=n=>{let h=0;for(const c of n.toLowerCase())h=(h*31+c.charCodeAt(0))%360;return "hsl("+h+",55%,45%)"};
 const PR=window.EMPresence;
 const av0=(n,u)=>u?'<span class="mb-av has"><img src="'+esc(u)+'" alt=""></span>':'<span class="mb-av has"><img src="'+emDefAv(n)+'" alt=""></span>';
@@ -9,18 +9,18 @@ const av=(n,u,m)=>PR&&m?'<span class="em-avd">'+av0(n,u)+PR.dot(m)+'</span>':av0
 const day=t=>new Date(t).toLocaleDateString(undefined,{year:"numeric",month:"long",day:"numeric"});
 const ago=t=>{const m=Math.round((Date.now()-t)/6e4);return m<1?"just now":m<60?m+" min ago":m<1440?Math.round(m/60)+" h ago":Math.round(m/1440)+" d ago"};
 const names=L=>(L||[]).map(e=>esc(e.n)+(e.q>1?" ×"+e.q:"")).join(", ")||"–";
-(function(){const s=document.createElement("style");s.textContent=".mb-cat{grid-column:1/-1;margin:22px 0 4px;display:flex;align-items:center;gap:10px;font:800 13px Montserrat,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}.mb-cat:first-child{margin-top:4px}.mb-cat i{font-style:normal;width:10px;height:10px;border-radius:50%;background:var(--rc,#8a8a93)}.mb-cat b{font-weight:700;opacity:.7}.mb-cat:after{content:'';flex:1;height:1px;background:var(--bl,#333)}";document.head.appendChild(s)})();
-const tile=m=>'<button class="mb-t" data-u="'+esc(m.username)+'">'+av(m.username,m.avatar,m)+'<span class="nm">'+esc(m.nick||m.username)+'</span></button>';
+(function(){const s=document.createElement("style");s.textContent=".mb-cat{grid-column:1/-1;margin:22px 0 4px;display:flex;align-items:center;gap:10px;font:800 13px Montserrat,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}.mb-cat:first-child{margin-top:4px}.mb-cat i{font-style:normal;width:10px;height:10px;border-radius:50%;background:var(--rc,#8a8a93)}.mb-cat b{font-weight:700;opacity:.7}.mb-t.bn{opacity:.5}.mb-hb{padding:3px 10px;border-radius:999px;border:1px solid var(--bl,#333);background:transparent;color:var(--text);font:700 11px Montserrat,sans-serif;cursor:pointer;text-transform:none;letter-spacing:0}.mb-cat:after{content:'';flex:1;height:1px;background:var(--bl,#333)}";document.head.appendChild(s)})();
+const tile=m=>'<button class="mb-t'+(m.banned?" bn":"")+'" data-u="'+esc(m.username)+'">'+av(m.username,m.avatar,m)+'<span class="nm">'+esc(m.nick||m.username)+'</span></button>';
 function groups(L){
  /* a member is listed once, under the first category that applies: Admin, then the roles in order, then Members */
  const keys=PR&&PR.ROLES?Object.keys(PR.ROLES):[],G=[{n:"Admin",c:"#ff4d4d",L:[]}].concat(keys.map(k=>({n:PR.ROLES[k].n,c:PR.ROLES[k].c,k,L:[]}))),rest={n:"Members",c:"#8a8a93",L:[]};
- L.forEach(m=>{if(m.role==="admin"){G[0].L.push(m);return}
+ const bans=[];L.forEach(m=>{if(m.banned){bans.push(m);return}if(m.role==="admin"){G[0].L.push(m);return}
   const g=G.find(g=>g.k&&(m.roles||[]).includes(g.k));(g||rest).L.push(m)});
- return G.concat(rest).filter(g=>g.L.length)}
+ const out=G.concat(rest).filter(g=>g.L.length);if(bans.length)out.push({n:"Banned",c:"#e5484d",L:bans,ban:true});return out}
 function draw(){
  const f=q.value.trim().toLowerCase(),L=M.filter(m=>!f||m.username.toLowerCase().includes(f)||(m.nick||"").toLowerCase().includes(f));
- note.textContent=M.length+(M.length===1?" member":" members")+" so far. Click one to open their profile.";
- grid.innerHTML=L.length?groups(L).map(g=>'<div class="mb-cat" style="--rc:'+g.c+'"><i></i>'+esc(g.n)+' <b>'+g.L.length+'</b></div>'+g.L.map(tile).join("")).join(""):'<div class="mb-empty">No member found.</div>'}
+ const nb=M.filter(m=>m.banned).length,na=M.length-nb;note.textContent=na+(na===1?" member":" members")+" so far. Click one to open their profile.";
+ grid.innerHTML=L.length?groups(L).map(g=>'<div class="mb-cat" style="--rc:'+g.c+'"><i></i>'+esc(g.n)+' <b>'+g.L.length+'</b>'+(g.ban?'<button type="button" class="mb-hb" data-hb>'+(hideB?"Show":"Hide")+'</button>':"")+'</div>'+(g.ban&&hideB?"":g.L.map(tile).join(""))).join(""):'<div class="mb-empty">No member found.</div>'}
 function open(u){
  const m=M.find(x=>x.username===u);if(!m)return;
  const mine=ADS.filter(a=>a.username===m.username),idx=M.indexOf(m)+1;
@@ -38,7 +38,7 @@ async function decorate(m){
   const b=card.querySelector(".mb-bio");if(b&&r.bio){b.textContent=r.bio;b.hidden=false}
   if(r.discord&&top)top.insertAdjacentHTML("afterend",'<p style="text-align:center;margin:8px 0 0;font-size:13px">Discord: <b>@'+esc(r.discord)+'</b> <i style="font-style:normal;font-weight:800;font-size:11px;padding:2px 8px;border-radius:999px;background:'+(r.discord_verified?"#1f7a46;color:#fff":"#6b5a1f;color:#ffe9a3")+'">'+(r.discord_verified?"Verified":"Not verified")+"</i></p>")}catch(e){}}
 function close(){mo.hidden=true;document.body.style.overflow=""}
-grid.addEventListener("click",e=>{const b=e.target.closest("[data-u]");if(b)open(b.dataset.u)});
+grid.addEventListener("click",e=>{if(e.target.closest("[data-hb]")){hideB=!hideB;draw();return}const b=e.target.closest("[data-u]");if(b)open(b.dataset.u)});
 mo.addEventListener("click",e=>{if(e.target===mo||e.target.closest(".mb-x"))close()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!mo.hidden)close()});
 q.addEventListener("input",draw);
@@ -50,6 +50,7 @@ async function load(){
   let pr={};try{(await EMAuth.rest("profiles?select=id,status,last_seen,roles&limit=1000")).forEach(x=>pr[x.id]=x)}catch(e){}
   M=p.map(r=>({id:r.id,username:r.username,role:r.role,avatar:r.avatar||"",nick:r.nickname||"",t:Date.parse(r.created_at),status:(pr[r.id]||{}).status,last_seen:(pr[r.id]||{}).last_seen,roles:(pr[r.id]||{}).roles||[]}));
   try{ADS=(await EMAuth.rest("ads?select=username,offering,looking,note,created_at&order=created_at.desc&limit=500")).map(r=>({username:r.username,a:r.offering||[],b:r.looking||[],note:r.note||"",t:Date.parse(r.created_at)}))}catch(e){ADS=[]}
+  if(EMAuth.isAdmin&&EMAuth.isAdmin()){try{const A=await EMAuth.rest("rpc/staff_accounts","POST",{}),bs=new Set(A.filter(a=>a.banned).map(a=>a.id));M.forEach(m=>{if(bs.has(m.id))m.banned=true})}catch(e){}}
   draw()}
  catch(e){note.textContent="";grid.innerHTML='<div class="mb-empty">Couldn\'t load the members: '+esc(e.message)+'</div>'}}
 grid.innerHTML='<div class="mb-empty">Loading…</div>';load();
