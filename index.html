@@ -52,7 +52,7 @@
 (function(){
 var q=document.getElementById("hm-q"),box=document.getElementById("hm-r"),loaded=0,items=[],TY={g:"Gear",p:"Pet",t:"Title",e:"Effect",o:"Death"},act=-1,cur=[];
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
-function load(cb){if(loaded===2){cb&&cb();return}if(loaded===1){return}loaded=1;var s=document.createElement("script");s.src="trade-data.js?v=11";
+function load(cb){if(loaded===2){cb&&cb();return}if(loaded===1){return}loaded=1;var s=document.createElement("script");s.src="trade-data.js?v=12";
  s.onload=function(){try{items=TD.items||[]}catch(e){items=[]}loaded=2;cb&&cb();if(cb!==paint&&q.value.trim())paint()};s.onerror=function(){loaded=0;box.hidden=false;box.innerHTML='<div class="hm-n">Could not load the items. You can still press Enter to search in the catalog.</div>'};document.head.appendChild(s)}
 function thumb(n){var t=(typeof TD!=="undefined"&&TD.thumbs&&TD.thumbs[n])||{};if(t.fx)return(t.m?'<img class="fxm" src="'+t.m+'" alt="">':"")+'<img class="fxa" src="'+t.a+'" alt="">';return t.a?'<img src="'+t.a+'" alt="">':""}
 function go(name,type){try{sessionStorage.setItem("em_pg_state",JSON.stringify({q:name,sort:"",types:[],stats:[],onlyList:false}))}catch(e){}location.href="catalog.html"}
