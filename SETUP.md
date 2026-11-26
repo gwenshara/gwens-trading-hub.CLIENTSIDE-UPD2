@@ -31,3 +31,9 @@ Run `supabase-setup-33.sql` in the SQL Editor (after supabase-setup-24.sql).
 - Only 3 accounts can be created per IP. The 4th sign-up is refused with "You're not able to make more accounts." If an account still gets created beyond the 3rd (for example by calling the API directly), it is banned automatically and is never signed in.
 - Existing accounts count towards the limit with the last IP we saw for them. Admins are never banned.
 - IPv6 is counted per /64 block. People on one shared network (school, family, mobile carrier) share the 3 slots.
+
+### Staff tools (supabase-setup-34.sql, run after 33)
+- **Members page > "Staff: IPs & bulk ban"** (admins + moderators): every account grouped by the IP it was made from, with "x/3 slots used". Tick several accounts (or "Select all" on one IP), add a reason, press **Ban selected**.
+- Banning does not ban the IP, and banned accounts stop counting towards the 3 slots, so that IP can make new accounts again.
+- On a member's profile, staff see an **IP address** box (last seen IP, IP at sign-up, other accounts on the same IP).
+- An account only has a "last seen" IP after it opened the site once while logged in. Accounts that never did show "IP not recorded".

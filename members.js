@@ -53,3 +53,57 @@ async function load(){
   draw()}
  catch(e){note.textContent="";grid.innerHTML='<div class="mb-empty">Couldn\'t load the members: '+esc(e.message)+'</div>'}}
 grid.innerHTML='<div class="mb-empty">Loading…</div>';load();
+
+/* STAFF (admins + moderators): every account with the IP it was made from, and a multi-select ban.
+   Banning only bans the accounts, so the slots of that IP (max 3 accounts) are free again. */
+(function(){
+ if(!window.EMAuth||!EMAuth.configured||!EMAuth.user||!EMAuth.user()||!EMAuth.canMod||!EMAuth.canMod())return;
+ const h=document.querySelector(".mb-h");if(!h)return;
+ const ME=EMAuth.uid&&EMAuth.uid(),IS_ADMIN=EMAuth.isAdmin&&EMAuth.isAdmin();
+ const btn=document.createElement("button");btn.type="button";btn.textContent="Staff: IPs & bulk ban";
+ btn.style.cssText="padding:9px 14px;border-radius:8px;font:700 13px Montserrat,sans-serif;cursor:pointer;background:#e5484d;border:1px solid #e5484d;color:#fff";h.appendChild(btn);
+ const box=document.createElement("div");box.hidden=true;box.style.cssText="margin:0 0 18px;padding:14px;border:1px solid #e5484d;border-radius:12px;background:var(--b3);font-family:Montserrat,sans-serif";
+ h.parentNode.insertBefore(box,document.getElementById("mb-n"));
+ let A=null,err="",msg="",flt="",hideBanned=false;const sel=new Set();
+ const inp="padding:8px 12px;border-radius:8px;border:1px solid var(--bl);background:var(--b1);color:var(--text);font:600 13px Montserrat,sans-serif";
+ const B="padding:8px 14px;border-radius:8px;font:700 13px Montserrat,sans-serif;cursor:pointer;border:1px solid var(--bl);background:var(--b1);color:var(--text)";
+ const canBan=a=>!a.banned&&a.role!=="admin"&&a.id!==ME&&!((a.roles||[]).includes("moderator")&&!IS_ADMIN);
+ const setup=e=>/does not exist|schema cache|Could not find/i.test(e.message)?"Run supabase-setup-33.sql and supabase-setup-34.sql in Supabase first.":e.message;
+ async function load(){err="";try{A=await EMAuth.rest("rpc/staff_accounts","POST",{})}catch(e){A=[];err=setup(e)}render()}
+ function render(){
+  if(A===null){box.innerHTML='<p style="margin:0">Loading\u2026</p>';return}
+  const f=flt.toLowerCase(),L=A.filter(a=>(!hideBanned||!a.banned)&&(!f||a.username.toLowerCase().includes(f)||(a.signup_ip||"").includes(f)||(a.last_ip||"").includes(f)));
+  const G=new Map();L.forEach(a=>{const k=a.signup_ip||"unknown";if(!G.has(k))G.set(k,[]);G.get(k).push(a)});
+  const used=k=>A.filter(a=>(a.signup_ip||"unknown")===k&&!a.banned).length;
+  const keys=[...G.keys()].sort((x,y)=>(x==="unknown")-(y==="unknown")||G.get(y).length-G.get(x).length||x.localeCompare(y));
+  const row=a=>'<label style="display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;padding:6px 0;border-top:1px solid var(--bl);font-size:13px'+(a.banned?";opacity:.55":"")+'"><input type="checkbox" data-s="'+esc(a.username)+'"'+(sel.has(a.username)?" checked":"")+(canBan(a)?"":" disabled")+'>'
+   +'<a href="profile.html?u='+encodeURIComponent(a.username)+'" style="color:inherit;font-weight:700">'+esc(a.username)+'</a>'
+   +(a.role==="admin"?'<i class="mb-ad">ADMIN</i>':(a.roles||[]).includes("moderator")?'<i class="mb-ad" style="background:#2f6fd1">MOD</i>':"")
+   +(a.banned?'<i class="mb-ad" style="background:#555">BANNED</i>':"")
+   +'<span style="margin-left:auto;color:var(--mute);font-size:12px">joined '+esc(new Date(a.created_at).toLocaleDateString())+(a.last_ip&&a.last_ip!==a.signup_ip?" \u00b7 last IP "+esc(a.last_ip):"")+'</span></label>';
+  const grp=k=>{const R=G.get(k),pick=R.filter(canBan);return '<div style="margin-top:12px"><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><b style="font-size:14px;overflow-wrap:anywhere">'+(k==="unknown"?"IP not recorded":esc(k))+'</b>'
+   +(k==="unknown"?"":'<span style="font-size:12px;color:var(--mute)">'+used(k)+"/3 slots used</span>")
+   +(pick.length?'<button type="button" data-g="'+esc(k)+'" style="'+B+';padding:4px 10px;font-size:12px">Select all ('+pick.length+')</button>':"")+'</div>'+R.map(row).join("")+'</div>'};
+  box.innerHTML='<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><b style="flex:1;min-width:160px">Where every account was made</b>'
+   +'<input id="st-q" placeholder="Search name or IP\u2026" value="'+esc(flt)+'" style="'+inp+'"><label style="font-size:13px;display:flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox" id="st-hb"'+(hideBanned?" checked":"")+'>Hide banned</label></div>'
+   +'<p style="margin:8px 0 0;font-size:12px;color:var(--mute)">Grouped by the IP address the account was made from. Max 3 accounts per IP; banned accounts free their slot. Only staff see this.</p>'
+   +(err?'<p style="color:#ff6b6b;margin:10px 0 0">'+esc(err)+'</p>':"")+(msg?'<p style="color:#3bb26b;margin:10px 0 0;font-weight:700">'+esc(msg)+'</p>':"")
+   +(keys.length?keys.map(grp).join(""):'<p style="margin:14px 0 0;color:var(--mute)">No accounts found.</p>')
+   +'<div style="position:sticky;bottom:0;margin-top:14px;padding:10px 0 2px;background:var(--b3);border-top:1px solid var(--bl);display:flex;gap:8px;flex-wrap:wrap;align-items:center">'
+   +'<input id="st-r" maxlength="200" placeholder="Reason (they read it when they log in)" style="'+inp+';flex:1;min-width:200px">'
+   +'<button type="button" id="st-clr" style="'+B+'">Clear</button><button type="button" id="st-go" style="'+B+';background:#e5484d;border-color:#e5484d;color:#fff"'+(sel.size?"":" disabled")+'>Ban selected ('+sel.size+')</button></div>'}
+ box.addEventListener("change",e=>{const c=e.target.closest("[data-s]");if(c){c.checked?sel.add(c.dataset.s):sel.delete(c.dataset.s);const g=box.querySelector("#st-go");g.textContent="Ban selected ("+sel.size+")";g.disabled=!sel.size;return}
+  if(e.target.id==="st-hb"){hideBanned=e.target.checked;render()}});
+ box.addEventListener("input",e=>{if(e.target.id==="st-q"){flt=e.target.value;const p=e.target.selectionStart;render();const q=box.querySelector("#st-q");q.focus();q.setSelectionRange(p,p)}});
+ box.addEventListener("click",async e=>{
+  const g=e.target.closest("[data-g]");if(g){A.filter(a=>(a.signup_ip||"unknown")===g.dataset.g&&canBan(a)).forEach(a=>sel.add(a.username));render();return}
+  if(e.target.id==="st-clr"){sel.clear();render();return}
+  if(e.target.id==="st-go"&&sel.size){
+   const names=[...sel],why=box.querySelector("#st-r").value.trim();
+   if(!confirm("Ban "+names.length+" account"+(names.length>1?"s":"")+"?\n\n"+names.slice(0,15).join(", ")+(names.length>15?" \u2026":"")+"\n\nTheir IP stays open: the slots become free again."))return;
+   e.target.disabled=true;e.target.textContent="Banning\u2026";
+   try{const r=await EMAuth.rest("rpc/ban_many","POST",{targets:names,reason:why});sel.clear();msg="Banned "+r.banned+" account"+(r.banned===1?"":"s")+(r.skipped?" ("+r.skipped+" skipped)":"")+". Their slots are free.";err="";A=await EMAuth.rest("rpc/staff_accounts","POST",{})}
+   catch(x){err=setup(x);msg=""}
+   render()}});
+ btn.onclick=()=>{box.hidden=!box.hidden;btn.textContent=box.hidden?"Staff: IPs & bulk ban":"Close staff tools";if(!box.hidden&&A===null)load()};
+})();

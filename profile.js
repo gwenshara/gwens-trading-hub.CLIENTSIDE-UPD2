@@ -37,7 +37,7 @@ async function load(){
   try{const x=(await EMAuth.rest("profiles?id=eq."+encodeURIComponent(r.id)+"&select=roblox_id,roblox_name"))[0];if(x)Object.assign(r,x)}catch(e){r.__norb=1}
   P=r;$("#pf").hidden=false;$("#pf-msg").hidden=true;$("#pf-n").textContent="#"+(idx+1);
   try{$("#pf-ads").textContent=(await EMAuth.rest("ads?select=id&username=eq."+encodeURIComponent(P.username)+"&limit=1000")).length}catch(e){}
-  paint();paintPres();paintMod();paintRb();paintDel();paintReviews();
+  paint();paintPres();paintMod();paintIpBox();paintRb();paintDel();paintReviews();
   if(window.EMSocial)EMSocial.mount($("#pf-soc"),P.id,P.username);
   if(mine){["#pf-bb","#pf-ab","#pf-bx","#pf-hint","#pf-nx"].forEach(s=>$(s).hidden=false);$("#pf-un").textContent=P.username;if(P.__nodc)$("#pf-hint").textContent="Nickname and Discord can't be saved yet: run supabase-setup-7.sql in Supabase first.";
    if(P.__old)$("#pf-hint").textContent="Pictures can't be saved yet: run supabase-setup-4.sql in Supabase first."}
@@ -170,18 +170,19 @@ function paintRoleMgr(){
 
 /* IP address of a member: only admins and moderators get this (the server checks it too) */
 let IPD=null,IPFOR="";
-async function paintIp(){
- const w=$("#pf-ipw");if(!w||_mdTab!=="ip")return;
+async function paintIpBox(){
+ if(mine||!P||!EMAuth.canMod||!EMAuth.canMod())return;
+ let w=$("#pf-ipb");if(!w){w=document.createElement("div");w.id="pf-ipb";w.className="pf-box";w.style.borderColor="#e5484d";$("#pf-bio").closest(".pf-box").insertAdjacentElement("afterend",w)}
  if(IPFOR!==P.username){IPD=null;IPFOR=P.username}
- if(IPD===null){w.innerHTML='<p class="pf-hint" style="margin:0">Loading\u2026</p>';
+ const H='<h4>IP address <span style="font-weight:600;font-size:11px;opacity:.7">(staff only)</span></h4>';
+ if(IPD===null){w.innerHTML=H+'<p class="pf-hint" style="margin:0">Loading\u2026</p>';
   try{IPD=await EMAuth.rest("rpc/get_member_ip","POST",{target:P.username})}
-  catch(e){w.innerHTML='<p class="pf-hint" style="margin:0">'+esc(/does not exist|schema cache|Could not find/i.test(e.message)?"Run supabase-setup-33.sql in Supabase first.":e.message)+'</p>';return}}
+  catch(e){w.innerHTML=H+'<p class="pf-hint" style="margin:0">'+esc(/does not exist|schema cache|Could not find/i.test(e.message)?"Run supabase-setup-33.sql in Supabase first.":e.message)+'</p>';return}}
  const d=IPD,row=(k,v)=>'<div style="display:flex;gap:10px;padding:7px 0;border-top:1px solid var(--bl,#3a3a42);font-size:13px"><span style="width:130px;flex:none;opacity:.65">'+k+'</span><span style="flex:1;min-width:0;overflow-wrap:anywhere;font-weight:700">'+v+'</span></div>';
  const same=(d.same_ip_accounts||[]).map(n=>'<a href="profile.html?u='+encodeURIComponent(n)+'" style="color:inherit">'+esc(n)+'</a>').join(", ");
- w.innerHTML='<p class="pf-hint" style="margin:0 0 8px">Only admins and moderators can see this. Never share it.</p>'
-  +row("Last seen IP",d.ip?esc(d.ip)+(d.ip_banned?' <span style="background:#e5484d;color:#fff;border-radius:6px;padding:1px 6px;font-size:11px">IP BAN</span>':""):'<i style="opacity:.6">none yet (they have not opened the site since this was added)</i>')
+ w.innerHTML=H+row("Last seen IP",d.ip?esc(d.ip)+(d.ip_banned?' <span style="background:#e5484d;color:#fff;border-radius:6px;padding:1px 6px;font-size:11px">IP BAN</span>':""):'<i style="opacity:.6">not recorded yet (they must open the site once while logged in)</i>')
   +row("Last seen",d.seen_at?esc(new Date(d.seen_at).toLocaleString()):"-")
-  +row("IP at sign-up",d.signup_ip?esc(d.signup_ip):"-")
+  +row("Made from IP",d.signup_ip?esc(d.signup_ip):"-")
   +row("Same IP accounts",same||'<i style="opacity:.6">none</i>')}
 /* moderation: admins and moderators can reset parts of someone else's profile and send a warning */
 let _mdOpen=false,_mdTab="warn";
@@ -190,7 +191,7 @@ function paintMod(){
  if(P.role==="admin"||((P.roles||[]).includes("moderator")&&!ADMIN))return;
  let w=$("#pf-md");if(!w){w=document.createElement("div");w.id="pf-md";w.className="pf-box";w.style.borderColor="#e5484d";$("#pf-bio").closest(".pf-box").insertAdjacentElement("afterend",w)}
  const opts=[["avatar","Profile picture"],["banner","Banner"],["nickname","Nickname"],["bio","About me"],["username","Username (they must pick a new one)"]];
- const tabs=[["warn","Warn / reset"],["ban","Ban"],["ip","IP address"]].concat(ADMIN?[["del","Delete account"]]:[]);
+ const tabs=[["warn","Warn / reset"],["ban","Ban"]].concat(ADMIN?[["del","Delete account"]]:[]);
  if(!tabs.some(t=>t[0]===_mdTab))_mdTab="warn";
  const TB='padding:7px 14px;border-radius:10px;font-weight:700;cursor:pointer',inp='width:100%;box-sizing:border-box;padding:9px 12px;border-radius:10px;border:1px solid var(--bl,#3a3a42);background:var(--b3,#1c1c20);color:inherit;font:inherit';
  w.innerHTML='<h4>Moderation</h4><button type="button" id="pf-mdb" class="pri" style="padding:8px 16px;border-radius:10px;font-weight:700;cursor:pointer;background:#e5484d;border-color:#e5484d;color:#fff">'+(_mdOpen?"Close moderation":"Open moderation")+'</button>'
@@ -202,7 +203,6 @@ function paintMod(){
   +'<label style="display:flex;gap:6px;align-items:center;font-weight:700;font-size:13px;margin-top:10px;cursor:pointer"><input type="checkbox" id="pf-mdw" checked>Send them a warning</label>'
   +'<div class="pf-row" style="margin-top:12px"><button type="button" id="pf-mdgo" class="pri" style="padding:8px 16px;border-radius:10px;font-weight:700;cursor:pointer">Send / reset now</button></div></div>'
   +'<div id="pf-bn" style="display:'+(_mdTab==="ban"?"block":"none")+'"></div>'
-  +'<div id="pf-ipw" style="display:'+(_mdTab==="ip"?"block":"none")+'"></div>'
   +'<div id="pf-bdel" style="display:'+(_mdTab==="del"?"block":"none")+'"></div></div>';
  $("#pf-mdb").onclick=()=>{_mdOpen=!_mdOpen;paintMod()};
  w.querySelectorAll("[data-mt]").forEach(b=>b.onclick=()=>{_mdTab=b.dataset.mt;paintMod()});
@@ -217,7 +217,7 @@ function paintMod(){
    if(typeof nu==="string"&&nu){location.href="profile.html?u="+encodeURIComponent(nu);return}
    if(what.includes("avatar"))P.avatar=null;if(what.includes("banner"))P.banner=null;if(what.includes("nickname"))P.nickname=null;if(what.includes("bio"))P.bio=null;
    paint();paintMod()}};
- paintBan();paintIp()}
+ paintBan()}
 document.addEventListener("click",()=>{const m=$("#pf-stp");if(m)m.hidden=true});
 
 /* star reviews other members left on this person's trade ads */
