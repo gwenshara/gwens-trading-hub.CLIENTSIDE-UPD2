@@ -204,7 +204,7 @@ function paintChat(stick){
  const box=$("#dm-msgs"),near=box.scrollHeight-box.scrollTop-box.clientHeight<90;
  const lo=[...MSGS].reverse().find(m=>m.sender_id===UID),SEENID=lo&&lo.read_at?lo.id:null;let h="",d="";MSGS.forEach(x=>{const k=day(x.created_at);if(k!==d){d=k;h+='<div class="dm-day">'+k+"</div>"}h+=msgHtml(x)+(x.id===SEENID?'<div class="dm-seen">Seen '+fmtT(x.read_at)+"</div>":"")});
  if(!MSGS.length)h='<div class="dm-none" style="margin:auto">No messages yet. Say hi</div>';
- box.innerHTML=h;if(stick||near)box.scrollTop=box.scrollHeight;loadPics();loadAds();paintAdb()}
+ box.innerHTML=h;addNote(box);if(stick||near||box.querySelector(".dm-sys"))box.scrollTop=box.scrollHeight;loadPics();loadAds();paintAdb()}
 /* pictures are fetched one by one, so the message list stays light */
 async function loadPics(){
  const grp=!!(cur&&cur.grp),need=(grp?(GM[cur.id]||[]):MSGS).filter(x=>x.kind==="image"&&!IMG[x.id]&&!PICREQ[x.id]);
@@ -250,7 +250,22 @@ async function open(id,name,ch,pre){ch=ch==="trade"?"trade":"personal";
  const i=$("#dm-in");if(i){if(pre&&!i.value&&!MSGS.length)i.value=pre;if(innerWidth>820)i.focus()}
  loadRx().then(c=>{if(c&&cur&&!cur.grp&&cur.id===id)paintChat(false)})}
 /* one place that writes a message */
-async function post(fields){
+/* ---- anti-spam: 1 second between messages, and a "Don't spam!" notice in the chat when someone sends too fast ---- */
+const SPAM_TXT="Don't spam! Each message is precious, so please make sure you don't abuse the message feature.";
+let SEND_T=[],SPAM_UNTIL=0,NOTE_UNTIL=0;
+function spamErr(m){const e=new Error(m);e.spam=true;return e}
+function addNote(box){if(!box||Date.now()>=NOTE_UNTIL||box.querySelector(".dm-sys"))return;const d=document.createElement("div");d.className="dm-sys";d.setAttribute("style","align-self:stretch;margin:10px 12px;padding:10px 14px;border-radius:10px;background:#e5484d22;border:1px solid #e5484d;color:#ff8a8d;font:600 13px/1.45 Montserrat,sans-serif;text-align:center");d.textContent="\u26D4 Chat bot: "+SPAM_TXT;box.appendChild(d);box.scrollTop=box.scrollHeight}
+function showNote(){NOTE_UNTIL=Date.now()+12000;addNote($("#dm-msgs")||$("#gp-msgs"))}
+function guardSend(){
+ const n=Date.now();
+ if(n<SPAM_UNTIL){showNote();throw spamErr(SPAM_TXT)}
+ SEND_T=SEND_T.filter(t=>n-t<10000);
+ if(SEND_T.length&&n-SEND_T[SEND_T.length-1]<1000)throw spamErr("Slow down: wait 1 second between messages.");
+ if(SEND_T.length>=6){SPAM_UNTIL=n+15000;showNote();throw spamErr(SPAM_TXT)}
+ SEND_T.push(n)}
+const spamServer=e=>/slow down|don.t spam/i.test(e&&e.message||"")&&(showNote(),true);
+async function post(fields,free){
+ if(!free)guardSend();
  const body=Object.assign({sender_id:UID,recipient_id:cur.id,sender_name:ME,recipient_name:cur.name},cur.ch==="trade"?{channel:"trade"}:{},fields);
  const r=await EMAuth.rest("dms?select="+COLS,"POST",body,{Prefer:"return=representation"});const m=r[0];
  if(fields.kind==="image"&&m){IMG[m.id]=fields.payload.img}
@@ -279,14 +294,15 @@ async function seenPing(){if(!NEW11||!cur||document.hidden||pingBusy)return;cons
  try{await EMAuth.rest("rpc/dm_mark_read","POST",{p_other:cur.id,p_channel:cur.ch});const t=new Date().toISOString();un.forEach(m=>m.read_at=t);ALL.forEach(m=>{if(m.sender_id===cur.id&&chOf(m)===cur.ch&&!m.read_at)m.read_at=t});build();paintList()}
  catch(e){if(/function|schema cache|read_at/i.test(e.message))NEW11=false}
  pingBusy=false}
-async function sendAdMark(){const a=adCtx;if(!a||!cur||cur.ch!=="trade"||a.uid!==cur.id)return;adCtx=null;if(MSGS.some(m=>adOf(m)===a.id))return;ADC[a.id]=a.ad;await post(NEW8?{kind:"text",text:"[[ad:"+a.id+"]]"}:{text:"[[ad:"+a.id+"]]"})}
+async function sendAdMark(){const a=adCtx;if(!a||!cur||cur.ch!=="trade"||a.uid!==cur.id)return;adCtx=null;if(MSGS.some(m=>adOf(m)===a.id))return;ADC[a.id]=a.ad;await post(NEW8?{kind:"text",text:"[[ad:"+a.id+"]]"}:{text:"[[ad:"+a.id+"]]"},true)}
 async function send(){
  const i=$("#dm-in"),b=$("#dm-send"),t=i.value.trim();if(!cur)return;if(!t&&!pendImg)return;$("#dm-err").textContent="";b.disabled=true;
  try{
   if(pendImg){if(!NEW8)throw new Error(NEED8);await post({kind:"image",text:t,payload:Object.assign({img:pendImg},rq())});pendImg=null;paintPend()}
   else{await sendAdMark();await post(NEW8?Object.assign({kind:"text",text:t},rf()):{text:t})}
   i.value="";replyTo=null;paintPend()}
- catch(e){$("#dm-err").textContent=setup(e)||/dms_content_check|violates check/i.test(e.message)?(/dms_content_check|violates check/i.test(e.message)?"The server refused it. Run supabase-setup-8.sql in Supabase first.":"Run supabase-setup-6.sql in Supabase first."):"Couldn't send: "+e.message}
+ catch(e){if(e.spam||spamServer(e)){$("#dm-err").textContent=e.spam?e.message:"Slow down: wait 1 second between messages.";b.disabled=false;i.focus();return}
+  $("#dm-err").textContent=setup(e)||/dms_content_check|violates check/i.test(e.message)?(/dms_content_check|violates check/i.test(e.message)?"The server refused it. Run supabase-setup-8.sql in Supabase first.":"Run supabase-setup-6.sql in Supabase first."):"Couldn't send: "+e.message}
  b.disabled=false;i.focus()}
 async function sendItem(n){
  closeOv();if(!cur)return;errEl().textContent="";
@@ -430,18 +446,20 @@ function paintGroup(stick){const r=$("#dm-r");if(!cur||!cur.grp)return;
  {const need=[...new Set(L.map(x=>x.sender_id))].filter(i=>i&&i!==UID&&!prof[i]);if(need.length&&!gProfBusy){gProfBusy=true;loadProfiles(need).then(()=>{gProfBusy=false;if(cur&&cur.grp)paintGroup(false)},()=>{gProfBusy=false})}}
  L.forEach(x=>{const k=day(x.created_at);if(k!==d){d=k;h+='<div class="dm-day">'+k+"</div>"}h+=gediting&&gediting.id===x.id?gHtml(x):withRx(gHtml(x),x)});
  if(!L.length)h='<div class="dm-none" style="margin:auto">No messages yet.</div>';
- box.innerHTML=h;if(stick||near)box.scrollTop=box.scrollHeight;gSig=sigG(cur.id);loadPics();
+ box.innerHTML=h;addNote(box);if(stick||near)box.scrollTop=box.scrollHeight;gSig=sigG(cur.id);loadPics();
  if(gediting){const t=$("#gp-ed");if(t&&document.activeElement!==t){t.focus();t.setSelectionRange(t.value.length,t.value.length)}}}
 function openGroup(id){const g=GL.find(x=>x.id===id);if(!g)return;
  cur={grp:true,id,name:g.name};replyTo=null;RX={};rxSig="";gediting=null;editing=null;TAB="group";sv("dm_tab",TAB);root.classList.add("chat");paintChat(true);gRead();buildG();paintList();
  const i=$("#gp-in");if(i&&innerWidth>820)i.focus();loadRx().then(c=>{if(c&&cur&&cur.grp&&cur.id===id)paintGroup(false)})}
 async function postG(f){
+ guardSend();
  const r=await EMAuth.rest("group_msgs?select="+(GNEW?GCOLS:GOLD),"POST",Object.assign({group_id:cur.id,sender_id:UID,sender_name:ME},f),{Prefer:"return=representation"});const m=r[0];
  if(f.kind==="image"&&m)IMG[m.id]=f.payload.img;if(f.kind==="item"&&m&&!m.iname)m.iname=f.payload.n;
  (GM[cur.id]=GM[cur.id]||[]).push(m);paintGroup(true);gRead();buildG();paintList()}
 async function sendG(){const i=$("#gp-in"),b=$("#gp-send");if(!i||!cur||!cur.grp)return;const t=i.value.trim();if(!t&&!pendImg)return;b.disabled=true;$("#gp-err").textContent="";
  try{if(pendImg){if(!GNEW)throw new Error(NEED17);await postG({kind:"image",text:t,payload:Object.assign({img:pendImg},rq())});pendImg=null;paintPend()}else await postG(Object.assign({kind:"text",text:t},rf()));i.value="";replyTo=null;paintPend()}
- catch(e){$("#gp-err").textContent="Couldn't send: "+e.message}
+ catch(e){if(e.spam||spamServer(e)){$("#gp-err").textContent=e.spam?e.message:"Slow down: wait 1 second between messages.";b.disabled=false;i.focus();return}
+  $("#gp-err").textContent="Couldn't send: "+e.message}
  b.disabled=false;i.focus()}
 function openGmo(btn){closePop();const el=btn.closest(".dm-m"),x=(GM[cur.id]||[]).find(m=>m.id===el.dataset.id);if(!x)return;
  pop=document.createElement("div");pop.className="dm-pop";
