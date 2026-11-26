@@ -416,3 +416,6 @@ body.dm-full .dm-rh{padding-top:calc(12px + env(safe-area-inset-top,0px))}
 .dm-m.out.hasrx .rxs{right:6px;justify-content:flex-end}
 .dm-m.hasrx .rxc{background:var(--b3,#262629);border:1.5px solid var(--bl,#3a3a42);color:var(--text,#f1f1f4);padding:1px 8px 1px 6px;font-size:13px}
 .dm-m.out.hasrx .rxc.me,.dm-m.hasrx .rxc.me{border-color:#7aa7ff;background:#7aa7ff40}
+
+/* bigger stickers in the chat */
+.dm-stk{width:230px;height:230px;max-width:62vw;max-height:62vw}
