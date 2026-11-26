@@ -177,5 +177,5 @@ if(!window.__emWarn){try{var _w=document.createElement("script");_w.src="modwarn
 
 if(!window.__emNP){try{var _q=document.createElement("script");_q.src="notifprompt.js?v=2";document.head.appendChild(_q)}catch(e){}}
 if(!window.__emPop){try{var _m=document.createElement("script");_m.src="msgpop.js?v=2";document.head.appendChild(_m)}catch(e){}}
-if(!window.__emMMA){try{var _a=document.createElement("script");_a.src="mmalert.js?v=1";document.head.appendChild(_a)}catch(e){}}
+if(!window.__emMMA){try{var _a=document.createElement("script");_a.src="mmalert.js?v=2";document.head.appendChild(_a)}catch(e){}}
 if(!window.__emBan){try{var _b=document.createElement("script");_b.src="banguard.js?v=1";document.head.appendChild(_b)}catch(e){}}

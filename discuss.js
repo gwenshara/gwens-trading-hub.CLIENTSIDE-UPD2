@@ -34,7 +34,7 @@ const SL={1:"Horrible demand",2:"No demand",3:"HTT - hard to trade",4:"Doing wel
 const price=p=>String(p==null?"":p).replace(/^0\/C/i,"O/C");
 const thumb=n=>{const i=BYN[n],t=TH[n]||{};let h="";
  if(t.fx){if(t.m)h+='<img class="fxm" src="'+esc(t.m)+'" alt="">';h+='<img class="fxa" src="'+esc(t.a)+'" alt="">'}
- else if(t.a)h='<img src="'+esc(t.a)+'" alt="">';else if(i&&i.t==="t")return'<span class="th t txt"><i>'+esc(n)+"</i></span>";else h="?";
+ else if(t.a)h='<img src="'+esc(t.a)+'" alt="">';else if(i&&i.t==="t")return'<span class="th t txt"><i>'+esc(n)+"</i></span>";else h="";
  return'<span class="th '+(i?i.t:"g")+'">'+h+"</span>"};
 const stars=n=>n?'<span class="dm-st" title="'+esc(SL[n]||"")+'">'+"\u2605".repeat(n)+"</span>":"";
 const chipTxt=c=>{const k=c[0],v=c[1];return k==="star"?v+" Stars":k==="rbx"?v+" Robux":k==="coin"?v+" Coins":k==="token"?v+" Tokens":k==="rank"?"Rank "+v:String(v)};
@@ -82,7 +82,7 @@ function paintAdb(){const b=$("#dm-adb");if(!b)return;const a=adCtx&&cur&&cur.ch
 
 const WLRE=/^\[\[(wl|inv):([\s\S]*)\]\]$/,wlOf=x=>{if(x.kind&&x.kind!=="text")return null;const m=WLRE.exec(x.text||"");if(!m)return null;const l=m[2].split("|").filter(Boolean).map(p=>{const k=p.lastIndexOf("*"),q=k>0?+p.slice(k+1):1;return k>0&&q>0?{n:p.slice(0,k),q:q}:{n:p,q:1}});l.k=m[1];return l},
 wlNm=x=>{const l=wlOf(x);return l&&l.k==="inv"?"Inventory":"Wishlist"},
-wlCard=l=>{const tot=l.reduce((t,r)=>t+r.q,0);return'<div class="dm-wl"><div class="dm-wlh"><b>'+(l.k==="inv"?"Inventory":"Wishlist")+'</b><span>'+l.length+(l.length===1?" item":" items")+(tot>l.length?" \u00b7 "+tot+" total":"")+'</span></div><div class="dm-wll">'+l.map(r=>{const i=BYN[r.n];return'<button class="dm-wli" data-item="'+esc(r.n)+'" type="button">'+(i?thumb(r.n):'<span class="th g">?</span>')+'<span class="dm-wlx"><b>'+esc(r.n)+(r.q>1?" x"+r.q:"")+'</b><span>'+(i?esc(price(i.p))+(i.stars?" \u00b7 "+stars(i.stars):""):"Item not found")+'</span></span></button>'}).join("")+'</div></div>'},
+wlCard=l=>{const tot=l.reduce((t,r)=>t+r.q,0);return'<div class="dm-wl"><div class="dm-wlh"><b>'+(l.k==="inv"?"Inventory":"Wishlist")+'</b><span>'+l.length+(l.length===1?" item":" items")+(tot>l.length?" \u00b7 "+tot+" total":"")+'</span></div><div class="dm-wll">'+l.map(r=>{const i=BYN[r.n];return'<button class="dm-wli" data-item="'+esc(r.n)+'" type="button">'+(i?thumb(r.n):'<span class="th g"></span>')+'<span class="dm-wlx"><b>'+esc(r.n)+(r.q>1?" x"+r.q:"")+'</b><span>'+(i?esc(price(i.p))+(i.stars?" \u00b7 "+stars(i.stars):""):"Item not found")+'</span></span></button>'}).join("")+'</div></div>'},
 myList=k=>{let a=[];try{a=JSON.parse(localStorage.getItem(EMAuth.listKey(k||"wishn"))||"[]")}catch(e){}return Array.isArray(a)?a.filter(r=>r&&typeof r[0]==="string"&&r[0]):[]};
 const STRE=/^\[\[st:([a-z]+)(\d+)\]\]$/i,stOf=x=>{if(x.kind&&x.kind!=="text")return null;const m=STRE.exec(x.text||"");if(!m)return null;const p=(window.EM_STICKERS||{})[m[1].toLowerCase()],u=p&&p.items[+m[2]-1];return{pack:m[1].toLowerCase(),n:+m[2],src:u||""}};
 const gsum=x=>stOf(x)?"Sticker":wlOf(x)?wlNm(x):x.kind==="image"?(x.text?"Photo: "+x.text:"Photo"):x.kind==="item"?"Item: "+(x.iname||""):x.text;
@@ -192,7 +192,7 @@ function msgHtml0(x){
  if(x.kind==="image"){const u=IMG[x.id];
   return`<div class="dm-m pic ${out?"out":"in"}" data-id="${id}">${mo}${qHtml(x)}${u?'<img class="dm-pic" data-pic="'+id+'" src="'+esc(u)+'" alt="Picture">':'<div class="dm-pic ph" data-pic="'+id+'">Loading picture\u2026</div>'}${x.text?'<div class="dm-cap">'+esc(x.text)+"</div>":""}${tm}</div>`}
  if(x.kind==="item"){const n=x.iname||"",i=BYN[n];
-  return`<div class="dm-m itm ${out?"out":"in"}" data-id="${id}">${mo}<button class="dm-it" data-item="${esc(n)}" type="button">${i?thumb(n):'<span class="th g">?</span>'}<span class="dm-itx"><b>${esc(n)}</b><span>${i?esc(price(i.p))+(i.stars?" \u00b7 "+stars(i.stars):""):"Item not found"}</span><em>Tap to see the item info</em></span></button>${tm}</div>`}
+  return`<div class="dm-m itm ${out?"out":"in"}" data-id="${id}">${mo}<button class="dm-it" data-item="${esc(n)}" type="button">${i?thumb(n):'<span class="th g"></span>'}<span class="dm-itx"><b>${esc(n)}</b><span>${i?esc(price(i.p))+(i.stars?" \u00b7 "+stars(i.stars):""):"Item not found"}</span><em>Tap to see the item info</em></span></button>${tm}</div>`}
  return`<div class="dm-m ${out?"out":"in"}" data-id="${id}">${mo}${qHtml(x)}${esc(x.text)}${tm}</div>`}
 function paintChat(stick){
  const r=$("#dm-r");
@@ -418,7 +418,7 @@ function gHtml0(x){const out=x.sender_id===UID;
  if(x.kind==="image"){const u=IMG[x.id];
   return'<div class="dm-m pic '+c+'" data-id="'+id+'">'+mo+nm+qHtml(x)+(u?'<img class="dm-pic" data-pic="'+id+'" src="'+esc(u)+'" alt="Picture">':'<div class="dm-pic ph" data-pic="'+id+'">Loading picture\u2026</div>')+(x.text?'<div class="dm-cap">'+esc(x.text)+"</div>":"")+tm+"</div>"}
  if(x.kind==="item"){const n=x.iname||"",i=BYN[n];
-  return'<div class="dm-m itm '+c+'" data-id="'+id+'">'+mo+nm+'<button class="dm-it" data-item="'+esc(n)+'" type="button">'+(i?thumb(n):'<span class="th g">?</span>')+'<span class="dm-itx"><b>'+esc(n)+"</b><span>"+(i?esc(price(i.p))+(i.stars?" \u00b7 "+stars(i.stars):""):"Item not found")+"</span><em>Tap to see the item info</em></span></button>"+tm+"</div>"}
+  return'<div class="dm-m itm '+c+'" data-id="'+id+'">'+mo+nm+'<button class="dm-it" data-item="'+esc(n)+'" type="button">'+(i?thumb(n):'<span class="th g"></span>')+'<span class="dm-itx"><b>'+esc(n)+"</b><span>"+(i?esc(price(i.p))+(i.stars?" \u00b7 "+stars(i.stars):""):"Item not found")+"</span><em>Tap to see the item info</em></span></button>"+tm+"</div>"}
  return'<div class="dm-m '+c+'" data-id="'+id+'">'+mo+nm+qHtml(x)+esc(x.text)+tm+"</div>"}
 let gProfBusy=false;
 function paintGroup(stick){const r=$("#dm-r");if(!cur||!cur.grp)return;

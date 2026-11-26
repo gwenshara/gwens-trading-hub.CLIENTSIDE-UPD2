@@ -12,7 +12,7 @@ const by=n=>ITEMS.find(i=>i.n===n);
 const TL={up:"Increasing",down:"Receding",flat:"Stabilizing",fluct:"Fluctuating",infl:"Inflated"};
 const stars=i=>{const o=OVR[i.n];return o&&o.s!==undefined?o.s:(TD.stars[i.n]||0)};
 const trend=n=>{const o=OVR[n];if(o&&o.d!==undefined)return o.d==="none"?null:o.d;return TD.TR[n]||null};
-const thumb=n=>{const i=by(n),t=TD.thumbs[n]||{};let h="✨";
+const thumb=n=>{const i=by(n),t=TD.thumbs[n]||{};let h="";
  if(t.fx){h=(t.m?`<img class="fxm" src="${t.m}" alt="">`:"")+`<img class="fxa" src="${t.a}" alt="">`}else if(t.a)h=`<img src="${t.a}" alt="">`;
  return`<span class="th ${i?i.t:"g"}">${h}</span>`};
 const starTxt=n=>n?"★".repeat(n)+"☆".repeat(5-n)+" ("+n+")":"none";

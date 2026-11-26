@@ -21,7 +21,7 @@ const fx=i=>{let m=1;if(O.st&&stars(i))m*=1+(stars(i)-3)*.06;if(O.pl&&plus(i))m*
 const line=(i,q)=>(val(i)||0)*q*fx(i);
 const thumb=i=>{const t=TD.thumbs[i.n]||{};let h="";
  if(t.fx){if(t.m)h+=`<img class="fxm" src="${t.m}" alt="">`;h+=`<img class="fxa" src="${t.a}" alt="">`}
- else if(t.a)h=`<img src="${t.a}" alt="">`;else h="✨";
+ else if(t.a)h=`<img src="${t.a}" alt="">`;else h="";
  return`<span class="th ${i.t}">${h}</span>`};
 const meta=i=>`${esc(i.p)}${val(i)===null?" · unknown":""}${stars(i)?" · ★"+stars(i):""}${trend(i.n)?" · "+TL[trend(i.n)]:""}`;
 
