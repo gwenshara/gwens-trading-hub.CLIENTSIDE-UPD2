@@ -20,8 +20,8 @@
 .hm-all{display:block;width:100%;padding:11px;border:0;border-top:1px solid var(--hl);background:transparent;color:var(--accent,#7aa7ff);font:700 13px Montserrat,sans-serif;cursor:pointer}
 .hm-all:hover{background:rgba(122,167,255,.1)}
 .hm-n{padding:14px 16px;color:var(--mute,#a0a0ab);font:600 13px Montserrat,sans-serif}
-.hm-note{max-width:760px;margin:26px auto 0;padding:14px 18px;border-radius:14px;border:1px solid #e0a43a;background:rgba(224,164,58,.1);color:var(--text,#f1f1f4)}
-.hm-note b{display:block;font:800 11px Montserrat,sans-serif;text-transform:uppercase;letter-spacing:.1em;color:#e0a43a;margin-bottom:4px}
+.hm-note{max-width:760px;margin:26px auto 0;padding:14px 18px;border-radius:14px;border:1px solid var(--hl);background:var(--hb);color:var(--text,#f1f1f4)}
+.hm-note b{display:block;font:800 11px Montserrat,sans-serif;text-transform:uppercase;letter-spacing:.1em;color:var(--mute,#a0a0ab);margin-bottom:4px}
 .hm-note p{margin:0;font:600 13.5px/1.6 Montserrat,sans-serif}
 .hm-g{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:28px}
 .hm-c{display:flex;flex-direction:column;gap:6px;padding:18px 16px;border-radius:16px;border:1px solid var(--hl);background:var(--hb);color:var(--text,#f1f1f4);text-decoration:none;transition:transform .15s,border-color .15s,box-shadow .15s}
@@ -36,3 +36,14 @@
 @media(max-width:860px){.hm-g{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:420px){.hm{padding:20px 12px 40px}.hm-g{gap:10px}.hm-c{padding:14px 12px}.hm-c>span:last-child{font-size:12px}}
 @media(prefers-reduced-motion:reduce){.hm-c{transition:none}}
+
+/* guide */
+.hm-guide{max-width:760px;margin:56px auto 0;padding-top:32px;border-top:1px solid var(--hl)}
+.hm-guide h2.hm-gt{margin:0 0 6px;font:800 clamp(20px,3.6vw,28px)/1.25 Montserrat,sans-serif;color:var(--text,#f1f1f4);text-transform:none}
+.hm-guide .hm-gs{margin:0 0 8px;color:var(--mute,#a0a0ab);font:600 14px/1.5 Montserrat,sans-serif}
+.hm-guide section{padding:22px 0 4px}
+.hm-guide h3{margin:0 0 10px;font:800 clamp(16px,2.6vw,19px)/1.35 Montserrat,sans-serif;color:var(--text,#f1f1f4)}
+.hm-guide p,.hm-guide li{font:500 14.5px/1.75 Montserrat,sans-serif;color:var(--text,#f1f1f4);opacity:.92}
+.hm-guide p{margin:0 0 10px}
+.hm-guide strong{font-weight:800;color:var(--accent,#7aa7ff)}
+.hm-guide ul{margin:6px 0 10px;padding-left:22px}

@@ -154,8 +154,8 @@ function mmTail(x,nm,both,mine,other){
 const rxName=id=>id===UID?"You":(pname(id)||((GMEM[cur&&cur.id]||[]).find(m=>m.user_id===id)||{}).username||"Member");
 function rxHtml(x){const m=RX[x.id];if(!m)return"";const o=RXK.filter(k=>m[k]&&m[k].length);if(!o.length)return"";
  return'<span class="rxs">'+o.map(k=>'<button type="button" class="rxc'+(m[k].includes(UID)?" me":"")+'" data-rx="'+k+'" title="'+esc(m[k].map(rxName).join(", "))+'">'+RXE[k]+" <b>"+m[k].length+"</b></button>").join("")+"</span>"}
-function withRx(h,x){if(x.kind==="sys"||x.kind==="mm")return h;const i=h.indexOf(">");
- return h.slice(0,i+1)+'<button class="rxo" data-rxo type="button" aria-label="React" title="React">'+SMILE+"</button>"+h.slice(i+1).replace(/<\/div>$/,rxHtml(x)+"</div>")}
+function withRx(h,x){if(x.kind==="sys"||x.kind==="mm")return h;const rx=rxHtml(x);if(rx)h=h.replace('class="dm-m ','class="dm-m hasrx ');const i=h.indexOf(">");
+ return h.slice(0,i+1)+'<button class="rxo" data-rxo type="button" aria-label="React" title="React">'+SMILE+"</button>"+h.slice(i+1).replace(/<\/div>$/,rx+"</div>")}
 const repaintCur=()=>{if(!cur)return;if(cur.grp)paintGroup(false);else paintChat(false)};
 async function loadRx(){if(!rxOk||!cur||rxBusy)return false;const grp=!!cur.grp,id=cur.id;
  const ids=(grp?(GM[id]||[]):MSGS).filter(m=>m.kind!=="sys"&&m.kind!=="mm").map(m=>m.id).slice(-300);
