@@ -17,7 +17,7 @@ ready(function(){
  if(document.getElementById("theme")||document.querySelector(".em-setb"))return; /* the Catalog pages have their own Settings menu */
  var base=".sec{border-top:1px solid var(--line,#3a3a42);padding:10px 0}.sec:first-of-type{border-top:0;padding-top:0}.stt{font:700 13px Montserrat,Nunito,system-ui,sans-serif;color:var(--mute,#a0a0ab);margin:0 0 6px}"+
  ".thr{display:flex;width:100%;align-items:center;justify-content:space-between;gap:10px;background:var(--bg,#1b1b1d);color:var(--text,#f1f1f4);border:1px solid var(--line,#3a3a42);border-radius:10px;padding:9px 12px;font:600 14px Nunito,system-ui,sans-serif;cursor:pointer}.thr:hover{border-color:var(--accent,#7aa7ff)}"+
- ".thr .thv::before{content:\"Dark\"}:root[data-theme=\"light\"] .thr .thv::before{content:\"Light\"}.thr .thi::before{content:\"\\1F319\"}:root[data-theme=\"light\"] .thr .thi::before{content:\"\\2600\\FE0F\"}"+
+ ""+
  ".sn{font:500 13px/1.4 Nunito,system-ui,sans-serif;color:var(--text,#f1f1f4)}.sn small{display:block;color:var(--mute,#a0a0ab);margin-top:2px}.sn .sd{display:inline-block;width:9px;height:9px;border-radius:50%;background:#80848e;margin-right:6px}.sn .sd.on{background:#3bb26b}.sn .sd.bad{background:#e5484d}"+
  ".sn button{margin-top:8px;border:0;border-radius:10px;padding:8px 14px;background:#2e8bff;color:#fff;font:700 13px Montserrat,Nunito,system-ui,sans-serif;cursor:pointer}.sn button.alt{background:var(--bg,#1b1b1d);color:var(--text,#f1f1f4);border:1px solid var(--line,#3a3a42)}.sn .er{color:#e5484d;margin-top:6px}";
  var css=base.replace(/(^|\})([^{}@]+)\{/g,function(m,a,sel){return a+sel.split(",").map(function(x){return ".em-setp "+x.trim().replace(/^:root\[data-theme=\"light\"\] /,"")}).join(",")+"{"});
@@ -33,6 +33,8 @@ ready(function(){
  function open(o){p.hidden=!o;b.setAttribute("aria-expanded",o)}
  b.onclick=function(e){e.stopPropagation();open(p.hidden)};
  p.querySelector(".thr").onclick=function(){R.setAttribute("data-theme",light()?"dark":"light")};
+ function sync(){var v=p.querySelector(".thv"),i=p.querySelector(".thi");if(v)v.textContent=light()?"Light":"Dark";if(i)i.textContent=light()?"\u2600\uFE0F":"\uD83C\uDF19"}
+ sync();new MutationObserver(sync).observe(R,{attributes:true,attributeFilter:["data-theme"]});
  document.addEventListener("click",function(e){if(!e.target.closest(".em-setp,.em-setb"))open(false)});
  document.addEventListener("keydown",function(e){if(e.key==="Escape")open(false)});
  setTimeout(function(){var n=document.querySelector(".em-setnotif");if(n&&n.textContent==="Loading\u2026")n.textContent="Notifications could not load. Refresh the page with Ctrl+Shift+R."},4000);
