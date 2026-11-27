@@ -190,8 +190,8 @@ function paintAlt(d){
  const L=(d&&d.same_ip_accounts)||[];let b=$("#pf-alt");
  if(!b){b=document.createElement("button");b.id="pf-alt";b.type="button";$("#pf-sub").insertAdjacentElement("afterend",b)}
  const n=L.length+1;
- b.style.cssText="display:inline-block;margin:6px 0 0;padding:4px 11px;border-radius:99px;font:800 12px Montserrat,sans-serif;cursor:pointer;border:1px solid "+(L.length?"#e5484d;background:rgba(229,72,77,.15);color:#ff8a8e":"var(--bl,#3a3a42);background:transparent;color:inherit;opacity:.7");
- b.textContent=L.length?"\u26a0 "+n+" accounts linked":"No linked accounts";
+ b.style.cssText="display:inline-block;margin:6px 0 0 14px;padding:4px 12px;border-radius:99px;font:800 12px Montserrat,sans-serif;cursor:pointer;border:1px solid var(--bl,#3a3a42);background:var(--b3,#2a2a30);color:inherit"+(L.length?"":";opacity:.7");
+ b.textContent=L.length?n+" accounts linked":"No linked accounts";
  b.onclick=()=>{
   let o=$("#pf-altw");if(o)o.remove();
   o=document.createElement("div");o.id="pf-altw";o.style.cssText="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:16px";

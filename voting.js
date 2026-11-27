@@ -49,7 +49,7 @@ function paint(){
  $("#vt-list").innerHTML=L.length?L.map(card).join(""):'<div class="vt-empty">'+(P.length?"No polls match.":"No polls yet. Be the first: press <b>Create a new poll</b>.")+'</div>'}
 /* ---- "See who voted" ---- */
 const dAv=n=>window.emDefAv?window.emDefAv(n):"";
-const voRow=x=>`<div class="vt-vr"><span class="vt-va"><img src="${esc(dAv(x.u))}" alt=""></span><span class="vt-vn">${esc(x.u)}${x.u===ME?" <em>(you)</em>":""}</span><small>${ago(Date.parse(x.t))}</small></div>`;
+const voRow=x=>`<div class="vt-vr"><span class="vt-va"><img src="${esc(x.a&&/^(data:image\/|https:)/.test(x.a)?x.a:dAv(x.u))}" alt=""></span><span class="vt-vn">${esc(x.u)}${x.u===ME?" <em>(you)</em>":""}</span><small>${ago(Date.parse(x.t))}</small></div>`;
 function voBox(id){const L=VO[id];
  if(L===undefined)return'<div class="vt-vo"><div class="vt-c" style="color:var(--mute)">Loading…</div></div>';
  if(!Array.isArray(L))return'<div class="vt-vo"><div class="vt-c" style="color:#ff6b6b">'+esc(L.err)+'</div></div>';
@@ -67,7 +67,7 @@ function card(p){
  ${p.note?`<p class="vt-note">${esc(p.note)}</p>`:""}
  ${(p.images&&p.images.length)?`<div class="vt-imgs n${p.images.length}">${p.images.map((u,i)=>`<button type="button" class="vt-im" data-im="${i}"><img src="${esc(u)}" alt="Poll picture ${i+1}"></button>`).join("")}</div>`:""}
  <div class="vt-res"><div class="vt-rb"><i class="a" style="width:${pa}%"></i><i class="d" style="width:${pd}%"></i></div><div class="vt-rn"><span class="a">${UP}${t.a} agree${tot?" · "+pa+"%":""}</span><span>${tot} vote${tot===1?"":"s"}</span><span class="d">${t.d} disagree${DN}</span></div></div>
- <div class="vt-act"><button class="va ${t.my==="agree"?"on":""}" data-v="agree" ${open?"":"disabled"}>${UP}Agree</button><button class="vd ${t.my==="disagree"?"on":""}" data-v="disagree" ${open?"":"disabled"}>${DN}Disagree</button><button class="ghost" data-vo>👥 ${openVo[p.id]?"Hide voters":"See who voted"}</button><button class="ghost" data-cm>💬 ${cm.length} comment${cm.length===1?"":"s"}</button><span class="gap"></span>${can?`<button class="ghost" data-close>${open?"Close poll":"Reopen"}</button><button class="ghost danger" data-del>Delete</button>`:""}</div>
+ <div class="vt-act"><button class="va ${t.my==="agree"?"on":""}" data-v="agree" ${open?"":"disabled"}>${UP}Agree</button><button class="vd ${t.my==="disagree"?"on":""}" data-v="disagree" ${open?"":"disabled"}>${DN}Disagree</button><button class="ghost" data-vo>${openVo[p.id]?"Hide voters":"See who voted"}</button><button class="ghost" data-cm>💬 ${cm.length} comment${cm.length===1?"":"s"}</button><span class="gap"></span>${can?`<button class="ghost" data-close>${open?"Close poll":"Reopen"}</button><button class="ghost danger" data-del>Delete</button>`:""}</div>
  <div class="vt-msg"></div>
  ${openVo[p.id]?voBox(p.id):""}
  ${openCm[p.id]?`<div class="vt-cm">${cm.map(c=>`<div class="vt-c">${ADMIN||c.user_id===UID?`<button data-dc="${esc(c.id)}" aria-label="Delete comment">✕</button>`:""}<b>${esc(c.username)}</b>${esc(c.text)}<small>${ago(Date.parse(c.created_at))}</small></div>`).join("")||'<div class="vt-c" style="color:var(--mute)">No comments yet.</div>'}

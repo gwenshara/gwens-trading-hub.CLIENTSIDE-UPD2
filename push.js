@@ -168,7 +168,7 @@ async function paint(err) {
   } else if (st === "blocked") {
     h += '<p class="pn-note" style="margin-top:0">Click the lock icon next to the address, allow Notifications for this site, then reload.</p>';
   }
-  if (A.canMod && A.canMod()) h += '<div class="pn-acts"><button class="pn-btn alt" id="pn-who" type="button">\ud83d\udc65 Who has notifications on</button></div>';
+  if (A.canMod && A.canMod()) h += '<div class="pn-acts"><button class="pn-btn alt" id="pn-who" type="button">Who has notifications on</button></div>';
   h += '<div class="pn-err" id="pn-err">' + esc(err || "") + '</div>';
   h += '<p class="pn-note">No alert while you are looking at the site, or while your status is Do not disturb. If several messages arrive from one person, you only get the first.</p></div>';
   modal.innerHTML = h;
@@ -279,7 +279,7 @@ function openGuide() {
 /* The "Get notified?" box now lives in Settings (catalog Settings menu and the gear on the other pages) */
 function hookGuide(el) { var g = el.querySelector("[data-g]"); if (g) g.onclick = function () { var host = el.closest(".stp,.em-setp"); if (host) host.hidden = true; openGuide(); }; }
 function hookWho(el) { var w = el.querySelector("[data-w]"); if (w) w.onclick = function () { var host = el.closest(".stp,.em-setp"); if (host) host.hidden = true; openWho(); }; }
-var WHOBTN = '<button class="alt" type="button" data-w>\ud83d\udc65 Who has notifications on</button>';
+var WHOBTN = '<button class="alt" type="button" data-w>Who has notifications on</button>';
 async function paintNotif(el) {
   if (!A.user()) { el.innerHTML = 'Log in to get notifications.<br><button class="alt" type="button" data-g>Guide</button>'; hookGuide(el); return; }
   var st = await API.state(), h;
