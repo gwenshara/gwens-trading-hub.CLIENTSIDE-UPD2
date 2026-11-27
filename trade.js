@@ -61,11 +61,14 @@ const api={redraw(){sides.forEach(s=>s.draw());verdict();paintTags()}};
 function paintTags(){const bx=$("#h-tags");const btn=t=>`<button type="button" class="tg${S.tg.includes(t[0])?" on":""}" data-tg="${t[0]}" aria-pressed="${S.tg.includes(t[0])}" aria-label="${t[1]}" title="${t[1]}"><img src="${t[2]}" alt=""></button>`;
  const main=TAGS.filter(t=>t[0]!=="limiteds"),lim=TAGS.filter(t=>t[0]==="limiteds");
  if(bx)bx.innerHTML=`<div class="tagrow">${main.map(btn).join("")}</div><div class="tagsec"><h4>Limiteds<small>pick the hat if you are looking for limited items</small></h4><div class="tagrow">${lim.map(btn).join("")}</div></div>`;
+ const lo=$("#h-tago"),lt=TAGS.find(t=>t[0]==="limiteds"),lon=S.ha.some(e=>e.n==="@lim");
+ if(lo&&lt)lo.innerHTML=`<div class="tagsec"><h4>Limiteds<small>pick the hat if you are trading away limited items</small></h4><div class="tagrow"><button type="button" class="tg${lon?" on":""}" data-lo aria-pressed="${lon}" aria-label="Limiteds" title="Limiteds"><img src="${lt[2]}" alt=""></button></div></div>`;
  ["ha","hb"].forEach(k=>{const bx=$(`[data-xt="${k}"]`);if(!bx)return;bx.querySelectorAll("[data-gm]").forEach(b=>{const on=S[k].some(e=>e.n==="@g:"+b.dataset.gm);b.classList.toggle("on",on);b.setAttribute("aria-pressed",on)});
   const ri=bx.querySelector("[data-rb]"),r=S[k].find(e=>e.n==="@r");if(document.activeElement!==ri)ri.value=r?r.q:"";
   const gi=bx.querySelector("[data-gem]"),gg=S[k].find(e=>e.n==="@m");if(document.activeElement!==gi)gi.value=gg?gg.q:""});
  const a=$("#cn-ha"),b=$("#cn-hb");if(a)a.textContent=S.ha.length?"("+S.ha.length+")":"";if(b)b.textContent=(S.hb.length+S.tg.length)?"("+(S.hb.length+S.tg.length)+")":""}
-document.addEventListener("click",e=>{const gm=e.target.closest("[data-gm]");if(gm){const k=gm.closest("[data-xt]").dataset.xt,id="@g:"+gm.dataset.gm;S[k]=S[k].some(x=>x.n===id)?S[k].filter(x=>x.n!==id):[...S[k],{n:id,q:1}];persist(k);api.redraw();return}
+document.addEventListener("click",e=>{const lo=e.target.closest("[data-lo]");if(lo){S.ha=S.ha.some(x=>x.n==="@lim")?S.ha.filter(x=>x.n!=="@lim"):[...S.ha,{n:"@lim",q:1}];persist("ha");api.redraw();return}
+ const gm=e.target.closest("[data-gm]");if(gm){const k=gm.closest("[data-xt]").dataset.xt,id="@g:"+gm.dataset.gm;S[k]=S[k].some(x=>x.n===id)?S[k].filter(x=>x.n!==id):[...S[k],{n:id,q:1}];persist(k);api.redraw();return}
  const g=e.target.closest("[data-tg]");if(g){const k=g.dataset.tg;S.tg=S.tg.includes(k)?S.tg.filter(x=>x!==k):[...S.tg,k];sv("hub_t",S.tg);paintTags();return}
  const p=e.target.closest("[data-pt]");if(p){$$("[data-pt]").forEach(b=>b.classList.toggle("on",b===p));$$(".col[data-side=ha],.col[data-side=hb]").forEach(c=>c.hidden=c.dataset.side!==p.dataset.pt)}});
 
@@ -116,6 +119,7 @@ $("#h-post").onclick=async()=>{const m=$("#h-msg"),btn=$("#h-post");m.style.colo
  btn.disabled=false};
 const ago=t=>{const m=Math.round((Date.now()-t)/6e4);return m<1?"just now":m<60?m+" min ago":m<1440?Math.round(m/60)+" h ago":Math.round(m/1440)+" d ago"};
 const mini=L=>L.map(e=>{if(e.n.startsWith("@g:")){const g=GM[e.n.slice(3)];return g?`<div class="mini"><span class="th gimg"><img src="${g[2]}" alt=""></span><div class="nm"><b>${g[0]} crosstrade</b><span>${esc(g[1])}</span></div></div>`:""}
+ if(e.n==="@lim"){const lt=TAGS.find(t=>t[0]==="limiteds");return lt?`<div class="mini"><span class="th rbimg"><img src="${lt[2]}" alt=""></span><div class="nm"><b>Limiteds</b><span>Trading limited items</span></div></div>`:""}
  if(e.n==="@m")return`<div class="mini"><span class="th rbimg"><img src="${GEM}" alt=""></span><div class="nm"><b>${fmtN(e.q)} Gems</b><span>Gems</span></div></div>`;
  if(e.n==="@r")return`<div class="mini"><span class="th rbimg"><img src="${RBX}" alt=""></span><div class="nm"><b>${fmtN(e.q)} Robux</b><span>Robux</span></div></div>`;
  const i=by(e.n);return i?`<div class="mini">${thumb(i)}<div class="nm"><b>${esc(i.n)}${e.q>1?" ×"+e.q:""}</b><span>${esc(i.p)}</span></div></div>`:""}).join("");

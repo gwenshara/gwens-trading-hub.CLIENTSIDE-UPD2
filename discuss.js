@@ -75,7 +75,7 @@ const NEED10="Run supabase-setup-10.sql in Supabase first.",key=(id,ch)=>ch==="t
 const NEED8="Run supabase-setup-8.sql in Supabase first.";
 const SETUPMSG='<div class="dm-none"><b>Messages are not set up yet.</b><br>Run <code>supabase-setup-6.sql</code> once in the Supabase SQL Editor, then refresh.</div>';
 const ADRE=/^\[\[ad:([0-9a-f-]{36})\]\]$/i,adOf=x=>(!x.kind||x.kind==="text")&&ADRE.test(x.text||"")?x.text.match(ADRE)[1]:null,ADC={},ADQ={};let adCtx=null;
-const adNm=L=>(L||[]).map(e=>e.n==="@r"?e.q+" Robux":e.n==="@m"?e.q+" Gems":String(e.n).startsWith("@g:")?String(e.n).slice(3)+" crosstrade":e.n+(e.q>1?" x"+e.q:"")).join(", ");
+const adNm=L=>(L||[]).map(e=>e.n==="@lim"?"Limiteds":e.n==="@r"?e.q+" Robux":e.n==="@m"?e.q+" Gems":String(e.n).startsWith("@g:")?String(e.n).slice(3)+" crosstrade":e.n+(e.q>1?" x"+e.q:"")).join(", ");
 const adBox=(a,tag)=>a?'<div class="dm-adc-t">'+tag+(a.username?' \u00b7 '+esc(a.username):"")+'</div><div class="dm-adc-r"><span>Offering</span>'+esc(adNm(a.offering)||"-")+'</div><div class="dm-adc-r"><span>Looking for</span>'+esc(adNm(a.looking)||"-")+'</div>'+(a.note?'<div class="dm-adc-n">'+esc(a.note)+'</div>':""):'<div class="dm-adc-t">'+tag+'</div><div class="dm-adc-n">This trade ad is no longer available.</div>';
 async function loadAds(){for(const x of MSGS){const id=adOf(x);if(!id||ADC[id]!==undefined||ADQ[id])continue;ADQ[id]=1;
  try{const r=await EMAuth.rest("ads?id=eq."+id+"&select=id,username,offering,looking,note");ADC[id]=r&&r[0]||null}catch(e){delete ADQ[id];continue}
@@ -611,7 +611,7 @@ tick(true).then(async()=>{const P=new URLSearchParams(location.search),u=P.get("
  if(u&&u.toLowerCase()!==ME.toLowerCase()){try{const r=await EMAuth.rest("profiles?select=id,username,role,avatar&username=ilike."+encodeURIComponent(u.replace(/[*%,()]/g,"")));
   if(r&&r[0]){prof[r[0].id]=r[0];let pre="";
    if(ch==="trade"&&ad&&/^[0-9a-f-]{36}$/i.test(ad)){try{const a=await EMAuth.rest("ads?id=eq."+ad+"&select=id,username,offering,looking,note");
-     if(a&&a[0]){const nm=L=>(L||[]).map(e=>e.n==="@r"?e.q+" Robux":e.n==="@m"?e.q+" Gems":e.n.startsWith("@g:")?e.n.slice(3)+" crosstrade":e.n+(e.q>1?" x"+e.q:"")).join(", ");
+     if(a&&a[0]){const nm=L=>(L||[]).map(e=>e.n==="@lim"?"Limiteds":e.n==="@r"?e.q+" Robux":e.n==="@m"?e.q+" Gems":e.n.startsWith("@g:")?e.n.slice(3)+" crosstrade":e.n+(e.q>1?" x"+e.q:"")).join(", ");
       if(a[0])adCtx={id:ad.toLowerCase(),uid:r[0].id,ad:a[0]};pre="Hi! About your trade ad. You offer: "+nm(a[0].offering)+". You want: "+nm(a[0].looking)+". "}}catch(e){}}
    open(r[0].id,r[0].username,ch,pre.slice(0,900))}}catch(e){}}});
 setInterval(()=>{if(!document.hidden)tick(false)},4000);
