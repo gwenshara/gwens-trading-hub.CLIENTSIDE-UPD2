@@ -97,8 +97,48 @@ css.textContent =
 ".pn-btn{border:0;border-radius:10px;padding:9px 14px;font:700 13px Montserrat,Inter,system-ui,sans-serif;cursor:pointer;background:#2e8bff;color:#fff}.pn-btn.alt{background:var(--b3,#2a2a30);color:var(--text,#fff);border:1px solid var(--bl,#3a3a42)}.pn-btn:disabled{opacity:.5;cursor:default}" +
 ".pn-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 2px;border-top:1px solid var(--bl,#3a3a42);cursor:pointer}.pn-row small{display:block;opacity:.65;font-weight:500;margin-top:2px}.pn-row input{width:18px;height:18px;flex:none;accent-color:#2e8bff}" +
 ".pn-acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.pn-err{color:#e5484d;margin-top:8px;min-height:1em}.pn-note{opacity:.6;font-weight:500;font-size:12px;margin-top:10px;line-height:1.4}" +
+".pn-who{display:flex;flex-direction:column;gap:0;margin-top:8px}.pn-who input{width:100%;box-sizing:border-box;margin:0 0 8px;padding:9px 12px;border-radius:10px;border:1px solid var(--bl,#3a3a42);background:var(--b3,#2a2a30);color:inherit;font:600 14px Montserrat,Inter,system-ui,sans-serif}" +
+".pn-wr{display:flex;align-items:center;gap:10px;padding:8px 2px;border-top:1px solid var(--bl,#3a3a42)}.pn-wr .av{width:30px;height:30px;border-radius:50%;flex:none;overflow:hidden;background:#2a2a30}.pn-wr .av img{width:100%;height:100%;object-fit:cover;display:block}.pn-wr .nm{flex:1;min-width:0;word-break:break-word}.pn-wr small{display:block;opacity:.65;font-weight:500;margin-top:2px;line-height:1.35}.pn-wr .dv{font-weight:700;opacity:.8;white-space:nowrap}" +
+".pn-list{max-height:50vh;overflow:auto}" +
 ".pn-toast{position:fixed;right:16px;bottom:16px;z-index:8900;background:var(--b2,#232327);color:var(--text,#fff);border:1px solid var(--bl,#3a3a42);border-radius:14px;padding:12px 14px;width:min(320px,calc(100% - 32px));box-shadow:0 8px 30px rgba(0,0,0,.35);font:600 13px Montserrat,Inter,system-ui,sans-serif}.pn-toast p{margin:0 0 10px;line-height:1.4}.pn-toast div{display:flex;gap:8px}";
 document.head.appendChild(css);
+
+/* moderators and admins: who has notifications on */
+var whoEl = null;
+function openWho() {
+  if (!whoEl) {
+    whoEl = document.createElement("div"); whoEl.className = "pn-mo"; whoEl.hidden = true; document.body.appendChild(whoEl);
+    whoEl.addEventListener("click", function (e) { if (e.target === whoEl || e.target.closest(".pn-x")) whoEl.hidden = true; });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape" && whoEl) whoEl.hidden = true; });
+  }
+  whoEl.hidden = false;
+  var head = '<div class="pn-box" role="dialog" aria-modal="true"><button class="pn-x" type="button" aria-label="Close">\u2715</button><h3>Who has notifications on</h3>';
+  whoEl.innerHTML = head + '<p class="pn-sub">Loading\u2026</p></div>';
+  A.rest("rpc/push_who", "POST", {}).then(function (d) {
+    var L = (d && d.users) || [], total = (d && d.total) || 0;
+    var h = head + '<p class="pn-sub"><b>' + L.length + '</b> of ' + total + ' member' + (total === 1 ? "" : "s") + ' have notifications on (on at least one device).</p>';
+    h += '<div class="pn-who"><input type="search" id="pn-wq" placeholder="Search a name\u2026" autocomplete="off"><div class="pn-list" id="pn-wl"></div></div>';
+    h += '<p class="pn-note">Members who never pressed Turn on, or who blocked notifications in their browser, are not in this list.</p></div>';
+    whoEl.innerHTML = h;
+    var list = whoEl.querySelector("#pn-wl");
+    function draw(q) {
+      q = (q || "").trim().toLowerCase();
+      var R = L.filter(function (u) { return !q || String(u.u).toLowerCase().indexOf(q) > -1; });
+      list.innerHTML = R.length ? R.map(function (u) {
+        var off = KINDS.filter(function (k) { return u.prefs && u.prefs[k[0]] === false; }).map(function (k) { return k[1]; });
+        var av = window.emDefAv ? window.emDefAv(u.u) : "";
+        return '<div class="pn-wr"><span class="av">' + (av ? '<img src="' + esc(av) + '" alt="">' : "") + '</span><span class="nm">' + esc(u.u) +
+          '<small>' + (off.length ? "Switched off: " + esc(off.join(", ")) : "All kinds on") + (u.status === "dnd" ? " \u00b7 Do not disturb" : "") + '</small></span><span class="dv">' + u.devices + " device" + (u.devices === 1 ? "" : "s") + "</span></div>";
+      }).join("") : '<p class="pn-note" style="margin:8px 0">' + (L.length ? "No one matches." : "No one has notifications on yet.") + "</p>";
+    }
+    draw("");
+    whoEl.querySelector("#pn-wq").oninput = function () { draw(this.value); };
+  }).catch(function (x) {
+    var m = x && x.message ? x.message : "Something went wrong.";
+    if (/push_who|schema cache|does not exist/i.test(m)) m = "Run supabase-setup-43.sql in Supabase first.";
+    whoEl.innerHTML = head + '<p class="pn-err">' + esc(m) + "</p></div>";
+  });
+}
 
 var modal = null;
 function openPanel() {
@@ -128,6 +168,7 @@ async function paint(err) {
   } else if (st === "blocked") {
     h += '<p class="pn-note" style="margin-top:0">Click the lock icon next to the address, allow Notifications for this site, then reload.</p>';
   }
+  if (A.canMod && A.canMod()) h += '<div class="pn-acts"><button class="pn-btn alt" id="pn-who" type="button">\ud83d\udc65 Who has notifications on</button></div>';
   h += '<div class="pn-err" id="pn-err">' + esc(err || "") + '</div>';
   h += '<p class="pn-note">No alert while you are looking at the site, or while your status is Do not disturb. If several messages arrive from one person, you only get the first.</p></div>';
   modal.innerHTML = h;
@@ -136,6 +177,7 @@ async function paint(err) {
   if (q("#pn-on")) q("#pn-on").onclick = async function () { var b = this; busy(b, true); try { await API.enable(); paint(""); } catch (x) { busy(b, false); e.textContent = friendly(x); } };
   if (q("#pn-off")) q("#pn-off").onclick = async function () { busy(this, true); await API.disable(); paint(""); };
   if (q("#pn-test")) q("#pn-test").onclick = async function () { var b = this; busy(b, true); e.textContent = ""; try { await API.test(); e.style.color = "#3bb26b"; e.textContent = "Sent. It should arrive in a few seconds."; } catch (x) { e.style.color = "#e5484d"; e.textContent = x.message; } setTimeout(function () { busy(b, false); }, 4000); };
+  if (q("#pn-who")) q("#pn-who").onclick = function () { modal.hidden = true; openWho(); };
   if (q("#pn-snd")) q("#pn-snd").onchange = function () { sv("em_push_snd", this.checked ? "1" : "0"); if (this.checked) ding(); };
   modal.querySelectorAll("[data-k]").forEach(function (c) {
     c.onchange = async function () {
@@ -236,6 +278,8 @@ function openGuide() {
 
 /* The "Get notified?" box now lives in Settings (catalog Settings menu and the gear on the other pages) */
 function hookGuide(el) { var g = el.querySelector("[data-g]"); if (g) g.onclick = function () { var host = el.closest(".stp,.em-setp"); if (host) host.hidden = true; openGuide(); }; }
+function hookWho(el) { var w = el.querySelector("[data-w]"); if (w) w.onclick = function () { var host = el.closest(".stp,.em-setp"); if (host) host.hidden = true; openWho(); }; }
+var WHOBTN = '<button class="alt" type="button" data-w>\ud83d\udc65 Who has notifications on</button>';
 async function paintNotif(el) {
   if (!A.user()) { el.innerHTML = 'Log in to get notifications.<br><button class="alt" type="button" data-g>Guide</button>'; hookGuide(el); return; }
   var st = await API.state(), h;
@@ -244,8 +288,8 @@ async function paintNotif(el) {
   else if (st === "blocked") h = '<span class="sd bad"></span>Blocked in your browser settings<small>Click the lock icon next to the address, allow Notifications for this site, then reload.</small>';
   else if (st === "ios-install") h = 'Needs the Home Screen app on iPhone/iPad<small>Tap Share, then Add to Home Screen, open the site from the new icon, and turn notifications on there.</small>';
   else h = "Not supported in this browser";
-  el.innerHTML = h + '<br><button class="alt" type="button" data-g>Guide: how it works</button>';
-  hookGuide(el);
+  el.innerHTML = h + '<br><button class="alt" type="button" data-g>Guide: how it works</button>' + (A.canMod && A.canMod() ? "<br>" + WHOBTN : "");
+  hookGuide(el); hookWho(el);
   var y = el.querySelector("[data-y]"), m = el.querySelector("[data-m]");
   if (y) y.onclick = function () {
     var er = el.querySelector(".er"); y.disabled = true; er.textContent = "";
@@ -255,7 +299,7 @@ async function paintNotif(el) {
 }
 function mountAll() { document.querySelectorAll(".em-setnotif").forEach(function (el) { paintNotif(el).catch(function (x) { el.textContent = "Could not check notifications: " + (x && x.message ? x.message : "unknown error"); }); }); }
 setTimeout(mountAll, 1500);
-API.openPanel = openPanel; API.openGuide = openGuide; API.mount = mountAll;
+API.openWho = openWho; API.openPanel = openPanel; API.openGuide = openGuide; API.mount = mountAll;
 document.addEventListener("click", function (e) { if (e.target.closest("#setb,.em-setb")) setTimeout(mountAll, 0); }, true);
 
 function start() {

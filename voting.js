@@ -32,7 +32,7 @@ async function api(path,method,body,extra){
   const e=new Error(/relation .*does not exist|Could not find the table|schema cache/i.test(m)?"SETUP":m);throw e}
  return j}
 const ME=EMAuth.user(),ADMIN=EMAuth.isAdmin(),UID=EMAuth.uid();
-let P=[],V={},C={},filt="open",mine=false,q="",sort="new",openCm={};
+let P=[],V={},C={},filt="open",mine=false,q="",sort="new",openCm={},openVo={},VO={};
 const ago=t=>{const m=Math.round((Date.now()-t)/6e4);return m<1?"just now":m<60?m+" min ago":m<1440?Math.round(m/60)+" h ago":Math.round(m/1440)+" d ago"};
 async function load(){
  try{
@@ -47,6 +47,18 @@ function paint(){
  let L=P.filter(p=>(filt==="all"||p.status===filt)&&(!mine||p.user_id===UID)&&(!s||[p.item,p.username,p.note,KIND[p.kind],showVal(p.kind,p.proposed)].join(" ").toLowerCase().includes(s)));
  if(sort==="votes")L=L.slice().sort((x,y)=>{const a=tally(x.id),b=tally(y.id);return(b.a+b.d)-(a.a+a.d)});
  $("#vt-list").innerHTML=L.length?L.map(card).join(""):'<div class="vt-empty">'+(P.length?"No polls match.":"No polls yet. Be the first: press <b>Create a new poll</b>.")+'</div>'}
+/* ---- "See who voted" ---- */
+const dAv=n=>window.emDefAv?window.emDefAv(n):"";
+const voRow=x=>`<div class="vt-vr"><span class="vt-va"><img src="${esc(dAv(x.u))}" alt=""></span><span class="vt-vn">${esc(x.u)}${x.u===ME?" <em>(you)</em>":""}</span><small>${ago(Date.parse(x.t))}</small></div>`;
+function voBox(id){const L=VO[id];
+ if(L===undefined)return'<div class="vt-vo"><div class="vt-c" style="color:var(--mute)">Loading…</div></div>';
+ if(!Array.isArray(L))return'<div class="vt-vo"><div class="vt-c" style="color:#ff6b6b">'+esc(L.err)+'</div></div>';
+ const A=L.filter(x=>x.v==="agree"),D=L.filter(x=>x.v!=="agree");
+ return`<div class="vt-vo"><div class="vt-vc a"><h4>Agree · ${A.length}</h4>${A.map(voRow).join("")||'<div class="vt-vz">Nobody yet</div>'}</div><div class="vt-vc d"><h4>Disagree · ${D.length}</h4>${D.map(voRow).join("")||'<div class="vt-vz">Nobody yet</div>'}</div></div>`}
+async function loadVo(id){
+ try{const r=await api("rpc/poll_voters","POST",{p_poll:id});VO[id]=Array.isArray(r)?r:[]}
+ catch(e){VO[id]={err:e.message==="SETUP"||/poll_voters|schema cache|does not exist/i.test(e.message)?"Run supabase-setup-43.sql in Supabase first.":"Couldn't load the voters: "+e.message}}
+ if(openVo[id])paint()}
 function card(p){
  const t=tally(p.id),tot=t.a+t.d,pa=tot?Math.round(t.a/tot*100):0,pd=tot?100-pa:0,can=ADMIN||p.user_id===UID,cm=C[p.id]||[],open=p.status==="open";
  return`<article class="vt-card ${open?"":"closed"}" data-id="${esc(p.id)}">
@@ -55,8 +67,9 @@ function card(p){
  ${p.note?`<p class="vt-note">${esc(p.note)}</p>`:""}
  ${(p.images&&p.images.length)?`<div class="vt-imgs n${p.images.length}">${p.images.map((u,i)=>`<button type="button" class="vt-im" data-im="${i}"><img src="${esc(u)}" alt="Poll picture ${i+1}"></button>`).join("")}</div>`:""}
  <div class="vt-res"><div class="vt-rb"><i class="a" style="width:${pa}%"></i><i class="d" style="width:${pd}%"></i></div><div class="vt-rn"><span class="a">${UP}${t.a} agree${tot?" · "+pa+"%":""}</span><span>${tot} vote${tot===1?"":"s"}</span><span class="d">${t.d} disagree${DN}</span></div></div>
- <div class="vt-act"><button class="va ${t.my==="agree"?"on":""}" data-v="agree" ${open?"":"disabled"}>${UP}Agree</button><button class="vd ${t.my==="disagree"?"on":""}" data-v="disagree" ${open?"":"disabled"}>${DN}Disagree</button><button class="ghost" data-cm>💬 ${cm.length} comment${cm.length===1?"":"s"}</button><span class="gap"></span>${can?`<button class="ghost" data-close>${open?"Close poll":"Reopen"}</button><button class="ghost danger" data-del>Delete</button>`:""}</div>
+ <div class="vt-act"><button class="va ${t.my==="agree"?"on":""}" data-v="agree" ${open?"":"disabled"}>${UP}Agree</button><button class="vd ${t.my==="disagree"?"on":""}" data-v="disagree" ${open?"":"disabled"}>${DN}Disagree</button><button class="ghost" data-vo>👥 ${openVo[p.id]?"Hide voters":"See who voted"}</button><button class="ghost" data-cm>💬 ${cm.length} comment${cm.length===1?"":"s"}</button><span class="gap"></span>${can?`<button class="ghost" data-close>${open?"Close poll":"Reopen"}</button><button class="ghost danger" data-del>Delete</button>`:""}</div>
  <div class="vt-msg"></div>
+ ${openVo[p.id]?voBox(p.id):""}
  ${openCm[p.id]?`<div class="vt-cm">${cm.map(c=>`<div class="vt-c">${ADMIN||c.user_id===UID?`<button data-dc="${esc(c.id)}" aria-label="Delete comment">✕</button>`:""}<b>${esc(c.username)}</b>${esc(c.text)}<small>${ago(Date.parse(c.created_at))}</small></div>`).join("")||'<div class="vt-c" style="color:var(--mute)">No comments yet.</div>'}
  <div class="vt-cf"><input maxlength="300" placeholder="${ME?"Write a comment…":"Log in (top left) to comment"}" ${ME?"":"disabled"}><button data-cs ${ME?"":"disabled"}>Send</button></div></div>`:""}
  </article>`}
@@ -69,7 +82,8 @@ $("#vt-list").addEventListener("click",async e=>{
    const my=tally(id).my,v=b.dataset.v;
    if(my===v){await api("poll_votes?poll_id=eq."+encodeURIComponent(id)+"&user_id=eq."+UID,"DELETE",null,{Prefer:"return=minimal"});V[id]=(V[id]||[]).filter(x=>x.user_id!==UID)}
    else{await api("poll_votes?on_conflict=poll_id,user_id","POST",{poll_id:id,user_id:UID,vote:v},{Prefer:"resolution=merge-duplicates,return=minimal"});V[id]=(V[id]||[]).filter(x=>x.user_id!==UID).concat([{poll_id:id,user_id:UID,vote:v}])}
-   paint()}
+   paint();if(openVo[id])loadVo(id)}
+  else if(b.hasAttribute("data-vo")){openVo[id]=!openVo[id];if(openVo[id]){delete VO[id];paint();loadVo(id)}else paint()}
   else if(b.hasAttribute("data-cm")){openCm[id]=!openCm[id];paint()}
   else if(b.hasAttribute("data-close")){const s=p.status==="open"?"closed":"open";const r=await api("polls?id=eq."+encodeURIComponent(id),"PATCH",{status:s},{Prefer:"return=representation"});if(!r||!r.length)throw new Error("the server refused it.");p.status=s;paint()}
   else if(b.hasAttribute("data-del")){if(!confirm("Delete this poll and its votes and comments?"))return;
