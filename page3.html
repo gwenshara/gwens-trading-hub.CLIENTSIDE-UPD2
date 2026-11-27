@@ -1477,7 +1477,7 @@ async function shareImage(kind,list,total,user){
  rbxIcon(c,246,H-76,38,"#fff");c.font="800 40px "+F;c.fillStyle="#fff";c.fillText(spc(total),294,H-40);
  c.font="700 20px "+F;c.fillStyle="#9aa0b4";c.textAlign="right";c.fillText(list.length+" item"+(list.length===1?"":"s"),W-50,H-40);c.textAlign="left";
  return cv.toDataURL("image/jpeg",.88)}
-async function pushShare(kind,strict){
+async function pushShare(kind,strict,fresh){
  const wtab=kind==="wishlist",ids=wtab?wishIds():[...favs].filter(id=>items[id]);
  if(!ids.length)return null;
  let me=null;try{me=EMAuth.user()}catch(e){}
@@ -1487,7 +1487,7 @@ async function pushShare(kind,strict){
  for(let k=0;k<20;k++){miss=0;list.forEach(l=>{if(!l.src){l.src=picSrc(l.n);if(l.src){l.m=picM(l.n);l.fx=picFx(l.n)}else if(l.t!=="t")miss++}});if(!miss)break;await new Promise(r=>setTimeout(r,200))}
  if(strict&&miss)return null;
  const total=list.reduce((s,l)=>s+l.v*l.q,0),png=await shareImage(kind,list,total,me);
- const code=await EMAuth.rest("rpc/share_list","POST",{p_kind:kind,p_items:list.map(l=>({n:l.n,p:l.p,v:l.v,q:l.q})),p_image:png});
+ const code=await EMAuth.rest("rpc/share_list","POST",{p_kind:kind,p_items:list.map(l=>({n:l.n,p:l.p,v:l.v,q:l.q})),p_image:png,p_fresh:!!fresh});
  try{localStorage.setItem("em_shr_"+me+"_"+kind,"1")}catch(e){}
  return code}
 /* after the first "Copy link", every change to that list refreshes the shared preview by itself */
@@ -1505,10 +1505,10 @@ async function shareList(btn){
  btn.textContent="Making link\u2026";
  try{
   clearTimeout(_shT[kind]);
-  const code=await pushShare(kind,false);
+  const code=await pushShare(kind,false,true);
   const url=new URL("list.html?c="+code,location.href).href;
   try{await navigator.clipboard.writeText(url);flash("Copied!")}catch(e){flash("Copy it below");prompt("Copy this link:",url)}
- }catch(e){btn.disabled=false;btn.textContent="Copy link";alert(/does not exist|schema cache|Could not find/i.test(e.message)?"Run supabase-setup-39.sql in Supabase first.":"Could not make the link: "+e.message)}}
+ }catch(e){btn.disabled=false;btn.textContent="Copy link";alert(/does not exist|schema cache|Could not find/i.test(e.message)?"Run supabase-setup-39.sql and supabase-setup-40.sql in Supabase first.":"Could not make the link: "+e.message)}}
 function drawML(){
  const ws=mlm.querySelector(".mlw"),wt=ws?ws.scrollTop:0,bt=mlm.querySelector(".mlb"),bs=bt?bt.scrollTop:0;
  const wtab=mlTab==="wish",
