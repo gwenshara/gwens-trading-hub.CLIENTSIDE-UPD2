@@ -40,7 +40,7 @@
   function apply(v) {
     cur = v === "winter" ? "winter" : "normal";
     try { localStorage.setItem(K, cur); } catch (e) {}
-    swapIcons(cur === "winter"); swapLogo(cur === "winter"); paint();
+    swapIcons(cur === "winter"); swapLogo(cur === "winter"); snow(cur === "winter"); paint();
   }
 
   /* first paint: use the last known choice right away, swap the logo as soon as it exists */
@@ -62,6 +62,68 @@
   addEventListener("storage", function (e) { if (e.key === K && (e.newValue === "winter" || e.newValue === "normal") && e.newValue !== cur) apply(e.newValue); });
   document.addEventListener("visibilitychange", function () { if (!document.hidden) pull(); });
   setInterval(function () { if (!document.hidden) pull(); }, 60000);
+
+
+  /* Winter snow: falls over the top part of the page (header, and the icon row on the Catalog).
+     Small snow stays behind the Catalog icons; the bigger snowflakes sometimes fall over them and sometimes behind. */
+  var snowOn = false, cv = null, cx = null, raf = 0, dots = [], flakes = [], fimg = null, nextSpawn = 0, SH = 0, SW = 0, dpr = 1, rects = [], lastT = 0, lastM = 0;
+  function headerBottom() {
+    var y = 0, sy = window.pageYOffset || 0;
+    [document.getElementById("car"), document.querySelector(".emnav")].forEach(function (e) { if (e) { var r = e.getBoundingClientRect(); y = Math.max(y, r.bottom + sy); } });
+    return Math.min(Math.ceil(y), 700);
+  }
+  function measure() {
+    var h = headerBottom(), w = document.documentElement.clientWidth;
+    if (h !== SH || w !== SW) {
+      SH = h; SW = w; dpr = Math.min(window.devicePixelRatio || 1, 2);
+      cv.width = Math.max(1, Math.round(w * dpr)); cv.height = Math.max(1, Math.round(h * dpr));
+      cv.style.width = w + "px"; cv.style.height = h + "px";
+      var want = Math.min(160, Math.round(w / 11)); while (dots.length < want) dots.push(newDot(true)); dots.length = want;
+    }
+    var sx = window.pageXOffset || 0, sy = window.pageYOffset || 0;
+    rects = Array.prototype.map.call(document.querySelectorAll("#car .cb .in"), function (e) { var r = e.getBoundingClientRect(); return { x: r.left + sx, y: r.top + sy, w: r.width, h: r.height }; });
+  }
+  function newDot(any) { return { x: Math.random() * (SW || 800), y: any ? Math.random() * (SH || 200) : -6, r: 0.8 + Math.random() * 1.5, v: 18 + Math.random() * 28, a: 0.45 + Math.random() * 0.5, p: Math.random() * 6.28, s: 0.6 + Math.random() * 1.2 }; }
+  function newFlake() { var z = 12 + Math.random() * 7; return { x: Math.random() * SW, y: -z, z: z, v: 28 + Math.random() * 26, r: Math.random() * 6.28, vr: (Math.random() - 0.5) * 1.6, p: Math.random() * 6.28, s: 0.5 + Math.random(), over: Math.random() < 0.5, a: 0.85 + Math.random() * 0.15 }; }
+  function drawFlake(f) {
+    cx.save(); cx.globalAlpha = f.a; cx.translate(f.x, f.y); cx.rotate(f.r); cx.drawImage(fimg, -f.z / 2, -f.z / 2, f.z, f.z); cx.restore();
+  }
+  function hole(r) {
+    var x = r.x + 2, y = r.y + 2, w = r.w - 4, h = r.h - 4, q = Math.min(16, w / 2, h / 2); if (w <= 0 || h <= 0) return;
+    cx.beginPath(); cx.moveTo(x + q, y); cx.arcTo(x + w, y, x + w, y + h, q); cx.arcTo(x + w, y + h, x, y + h, q); cx.arcTo(x, y + h, x, y, q); cx.arcTo(x, y, x + w, y, q); cx.closePath(); cx.fill();
+  }
+  function frame(t) {
+    raf = 0; if (!snowOn || document.hidden) return;
+    var dt = Math.min(0.05, (t - (lastT || t)) / 1000); lastT = t;
+    if (t - lastM > 250 || (document.getElementById("car") && t - lastM > 30)) { measure(); lastM = t; }
+    var sec = t / 1000;
+    dots.forEach(function (d, i) { d.y += d.v * dt; d.x += Math.sin(sec * d.s + d.p) * 9 * dt; if (d.y > SH + 4) dots[i] = newDot(false); });
+    if (t > nextSpawn && flakes.length < 5 && fimg && fimg.complete) { flakes.push(newFlake()); nextSpawn = t + 1500 + Math.random() * 3500; }
+    flakes.forEach(function (f) { f.y += f.v * dt; f.x += Math.sin(sec * f.s + f.p) * 14 * dt; f.r += f.vr * dt; });
+    flakes = flakes.filter(function (f) { return f.y < SH + f.z; });
+    cx.setTransform(dpr, 0, 0, dpr, 0, 0); cx.clearRect(0, 0, SW, SH);
+    cx.fillStyle = "#fff";
+    dots.forEach(function (d) { cx.globalAlpha = d.a; cx.beginPath(); cx.arc(d.x, d.y, d.r, 0, 6.2832); cx.fill(); });
+    cx.globalAlpha = 1;
+    flakes.forEach(function (f) { if (!f.over) drawFlake(f); });
+    cx.globalCompositeOperation = "destination-out"; cx.fillStyle = "#000"; rects.forEach(hole); cx.globalCompositeOperation = "source-over";
+    flakes.forEach(function (f) { if (f.over) drawFlake(f); });
+    raf = requestAnimationFrame(frame);
+  }
+  function snow(on) {
+    if (on && !snowOn) {
+      if (window.matchMedia && matchMedia("(prefers-reduced-motion:reduce)").matches) return;
+      if (!document.body) return;
+      snowOn = true; cv = document.createElement("canvas"); cv.setAttribute("aria-hidden", "true");
+      cv.style.cssText = "position:absolute;left:0;top:0;pointer-events:none;z-index:5";
+      cx = cv.getContext("2d"); document.body.appendChild(cv);
+      fimg = new Image(); fimg.src = "snowflake.png" + V; dots = []; flakes = []; SH = SW = 0; lastT = 0; lastM = 0; nextSpawn = 0;
+      measure(); raf = requestAnimationFrame(frame);
+    } else if (!on && snowOn) {
+      snowOn = false; if (raf) cancelAnimationFrame(raf); raf = 0; if (cv && cv.parentNode) cv.parentNode.removeChild(cv); cv = null;
+    }
+  }
+  document.addEventListener("visibilitychange", function () { if (snowOn && !document.hidden && !raf) { lastT = 0; raf = requestAnimationFrame(frame); } });
 
   /* admin-only choice inside Settings (both the catalog menu and the other pages' menu) */
   function admin() { try { return !!(window.EMAuth && EMAuth.isAdmin && EMAuth.isAdmin()); } catch (e) { return false; } }
@@ -104,7 +166,7 @@
   }
   function ready(f) { if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", f); else f(); }
   ready(function () {
-    if (cur === "winter") swapLogo(true);
+    if (cur === "winter") { swapLogo(true); snow(true); }
     pull(); mount(); setTimeout(mount, 600); setTimeout(mount, 2000);
     new MutationObserver(function () { mount(); }).observe(document.body, { childList: true });
   });
