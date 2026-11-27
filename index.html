@@ -93,9 +93,10 @@ if(!Array.isArray(show))show=["new"];
 function key(k){try{return window.EMAuth&&EMAuth.listKey?EMAuth.listKey(k):k}catch(e){return k}}
 function names(k){var a=ld(key(k),[]);return(Array.isArray(a)?a:[]).map(function(r){return Array.isArray(r)?{n:r[0],q:+r[1]||1}:{n:r,q:1}}).filter(function(r){return typeof r.n==="string"&&r.n})}
 function by(n){for(var i=0;i<ITEMS.length;i++)if(ITEMS[i].n===n)return ITEMS[i];return null}
+function price(i){var o=OV[i.n];return o&&o.p!==undefined&&o.p!==""?o.p:i.p}
 function isNew(i){var o=OV[i.n];return o&&o.nw!==undefined?!!o.nw:NEWSET.indexOf(i.n)>-1}
 function thumb(n){var t=(typeof TD!=="undefined"&&TD.thumbs&&TD.thumbs[n])||{};if(t.fx)return(t.m?'<img class="fxm" src="'+t.m+'" alt="">':"")+'<img class="fxa" src="'+t.a+'" alt="">';return t.a?'<img src="'+t.a+'" alt="">':""}
-function tile(i,q){return'<button type="button" class="hw-t t-'+esc(i.t)+'" data-go="'+esc(i.n)+'" title="'+esc(i.n)+'">'+(isNew(i)?'<span class="hw-nw">NEW</span>':"")+'<span class="hw-n">'+esc(i.n)+'</span><span class="hw-i">'+thumb(i.n)+'</span><span class="hw-p">'+esc(i.p)+(q>1?" \u00d7"+q:"")+'</span></button>'}
+function tile(i,q){return'<button type="button" class="hw-t t-'+esc(i.t)+'" data-go="'+esc(i.n)+'" title="'+esc(i.n)+'">'+(isNew(i)?'<span class="hw-nw">NEW</span>':"")+'<span class="hw-n">'+esc(i.n)+'</span><span class="hw-i">'+thumb(i.n)+'</span><span class="hw-p">'+esc(price(i))+(q>1?" \u00d7"+q:"")+'</span></button>'}
 function row(title,list,empty){return'<div class="hw-r"><div class="hw-rt">'+esc(title)+'<small>'+list.length+'</small></div>'+(list.length?'<div class="hw-s">'+list.map(function(x){return tile(x.i,x.q)}).join("")+'</div>':'<div class="hw-e">'+esc(empty)+'</div>')+'</div>'}
 function pickRand(){if(!ITEMS.length)return;var p=rnd,i;do{i=ITEMS[Math.floor(Math.random()*ITEMS.length)]}while(ITEMS.length>1&&p&&i.n===p.n);rnd=i}
 function paint(){
@@ -106,7 +107,7 @@ function paint(){
  if(show.indexOf("list")>-1)h+=row("My list",names("favn").map(function(r){return{i:by(r.n),q:r.q}}).filter(function(x){return x.i}),"Your list is empty. Add items to My List in the catalog.");
  if(show.indexOf("wish")>-1)h+=row("Wishlist",names("wishn").map(function(r){return{i:by(r.n),q:1}}).filter(function(x){return x.i}),"Your wishlist is empty. Add items to your wishlist in the catalog.");
  if(show.indexOf("new")>-1)h+=row("New items",ITEMS.filter(isNew).map(function(i){return{i:i,q:1}}),"No new items right now.");
- if(show.indexOf("rand")>-1){if(!rnd)pickRand();h+='<div class="hw-r"><div class="hw-rt">Random item</div>'+(rnd?'<div class="hw-rd">'+tile(rnd,1)+'<div class="hw-ri"><b>'+esc(rnd.n)+'</b><span>'+esc(TY[rnd.t]||"")+' \u00b7 value '+esc(rnd.p)+'</span><div><button type="button" class="hw-bt" data-roll>Roll again</button><button type="button" class="hw-bt sec" data-go="'+esc(rnd.n)+'">Open in catalog</button></div></div></div>':'<div class="hw-e">No items to pick from.</div>')+'</div>'}
+ if(show.indexOf("rand")>-1){if(!rnd)pickRand();h+='<div class="hw-r"><div class="hw-rt">Random item</div>'+(rnd?'<div class="hw-rd">'+tile(rnd,1)+'<div class="hw-ri"><b>'+esc(rnd.n)+'</b><span>'+esc(TY[rnd.t]||"")+' \u00b7 value '+esc(price(rnd))+'</span><div><button type="button" class="hw-bt" data-roll>Roll again</button><button type="button" class="hw-bt sec" data-go="'+esc(rnd.n)+'">Open in catalog</button></div></div></div>':'<div class="hw-e">No items to pick from.</div>')+'</div>'}
  bx.innerHTML=h}
 cs.addEventListener("click",function(e){var b=e.target.closest("button[data-k]");if(!b)return;var k=b.dataset.k,x=show.indexOf(k);if(x>-1)show.splice(x,1);else{show.push(k);if(k==="rand")pickRand()}try{localStorage.setItem("hm_show",JSON.stringify(show))}catch(er){}paint()});
 bx.addEventListener("click",function(e){if(e.target.closest("[data-roll]")){pickRand();paint();return}var g=e.target.closest("[data-go]");if(g){try{sessionStorage.setItem("em_pg_state",JSON.stringify({q:g.dataset.go,sort:"",types:[],stats:[],onlyList:false}))}catch(er){}location.href="catalog.html"}});
@@ -116,7 +117,10 @@ function start(){
   ld("em_custom",[]).forEach(function(c){if(c&&c.n&&!by(c.n)){ITEMS.push({n:c.n,t:c.t,p:c.p,r:!!c.r,u:!!c.u});if(c.img&&TD.thumbs)TD.thumbs[c.n]={a:c.img}}});
   var im=ld("em_images",{});Object.keys(im).forEach(function(n){if(im[n]&&TD.thumbs)TD.thumbs[n]={a:im[n]}});
   OV=ld("ovr",{});ready=true;paint();
-  try{var C=window.EM_SUPABASE;if(C&&window.fetch){fetch(C.url+"/rest/v1/site_state?select=value&key=eq.overrides",{headers:{apikey:C.anonKey}}).then(function(r){return r.json()}).then(function(r){if(r&&r[0]&&r[0].value){OV=JSON.parse(r[0].value)||{};paint()}}).catch(function(){})}}catch(e){}
+  try{var C=window.EM_SUPABASE;if(C&&window.fetch){fetch(C.url+"/rest/v1/site_state?select=key,value&key=in.(overrides,custom,images)",{headers:{apikey:C.anonKey}}).then(function(r){return r.json()}).then(function(rows){if(!Array.isArray(rows))return;rows.forEach(function(r){var v;try{v=JSON.parse(r.value)}catch(e){return}
+   if(r.key==="overrides"&&v&&typeof v==="object")OV=v;
+   else if(r.key==="custom"&&Array.isArray(v))v.forEach(function(c){if(c&&c.n&&!by(c.n)){ITEMS.push({n:c.n,t:c.t,p:c.p,r:!!c.r,u:!!c.u});if(c.img&&TD.thumbs)TD.thumbs[c.n]={a:c.img}}});
+   else if(r.key==="images"&&v&&typeof v==="object")Object.keys(v).forEach(function(n){if(v[n]&&TD.thumbs)TD.thumbs[n]={a:v[n]}})});paint()}).catch(function(){})}}catch(e){}
  };
  if(window.__hmLoad)window.__hmLoad(done);else setTimeout(start,50)}
 start();setTimeout(function(){if(!ready)bx.innerHTML='<div class="hw-e">Could not load the items. Refresh the page to try again.</div>'},10000);
