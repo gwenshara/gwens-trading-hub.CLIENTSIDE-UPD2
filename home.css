@@ -76,3 +76,16 @@
 .hw-rd{display:flex;gap:16px;align-items:center;flex-wrap:wrap;padding:2px 4px 10px}.hw-ri{display:flex;flex-direction:column;gap:6px;min-width:0}.hw-ri b{font:800 17px Montserrat,sans-serif;color:var(--text,#f1f1f4)}.hw-ri span{font:600 12px Montserrat,sans-serif;color:var(--mute,#a0a0ab)}.hw-ri div{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
 .hw-bt{padding:8px 14px;border-radius:10px;border:0;background:var(--accent,#7aa7ff);color:#0b1020;font:800 12px Montserrat,sans-serif;cursor:pointer}.hw-bt.sec{background:transparent;border:1px solid var(--hl);color:var(--text,#f1f1f4)}
 @media(prefers-reduced-motion:reduce){.hw-t{transition:none}}
+/* wiki updates */
+.hw-uf{display:flex;gap:10px;align-items:flex-start;margin:0 0 12px;padding:10px;border:1px dashed var(--hl);border-radius:12px}
+.hw-ud{flex:none;padding:6px 10px;border-radius:8px;background:var(--accent,#7aa7ff);color:#0b1020;font:800 12px Montserrat,sans-serif;white-space:nowrap}
+.hw-uf textarea,.hw-ue{flex:1;min-width:0;width:100%;box-sizing:border-box;min-height:38px;resize:vertical;padding:8px 10px;border-radius:8px;border:1px solid var(--hl);background:rgba(0,0,0,.25);color:var(--text,#f1f1f4);font:600 16px Montserrat,sans-serif}
+.hw-ui{padding:10px 12px;margin:0 0 8px;border:1px solid var(--hl);border-radius:12px;background:rgba(255,255,255,.03)}
+.hw-ui time{display:inline-block;margin-bottom:4px;padding:2px 9px;border-radius:99px;background:var(--accent,#7aa7ff);color:#0b1020;font:800 11px Montserrat,sans-serif}
+.hw-ui .hw-ut{white-space:pre-wrap;overflow-wrap:anywhere;font:600 14px/1.45 Montserrat,sans-serif;color:var(--text,#f1f1f4)}
+.hw-ui i{font:600 11px Montserrat,sans-serif;color:var(--mute,#a0a0ab);margin-left:8px}
+.hw-ua{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.hw-ua button{padding:5px 12px;border-radius:8px;border:1px solid var(--hl);background:transparent;color:var(--text,#f1f1f4);font:700 12px Montserrat,sans-serif;cursor:pointer}
+.hw-ua button.del{border-color:#e5484d;color:#ff8a8e}
+.hw-ua button.ok{background:var(--accent,#7aa7ff);border-color:var(--accent,#7aa7ff);color:#0b1020}
+@media(max-width:560px){.hw-uf{flex-direction:column}.hw-ud{align-self:flex-start}}
