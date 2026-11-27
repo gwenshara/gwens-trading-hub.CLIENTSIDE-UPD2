@@ -37,7 +37,7 @@ async function load(){
   try{const x=(await EMAuth.rest("profiles?id=eq."+encodeURIComponent(r.id)+"&select=roblox_id,roblox_name"))[0];if(x)Object.assign(r,x)}catch(e){r.__norb=1}
   P=r;$("#pf").hidden=false;$("#pf-msg").hidden=true;$("#pf-n").textContent="#"+(idx+1);
   try{$("#pf-ads").textContent=(await EMAuth.rest("ads?select=id&username=eq."+encodeURIComponent(P.username)+"&limit=1000")).length}catch(e){}
-  paint();paintPres();paintMod();paintIpBox();paintRb();paintDel();paintReviews();
+  paint();paintPres();paintMod();paintIpBox();paintAltPub();paintRb();paintDel();paintReviews();
   if(window.EMSocial)EMSocial.mount($("#pf-soc"),P.id,P.username);
   if(mine){["#pf-bb","#pf-ab","#pf-bx","#pf-hint","#pf-nx"].forEach(s=>$(s).hidden=false);$("#pf-un").textContent=P.username;if(P.__nodc)$("#pf-hint").textContent="Nickname and Discord can't be saved yet: run supabase-setup-7.sql in Supabase first.";
    if(P.__old)$("#pf-hint").textContent="Pictures can't be saved yet: run supabase-setup-4.sql in Supabase first."}
@@ -184,8 +184,25 @@ async function paintIpBox(){
   +row("Last seen",d.seen_at?esc(new Date(d.seen_at).toLocaleString()):"-")
   +row("Made from IP",d.signup_ip?esc(d.signup_ip):"-")
   +row("Same IP accounts",same||'<i style="opacity:.6">none</i>');
- paintAlt(d)}
-/* "3 accounts linked": staff see at a glance if a member shares an IP with other accounts (small window with the list) */
+}
+/* linked accounts: shown to everybody (names only, no addresses). The server leaves out admin accounts and gives nothing for admin / moderator profiles. */
+let ALTFOR="",ALTD=null;
+async function altGet(u){
+ const C=window.EM_SUPABASE||{};let tok=null;try{tok=await EMAuth.token()}catch(e){}
+ const h={apikey:C.anonKey,"Content-Type":"application/json"};
+ if(tok)h.Authorization="Bearer "+tok;else if(!/^sb_/.test(C.anonKey))h.Authorization="Bearer "+C.anonKey;
+ const r=await fetch(C.url+"/rest/v1/rpc/get_linked_accounts",{method:"POST",headers:h,body:JSON.stringify({target:u})});
+ if(!r.ok)throw new Error("linked accounts not available");return r.json()}
+async function paintAltPub(){
+ if(!P||!P.username)return;
+ if(ALTFOR!==P.username){ALTFOR=P.username;ALTD=null}
+ if(ALTD===null){const who=P.username;let r;
+  try{r=await altGet(who)}catch(e){return}
+  if(ALTFOR!==who)return;ALTD=r||false}
+ const b=$("#pf-alt");
+ if(ALTD===false){if(b)b.remove();return}
+ paintAlt({same_ip_accounts:ALTD.accounts||[]})}
+/* "3 accounts linked": everyone sees at a glance if a member shares an IP with other accounts (small window with the list) */
 function paintAlt(d){
  const L=(d&&d.same_ip_accounts)||[];let b=$("#pf-alt");
  if(!b){b=document.createElement("button");b.id="pf-alt";b.type="button";$("#pf-sub").insertAdjacentElement("afterend",b)}
