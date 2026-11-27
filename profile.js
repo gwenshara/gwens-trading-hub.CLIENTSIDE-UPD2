@@ -198,8 +198,8 @@ function paintAlt(d){
   o.innerHTML='<div role="dialog" aria-modal="true" style="position:relative;width:min(290px,100%);max-height:70vh;overflow:auto;box-sizing:border-box;background:var(--b2,#232327);color:var(--text,#fff);border:1px solid var(--bl,#3a3a42);border-radius:14px;padding:14px 16px;font:600 13px Montserrat,Inter,system-ui,sans-serif">'
    +'<button type="button" data-x aria-label="Close" style="position:absolute;top:8px;right:10px;background:none;border:0;color:inherit;font-size:16px;cursor:pointer;opacity:.7">\u2715</button>'
    +'<div style="font:800 15px Montserrat,sans-serif;margin:0 22px 8px 0">'+(L.length?n+" accounts linked":"No linked accounts")+'</div>'
-   +(L.length?'<div style="padding:6px 0;border-top:1px solid var(--bl,#3a3a42)"><b>'+esc(P.username)+'</b> <span style="opacity:.6">(this account)</span></div>'+L.map(u=>'<div style="padding:6px 0;border-top:1px solid var(--bl,#3a3a42)"><a href="profile.html?u='+encodeURIComponent(u)+'" style="color:inherit;font-weight:700">'+esc(u)+'</a></div>').join(""):'<p style="margin:0;opacity:.7;font-weight:500">No other account uses the same IP address.</p>')
-   +'<p style="margin:10px 0 0;opacity:.6;font-weight:500;font-size:11px;line-height:1.4">Same IP address. It can also be family or a shared network, so it is a hint, not proof.</p></div>';
+   +(L.length?'<div style="padding:6px 0;border-top:1px solid var(--bl,#3a3a42)"><b>'+esc(P.username)+'</b> <span style="opacity:.6">(this account)</span></div>'+L.map(u=>'<div style="padding:6px 0;border-top:1px solid var(--bl,#3a3a42)"><a href="profile.html?u='+encodeURIComponent(u)+'" style="color:inherit;font-weight:700">'+esc(u)+'</a></div>').join(""):'<p style="margin:0;opacity:.7;font-weight:500">This account is not linked to any other account.</p>')
+   +'</div>';
   o.addEventListener("click",e=>{if(e.target===o||e.target.closest("[data-x]"))o.remove()});
   document.body.appendChild(o)}}
 /* moderation: admins and moderators can reset parts of someone else's profile and send a warning */
