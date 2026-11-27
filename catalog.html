@@ -1532,12 +1532,28 @@ if(window.EMData&&EMData.enabled())EMData.onChange((k,v)=>{
  let o;try{o=JSON.parse(v)}catch(e){return}
  if(!o||typeof o!=="object"||Array.isArray(o))return;
  FACTS=o;try{localStorage.setItem("em_facts",v)}catch(e){}});
-const MEDIA_HTML='<div class="edmedia"><div class="edn">Icon and video save for everyone right away. No Save needed.</div><label>Icon image<input type="file" id="ed-img" accept="image/*"></label><label>Showcase video (MP4, WebM or GIF, up to 45 MB)<input type="file" id="ed-vid" accept="video/mp4,video/webm,image/gif"></label><div class="edn" id="ed-ms" aria-live="polite"></div><button type="button" id="ed-rv">Remove showcase video</button></div>';
+const MEDIA_HTML='<div class="edmedia"><div class="edn">Icon and video save for everyone right away. No Save needed.</div><label>Icon image<input type="file" id="ed-img" accept="image/*"></label><label>Showcase video (MP4, WebM or GIF. Big videos are shrunk automatically)<input type="file" id="ed-vid" accept="video/mp4,video/webm,image/gif"></label><div class="edn" id="ed-ms" aria-live="polite"></div><button type="button" id="ed-rv">Remove showcase video</button></div>';
 const _omMed=openM;openM=function(id){_omMed(id);if(EDIT){const b=document.querySelector("#ed .edb");if(b&&!document.querySelector("#ed-img"))b.insertAdjacentHTML("beforebegin",MEDIA_HTML)}};
 const medMsg=m=>{const e=document.getElementById("ed-ms");if(e)e.textContent=m};
 const medOK=()=>EDIT&&window.EMData&&EMData.enabled()&&EMAuth.canEdit();
 const saveMedia=async(k,o)=>{const raw=JSON.stringify(o);await EMData.put(k,raw);try{localStorage.setItem(k==="images"?"em_images":"em_showcases",raw)}catch(e){}};
 const ourPath=u=>u&&u.indexOf("/showcase/")>0?u.split("/showcase/")[1]:null;
+/* shrinks a video in the browser: replays it at 480p and records it again at a low bitrate (a 20 s clip takes about 20 s) */
+const shrinkVideo=(file,onp)=>new Promise((res,rej)=>{
+ const v=document.createElement("video"),url=URL.createObjectURL(file);v.muted=true;v.playsInline=true;v.preload="auto";v.src=url;
+ let raf=0,done=false;const fail=m=>{if(done)return;done=true;cancelAnimationFrame(raf);URL.revokeObjectURL(url);rej(new Error(m))};
+ v.onerror=()=>fail("Cannot read this video");
+ v.onloadedmetadata=()=>{
+  if(!v.videoWidth||!v.videoHeight)return fail("No picture");
+  const H=Math.min(480,v.videoHeight),w=Math.round(v.videoWidth*H/v.videoHeight/2)*2,c=document.createElement("canvas");c.width=w;c.height=H;const g=c.getContext("2d");
+  const mt=["video/mp4;codecs=avc1","video/mp4","video/webm;codecs=vp9","video/webm;codecs=vp8","video/webm"].find(t=>MediaRecorder.isTypeSupported(t));
+  if(!mt)return fail("No recorder");
+  let rec;try{rec=new MediaRecorder(c.captureStream(30),{mimeType:mt,videoBitsPerSecond:650000})}catch(e){return fail("No recorder")}
+  const parts=[];rec.ondataavailable=e=>{if(e.data&&e.data.size)parts.push(e.data)};
+  rec.onstop=()=>{if(done)return;done=true;cancelAnimationFrame(raf);URL.revokeObjectURL(url);res({blob:new Blob(parts,{type:mt.split(";")[0]}),ext:mt.indexOf("mp4")===6?"mp4":"webm"})};
+  const draw=()=>{g.drawImage(v,0,0,w,H);if(onp&&v.duration)onp(Math.min(99,Math.round(v.currentTime/v.duration*100)));raf=requestAnimationFrame(draw)};
+  v.onended=()=>{if(rec.state!=="inactive")rec.stop()};
+  v.play().then(()=>{rec.start(500);draw()}).catch(()=>fail("Playback blocked"))}});
 document.addEventListener("change",async e=>{
  const el=e.target;if(el.id!=="ed-img"&&el.id!=="ed-vid")return;
  const f=el.files[0];if(!f)return;
@@ -1552,10 +1568,15 @@ document.addEventListener("change",async e=>{
   return}
  const ext=(f.name.split(".").pop()||"").toLowerCase().replace(/[^a-z0-9]/g,"");
  if(!/^(mp4|webm|gif)$/.test(ext)){el.value="";return medMsg("Use an MP4, WebM or GIF file.")}
- if(f.size>45*1048576){el.value="";return medMsg("That file is "+Math.round(f.size/1048576)+" MB. The limit is 45 MB, so shrink it first.")}
- const slug=i.n.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")||"item",path=slug+"-"+Date.now()+"."+ext;
- try{medMsg("Uploading\u2026 0%");
-  const url=await EMData.upload(path,f,p=>medMsg("Uploading\u2026 "+p+"%"));
+ let up=f,upExt=ext;
+ if(/^(mp4|webm)$/.test(ext)&&f.size>2.5*1048576&&window.MediaRecorder&&HTMLCanvasElement.prototype.captureStream){
+  try{const r=await shrinkVideo(f,p=>medMsg("Shrinking the video\u2026 "+p+"% (keep this tab open)"));
+   if(r.blob.size&&r.blob.size<f.size){up=new File([r.blob],"v."+r.ext,{type:r.blob.type});upExt=r.ext}}
+  catch(x){}}
+ if(up.size>45*1048576){el.value="";return medMsg("That file is "+Math.round(up.size/1048576)+" MB and could not be shrunk here. The limit is 45 MB, so shrink it first (see the guide I sent you).")}
+ const slug=i.n.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")||"item",path=slug+"-"+Date.now()+"."+upExt;
+ try{medMsg("Uploading\u2026 0% ("+(up.size/1048576).toFixed(1)+" MB)");
+  const url=await EMData.upload(path,up,p=>medMsg("Uploading\u2026 "+p+"%"));
   const old=SHOWM[i.n];SHOWM[i.n]=url;await saveMedia("showcases",SHOWM);
   const op=ourPath(old);if(op)EMData.remove(op).catch(()=>{});
   applyMedia();EMLog.add(i.n,"added a showcase video to");const id=openId;render();openM(id);toast("Showcase video saved for everyone")}
