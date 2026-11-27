@@ -1459,20 +1459,21 @@ async function shareImage(kind,list,total,user){
  while(c.measureText(title).width>760&&fs>24){fs-=2;c.font="800 "+fs+"px "+F}
  c.fillStyle="#fff";c.fillText(title,50,80);
  c.font="700 22px "+F;c.fillStyle="#9aa0b4";c.textAlign="right";c.fillText("EM Wiki \u00b7 gwenvaluehub.com",W-50,78);c.textAlign="left";
- const cols=6,T=170,G=16,x0=50,y0=112,max=12;
- const shown=list.length>max?list.slice(0,max-1):list;
+ const GW=W-100,y0=112,avail=H-112-92,cnt=list.length;
+ let cols=6,T=170,G=16;
+ for(let cc=6;cc<=60;cc++){const g=Math.max(3,Math.round(16*Math.min(1,(GW/cc)/170))),t=Math.min(170,Math.floor((GW-(cc-1)*g)/cc));cols=cc;T=t;G=g;if(Math.ceil(cnt/cc)*(t+g)-g<=avail)break}
+ const x0=50+Math.max(0,(GW-(cols*T+(cols-1)*G))/2),s=T/170,shown=list;
  const imgs=await Promise.all(shown.map(i=>loadImg(i.src))),ims=await Promise.all(shown.map(i=>loadImg(i.m)));
  shown.forEach((it,k)=>{const col=k%cols,row=(k/cols)|0,x=x0+col*(T+G),y=y0+row*(T+G);
-  rrect(c,x,y,T,T,16);c.fillStyle="#2c2c32";c.fill();c.strokeStyle="#3d3d45";c.lineWidth=2;c.stroke();
-  const im=imgs[k];
-  if(im){const pad=18,bw=T-2*pad,bh=T-30-42,put=(q,op)=>{const r=Math.min(bw/q.width,bh/q.height),w=q.width*r,h=q.height*r;c.globalCompositeOperation=op;c.drawImage(q,x+(T-w)/2,y+30+(bh-h)/2,w,h)};
+  rrect(c,x,y,T,T,Math.max(3,16*s));c.fillStyle="#2c2c32";c.fill();c.strokeStyle="#3d3d45";c.lineWidth=Math.max(1,2*s);c.stroke();
+  const im=imgs[k],topH=s>=.5?30*s:4,botH=s>=.4?42*s:4;
+  if(im){const pad=Math.max(2,18*s),bw=T-2*pad,bh=T-topH-botH,put=(q,op)=>{const r=Math.min(bw/q.width,bh/q.height),w=q.width*r,h=q.height*r;c.globalCompositeOperation=op;c.drawImage(q,x+(T-w)/2,y+topH+(bh-h)/2,w,h)};
    if(ims[k])put(ims[k],"multiply");put(im,it.fx?"screen":"source-over");c.globalCompositeOperation="source-over"}
-  else{c.fillStyle="#fff";c.font="800 22px "+F;c.textAlign="center";wrapLines(c,it.n,x+T/2,y+T/2-4,T-24,26);c.textAlign="left"}
-  c.save();c.textAlign="center";c.font="800 15px "+F;c.lineWidth=4;c.lineJoin="round";c.strokeStyle="#000";c.fillStyle="#fff";const nm=fitText(c,it.n,T-14);c.strokeText(nm,x+T/2,y+21);c.fillText(nm,x+T/2,y+21);c.restore();
-  if(it.q>1){c.font="800 17px "+F;c.lineWidth=4;c.strokeStyle="#000";c.strokeText("x"+it.q,x+10,y+T-50);c.fillStyle="#fff";c.fillText("x"+it.q,x+10,y+T-50)}
-  const pt=String(it.p||spc(it.v));c.font="800 17px "+F;const pw=c.measureText(pt).width+46,px=x+(T-pw)/2,py=y+T-38;
-  rrect(c,px,py,pw,28,14);c.fillStyle="#111";c.fill();rbxIcon(c,px+10,py+6,16,"#fff");c.fillStyle="#fff";c.fillText(pt,px+32,py+20)});
- if(list.length>max){const k=max-1,col=k%cols,row=(k/cols)|0,x=x0+col*(T+G),y=y0+row*(T+G);rrect(c,x,y,T,T,16);c.fillStyle="#2c2c32";c.fill();c.fillStyle="#fff";c.font="800 34px "+F;c.textAlign="center";c.fillText("+"+(list.length-(max-1)),x+T/2,y+T/2+6);c.font="700 16px "+F;c.fillStyle="#9aa0b4";c.fillText("more items",x+T/2,y+T/2+32);c.textAlign="left"}
+  else if(s>=.4){c.fillStyle="#fff";c.font="800 "+22*s+"px "+F;c.textAlign="center";wrapLines(c,it.n,x+T/2,y+T/2-4*s,T-24*s,26*s);c.textAlign="left"}
+  if(s>=.5){c.save();c.textAlign="center";c.font="800 "+15*s+"px "+F;c.lineWidth=4*s;c.lineJoin="round";c.strokeStyle="#000";c.fillStyle="#fff";const nm=fitText(c,it.n,T-14*s);c.strokeText(nm,x+T/2,y+21*s);c.fillText(nm,x+T/2,y+21*s);c.restore()}
+  if(it.q>1&&s>=.4){c.font="800 "+17*s+"px "+F;c.lineWidth=4*s;c.strokeStyle="#000";c.strokeText("x"+it.q,x+10*s,y+T-50*s);c.fillStyle="#fff";c.fillText("x"+it.q,x+10*s,y+T-50*s)}
+  if(s>=.4){const pt=String(it.p||spc(it.v));c.font="800 "+17*s+"px "+F;const pw=c.measureText(pt).width+46*s,px=x+(T-pw)/2,py=y+T-38*s;
+   rrect(c,px,py,pw,28*s,14*s);c.fillStyle="#111";c.fill();rbxIcon(c,px+10*s,py+6*s,16*s,"#fff");c.fillStyle="#fff";c.fillText(pt,px+32*s,py+20*s)}});
  c.font="800 22px "+F;c.fillStyle="#9aa0b4";c.fillText("TOTAL VALUE",50,H-40);
  rbxIcon(c,246,H-76,38,"#fff");c.font="800 40px "+F;c.fillStyle="#fff";c.fillText(spc(total),294,H-40);
  c.font="700 20px "+F;c.fillStyle="#9aa0b4";c.textAlign="right";c.fillText(list.length+" item"+(list.length===1?"":"s"),W-50,H-40);c.textAlign="left";
@@ -1506,7 +1507,7 @@ async function shareList(btn){
  try{
   clearTimeout(_shT[kind]);
   const code=await pushShare(kind,false,true);
-  const url=new URL("list.html?c="+code,location.href).href;
+  const url=new URL("list?c="+code,location.href).href;
   try{await navigator.clipboard.writeText(url);flash("Copied!")}catch(e){flash("Copy it below");prompt("Copy this link:",url)}
  }catch(e){btn.disabled=false;btn.textContent="Copy link";alert(/does not exist|schema cache|Could not find/i.test(e.message)?"Run supabase-setup-39.sql and supabase-setup-40.sql in Supabase first.":"Could not make the link: "+e.message)}}
 function drawML(){
