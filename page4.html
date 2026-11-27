@@ -842,9 +842,9 @@ let OVR={},EDIT=false,DBDOC=null,CANDB=false,SAVED="{}";
 try{OVR=JSON.parse(localStorage.getItem("ovr")||"{}")}catch(e){}try{SAVED=localStorage.getItem("ovr_saved");if(SAVED===null){SAVED=JSON.stringify(OVR);localStorage.setItem("ovr_saved",SAVED)}}catch(e){SAVED=JSON.stringify(OVR)}
 const typeOn=new Set(),statOn=new Set();let onlyList=false;
 let favs=new Set();try{favs=new Set(JSON.parse(localStorage.getItem(EMAuth.listKey("favs"))||"[]"))}catch(e){}
-const saveFavs=()=>{try{localStorage.setItem(EMAuth.listKey("favs"),JSON.stringify([...favs]))}catch(e){}favMirror()};
+const saveFavs=()=>{try{localStorage.setItem(EMAuth.listKey("favs"),JSON.stringify([...favs]))}catch(e){}favMirror();window.EMShareSync&&EMShareSync("favorites")};
 let QTY={};try{QTY=JSON.parse(localStorage.getItem(EMAuth.listKey("favq"))||"{}")}catch(e){}
-const saveQty=()=>{try{localStorage.setItem(EMAuth.listKey("favq"),JSON.stringify(QTY))}catch(e){}favMirror()};
+const saveQty=()=>{try{localStorage.setItem(EMAuth.listKey("favq"),JSON.stringify(QTY))}catch(e){}favMirror();window.EMShareSync&&EMShareSync("favorites")};
 const favMirror=()=>{try{const a=[...favs].filter(id=>items[id]).map(id=>[items[id].n,getQ(id)]);localStorage.setItem(EMAuth.listKey("favn"),JSON.stringify(a))}catch(e){}};
 
 const getQ=id=>Math.max(1,Math.min(99,+QTY[id]||1));
@@ -852,7 +852,7 @@ try{if(localStorage.getItem(EMAuth.listKey("favn"))===null)favMirror()}catch(e){
 
 /* ===== Wishlist (separate from the hearts, which are now "Favorites" = inventory) ===== */
 let WISH=new Set();try{const a=JSON.parse(localStorage.getItem(EMAuth.listKey("wishn"))||"[]");WISH=new Set((Array.isArray(a)?a:[]).map(r=>Array.isArray(r)?r[0]:r).filter(n=>typeof n==="string"&&n))}catch(e){}
-const saveWish=()=>{try{localStorage.setItem(EMAuth.listKey("wishn"),JSON.stringify([...WISH].map(n=>[n,1])))}catch(e){}};
+const saveWish=()=>{try{localStorage.setItem(EMAuth.listKey("wishn"),JSON.stringify([...WISH].map(n=>[n,1])))}catch(e){}window.EMShareSync&&EMShareSync("wishlist")};
 const WSVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"/><path d="M12 7.5v5M9.5 10h5"/></svg>';
 const wishBtn=(n,id)=>{const on=WISH.has(n);return`<button id="${id||"mw"}" type="button" class="mwb${on?" on":""}" data-tip="${on?"Added":"Add to my wishlist"}" aria-label="${on?"Remove from my wishlist":"Add to my wishlist"}" aria-pressed="${on}">${WSVG}</button>`};
 document.addEventListener("click",e=>{const c=e.target.closest("#mw,#mw2");if(!c||openId==null||!items[openId])return;const n=items[openId].n,had=WISH.has(n);
@@ -1442,6 +1442,8 @@ const mlTile=(i,q,mode)=>{const title=i.t==="t",pic=TPIC(i.n),w=mode==="w",on=w?
  return `<div class="mlt${on?"":" off"}" data-mlo="${i.id}" tabindex="0" role="button" aria-label="${esc(i.n)}">${btn}${q>1&&SET.qty!==false?`<span class="mq">x${q}</span>`:""}${title?"":`<div class="mn">${esc(i.n)}</div>`}<div class="${title&&!pic?"ttl img":"img"}">${pic||(title?esc(i.n):emo(i.n,i.t))}</div><div class="price"><b></b>${esc(i.p)}</div></div>`};
 /* ===== share my list: copy a link whose Discord preview shows the list ===== */
 const picSrc=n=>{const h=PIC(n)||"";const m=/<img[^>]*class="fxa"[^>]*\bsrc="(data:[^"]+)"/.exec(h)||/<img[^>]*\bsrc="(data:[^"]+)"/.exec(h);return m?m[1]:""};
+const picM=n=>{const h=PIC(n)||"";const m=/<img[^>]*class="fxm"[^>]*\bsrc="(data:[^"]+)"/.exec(h);return m?m[1]:""};
+const picFx=n=>/<img[^>]*class="fxa"/.test(PIC(n)||"");
 const loadImg=src=>new Promise(res=>{if(!src)return res(null);const im=new Image();im.onload=()=>res(im);im.onerror=()=>res(null);im.src=src});
 const RBX_HEX="M12 1.6 21 6.8v10.4L12 22.4 3 17.2V6.8z",RBX_IN="M12 4.8a7.2 7.2 0 1 0 0 14.4 7.2 7.2 0 0 0 0-14.4zM9.5 9.5h5v5h-5z";
 function rbxIcon(c,x,y,s,col){c.save();c.translate(x,y);c.scale(s/24,s/24);c.strokeStyle=col;c.lineWidth=1.9;c.lineJoin="round";c.stroke(new Path2D(RBX_HEX));c.fillStyle=col;c.fill(new Path2D(RBX_IN),"evenodd");c.restore()}
@@ -1459,11 +1461,12 @@ async function shareImage(kind,list,total,user){
  c.font="700 22px "+F;c.fillStyle="#9aa0b4";c.textAlign="right";c.fillText("EM Wiki \u00b7 gwenvaluehub.com",W-50,78);c.textAlign="left";
  const cols=6,T=170,G=16,x0=50,y0=112,max=12;
  const shown=list.length>max?list.slice(0,max-1):list;
- const imgs=await Promise.all(shown.map(i=>loadImg(i.src)));
+ const imgs=await Promise.all(shown.map(i=>loadImg(i.src))),ims=await Promise.all(shown.map(i=>loadImg(i.m)));
  shown.forEach((it,k)=>{const col=k%cols,row=(k/cols)|0,x=x0+col*(T+G),y=y0+row*(T+G);
   rrect(c,x,y,T,T,16);c.fillStyle="#2c2c32";c.fill();c.strokeStyle="#3d3d45";c.lineWidth=2;c.stroke();
   const im=imgs[k];
-  if(im){const pad=18,bw=T-2*pad,bh=T-30-42,r=Math.min(bw/im.width,bh/im.height),w=im.width*r,h=im.height*r;c.drawImage(im,x+(T-w)/2,y+30+(bh-h)/2,w,h)}
+  if(im){const pad=18,bw=T-2*pad,bh=T-30-42,put=(q,op)=>{const r=Math.min(bw/q.width,bh/q.height),w=q.width*r,h=q.height*r;c.globalCompositeOperation=op;c.drawImage(q,x+(T-w)/2,y+30+(bh-h)/2,w,h)};
+   if(ims[k])put(ims[k],"multiply");put(im,it.fx?"screen":"source-over");c.globalCompositeOperation="source-over"}
   else{c.fillStyle="#fff";c.font="800 22px "+F;c.textAlign="center";wrapLines(c,it.n,x+T/2,y+T/2-4,T-24,26);c.textAlign="left"}
   c.save();c.textAlign="center";c.font="800 15px "+F;c.lineWidth=4;c.lineJoin="round";c.strokeStyle="#000";c.fillStyle="#fff";const nm=fitText(c,it.n,T-14);c.strokeText(nm,x+T/2,y+21);c.fillText(nm,x+T/2,y+21);c.restore();
   if(it.q>1){c.font="800 17px "+F;c.lineWidth=4;c.strokeStyle="#000";c.strokeText("x"+it.q,x+10,y+T-50);c.fillStyle="#fff";c.fillText("x"+it.q,x+10,y+T-50)}
@@ -1474,6 +1477,24 @@ async function shareImage(kind,list,total,user){
  rbxIcon(c,246,H-76,38,"#fff");c.font="800 40px "+F;c.fillStyle="#fff";c.fillText(spc(total),294,H-40);
  c.font="700 20px "+F;c.fillStyle="#9aa0b4";c.textAlign="right";c.fillText(list.length+" item"+(list.length===1?"":"s"),W-50,H-40);c.textAlign="left";
  return cv.toDataURL("image/jpeg",.88)}
+async function pushShare(kind,strict){
+ const wtab=kind==="wishlist",ids=wtab?wishIds():[...favs].filter(id=>items[id]);
+ if(!ids.length)return null;
+ let me=null;try{me=EMAuth.user()}catch(e){}
+ if(!me)return null;
+ const list=ids.map(id=>{const i=items[id];return{n:i.n,p:i.p,v:i.v,q:wtab?1:getQ(id),t:i.t,src:"",m:"",fx:false}});
+ let miss=0;
+ for(let k=0;k<20;k++){miss=0;list.forEach(l=>{if(!l.src){l.src=picSrc(l.n);if(l.src){l.m=picM(l.n);l.fx=picFx(l.n)}else if(l.t!=="t")miss++}});if(!miss)break;await new Promise(r=>setTimeout(r,200))}
+ if(strict&&miss)return null;
+ const total=list.reduce((s,l)=>s+l.v*l.q,0),png=await shareImage(kind,list,total,me);
+ const code=await EMAuth.rest("rpc/share_list","POST",{p_kind:kind,p_items:list.map(l=>({n:l.n,p:l.p,v:l.v,q:l.q})),p_image:png});
+ try{localStorage.setItem("em_shr_"+me+"_"+kind,"1")}catch(e){}
+ return code}
+/* after the first "Copy link", every change to that list refreshes the shared preview by itself */
+const _shT={};
+window.EMShareSync=kind=>{let me=null;try{me=EMAuth.user()}catch(e){}
+ if(!me)return;try{if(!localStorage.getItem("em_shr_"+me+"_"+kind))return}catch(e){return}
+ clearTimeout(_shT[kind]);_shT[kind]=setTimeout(()=>{pushShare(kind,true).catch(()=>{})},2000)};
 async function shareList(btn){
  const wtab=mlTab==="wish",kind=wtab?"wishlist":"favorites",ids=wtab?wishIds():[...favs].filter(id=>items[id]);
  const flash=t=>{btn.textContent=t;setTimeout(()=>{btn.disabled=false;btn.textContent="Copy link"},2400)};
@@ -1483,10 +1504,8 @@ async function shareList(btn){
  if(!me){flash("Log in first");return}
  btn.textContent="Making link\u2026";
  try{
-  const list=ids.map(id=>{const i=items[id];return{n:i.n,p:i.p,v:i.v,q:wtab?1:getQ(id),t:i.t,src:""}});
-  for(let k=0;k<20;k++){let miss=0;list.forEach(l=>{if(!l.src){l.src=picSrc(l.n);if(!l.src&&l.t!=="t")miss++}});if(!miss)break;await new Promise(r=>setTimeout(r,200))}
-  const total=list.reduce((s,l)=>s+l.v*l.q,0),png=await shareImage(kind,list,total,me);
-  const code=await EMAuth.rest("rpc/share_list","POST",{p_kind:kind,p_items:list.map(l=>({n:l.n,p:l.p,v:l.v,q:l.q})),p_image:png});
+  clearTimeout(_shT[kind]);
+  const code=await pushShare(kind,false);
   const url=new URL("list.html?c="+code,location.href).href;
   try{await navigator.clipboard.writeText(url);flash("Copied!")}catch(e){flash("Copy it below");prompt("Copy this link:",url)}
  }catch(e){btn.disabled=false;btn.textContent="Copy link";alert(/does not exist|schema cache|Could not find/i.test(e.message)?"Run supabase-setup-39.sql in Supabase first.":"Could not make the link: "+e.message)}}
