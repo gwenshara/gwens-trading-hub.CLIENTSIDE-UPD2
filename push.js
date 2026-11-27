@@ -9,7 +9,9 @@ var KINDS = [
   ["dm", "Messages", "Private and trade chats"],
   ["group", "Group chats", "Includes middleman chats"],
   ["mm", "Middleman requests", "When you are chosen as middleman"],
-  ["vote", "New value votes", "When someone starts a vote"]
+  ["vote", "New value votes", "When someone starts a vote"],
+  ["upd", "Wiki updates", "When an update is posted on the home page"],
+  ["newitem", "New items", "When an item is added to the New category"]
 ];
 function ld(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
 function sv(k, v) { try { if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} }
@@ -110,7 +112,7 @@ function openPanel() {
 async function paint(err) {
   var st = await API.state(), prefs = null;
   if (st === "on") { try { prefs = await API.prefs(); } catch (e) {} }
-  prefs = prefs || { dm: true, group: true, mm: true, vote: true };
+  prefs = prefs || { dm: true, group: true, mm: true, vote: true, upd: true, newitem: true };
   var msg = { on: "On for this device", off: "Off on this device", blocked: "Blocked in your browser settings", "ios-install": "Needs the Home Screen app on iPhone/iPad", unsupported: "Not supported in this browser" }[st];
   var h = '<div class="pn-box" role="dialog" aria-modal="true"><button class="pn-x" type="button" aria-label="Close">\u2715</button><h3>Notifications</h3>' +
     '<p class="pn-sub">Get a notification when you are away from the site.</p>' +
@@ -214,7 +216,7 @@ function openGuide() {
   function home() {
     guideEl.innerHTML = '<div class="pn-box" role="dialog" aria-modal="true"><button class="pn-x" type="button" aria-label="Close">\u2715</button><h3>How notifications work</h3>' +
       '<p class="pn-sub">You get a notification on your ' + (phone ? "phone" : "computer") + ' when something happens while you are away from the site.</p>' +
-      '<ul style="margin:0 0 14px;padding-left:18px;line-height:1.6;font-weight:500"><li>New private, trade, group and middleman messages.</li><li>New value votes.</li><li>The first message from someone notifies you. If they keep writing, you are notified again after 2 minutes.</li><li>No notification while you are looking at the site or while your status is Do not disturb.</li></ul>' +
+      '<ul style="margin:0 0 14px;padding-left:18px;line-height:1.6;font-weight:500"><li>New private, trade, group and middleman messages.</li><li>New value votes, wiki updates and items added to the New category (each can be switched off in Settings).</li><li>The first message from someone notifies you. If they keep writing, you are notified again after 2 minutes.</li><li>No notification while you are looking at the site or while your status is Do not disturb.</li></ul>' +
       '<div class="stt" style="font:700 13px Montserrat,Inter,system-ui,sans-serif;margin-bottom:8px">What device are you using?</div>' +
       '<div class="pn-acts" style="margin-top:0">' + opts.map(function (o) { return '<button class="pn-btn" type="button" data-d="' + o[0] + '" style="flex:1;padding:14px">' + o[1] + "</button>"; }).join("") + "</div></div>";
     guideEl.querySelectorAll("[data-d]").forEach(function (b) { b.onclick = function () { show(b.dataset.d); }; });
