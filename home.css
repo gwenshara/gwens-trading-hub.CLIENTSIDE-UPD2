@@ -89,3 +89,7 @@
 .hw-ua button.del{border-color:#e5484d;color:#ff8a8e}
 .hw-ua button.ok{background:var(--accent,#7aa7ff);border-color:var(--accent,#7aa7ff);color:#0b1020}
 @media(max-width:560px){.hw-uf{flex-direction:column}.hw-ud{align-self:flex-start}}
+
+.hw-ua button.hw-lk{display:inline-flex;align-items:center;gap:5px;border-radius:99px;padding:5px 12px}
+.hw-ua button.hw-lk.on{border-color:#ff5c7a;color:#ff5c7a;background:rgba(255,92,122,.12)}
+.hw-ua button.hw-lk:disabled{opacity:.6;cursor:default}
