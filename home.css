@@ -55,3 +55,24 @@
 .hm-pad p{position:absolute;left:19%;right:6%;top:calc(17.4% + 8.2cqw);margin:0;font:600 9.4cqw/6.97cqw Caveat,"Segoe Script","Bradley Hand",cursive;color:#2b3a67;transform:rotate(.6deg)}
 @media(min-width:1100px){.hm-pad{position:absolute;right:-40px;top:26px;margin:0;width:200px;max-width:none;transform:rotate(4deg)}}
 @media(min-width:1600px){.hm-pad{right:auto;left:calc(100% + 22px);top:60px;width:280px}}
+
+/* window with your list, wishlist, new items and a random item */
+.hw{max-width:860px;margin:22px auto 0;padding:16px 18px 18px;border-radius:16px;border:1px solid var(--hl);background:var(--hb)}
+.hw-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;margin-bottom:12px}.hw-h b{font:800 16px Montserrat,sans-serif;color:var(--text,#f1f1f4)}.hw-h span{font:600 12px Montserrat,sans-serif;color:var(--mute,#a0a0ab)}
+.hw-c{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.hw-c button{padding:8px 14px;border-radius:99px;border:1px solid var(--hl);background:transparent;color:var(--text,#f1f1f4);font:700 13px Montserrat,sans-serif;cursor:pointer}
+.hw-c button:hover{border-color:var(--accent,#7aa7ff)}.hw-c button[aria-pressed="true"]{background:var(--accent,#7aa7ff);border-color:var(--accent,#7aa7ff);color:#0b1020}
+.hw-r{border:1px solid var(--hl);border-radius:14px;padding:12px 12px 8px;margin-top:12px;background:rgba(0,0,0,.14)}
+.hw-rt{display:flex;align-items:center;gap:8px;margin:0 0 10px 4px;font:800 14px Montserrat,sans-serif;color:var(--text,#f1f1f4)}.hw-rt small{font:700 11px Montserrat,sans-serif;color:var(--mute,#a0a0ab);padding:2px 8px;border-radius:99px;border:1px solid var(--hl)}
+.hw-s{display:flex;gap:12px;overflow-x:auto;padding:2px 4px 12px;scroll-snap-type:x proximity;scrollbar-width:thin}
+.hw-t{position:relative;flex:none;width:112px;height:112px;border-radius:14px;border:0;padding:6px 6px 4px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;overflow:hidden;cursor:pointer;scroll-snap-align:start;color:#fff;background:#888;box-shadow:inset 0 0 0 1px rgba(255,255,255,.18),0 3px 8px rgba(0,0,0,.3);transition:transform .15s}
+.hw-t:hover,.hw-t:focus-visible{transform:translateY(-3px);outline:none}
+.hw-t.t-g{background:#5fe36a}.hw-t.t-p{background:#3b7cf5}.hw-t.t-t{background:#c457f2}.hw-t.t-e{background:#ffb23e}.hw-t.t-o{background:#e5654a}
+.hw-n{font:800 11.5px/1.15 Montserrat,sans-serif;text-align:center;text-shadow:0 1px 2px rgba(0,0,0,.7);max-width:100%;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;z-index:1}
+.hw-i{position:relative;flex:1;width:100%;display:grid;place-items:center;min-height:0}.hw-i img{max-width:70%;max-height:62px;position:relative}.hw-i img.fxa{position:absolute;inset:0;margin:auto;mix-blend-mode:screen}.hw-i img.fxm{position:absolute;inset:0;margin:auto;mix-blend-mode:multiply}
+.hw-p{font:800 11px Montserrat,sans-serif;text-shadow:0 1px 2px rgba(0,0,0,.7);z-index:1}
+.hw-nw{position:absolute;top:10px;left:-26px;width:90px;transform:rotate(-45deg);background:#ffe600;color:#1a1a1a;font:900 10px/15px Montserrat,sans-serif;text-align:center;letter-spacing:.06em;z-index:2;box-shadow:0 1px 3px rgba(0,0,0,.4)}
+.hw-e{padding:14px 8px;color:var(--mute,#a0a0ab);font:600 13px Montserrat,sans-serif;text-align:center}
+.hw-rd{display:flex;gap:16px;align-items:center;flex-wrap:wrap;padding:2px 4px 10px}.hw-ri{display:flex;flex-direction:column;gap:6px;min-width:0}.hw-ri b{font:800 17px Montserrat,sans-serif;color:var(--text,#f1f1f4)}.hw-ri span{font:600 12px Montserrat,sans-serif;color:var(--mute,#a0a0ab)}.hw-ri div{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.hw-bt{padding:8px 14px;border-radius:10px;border:0;background:var(--accent,#7aa7ff);color:#0b1020;font:800 12px Montserrat,sans-serif;cursor:pointer}.hw-bt.sec{background:transparent;border:1px solid var(--hl);color:var(--text,#f1f1f4)}
+@media(prefers-reduced-motion:reduce){.hw-t{transition:none}}
