@@ -1,4 +1,3 @@
-/* Red number badges on the menu: Catalog / Trade / Forum / Log Update, and on the Forum cards. */
 (function(){
 if(window.__emBadges)return;window.__emBadges=1;
 var CFG=window.EM_SUPABASE||{},A=window.EMAuth;
@@ -56,7 +55,6 @@ async function run(){
   put('.fc[href="forum-discussions.html"]',out.dm);
   put('.fc[href="forum-voting.html"]',out.vote);
 }
-/* clicking a menu tab or a category card makes its red number go away right away, and stay gone until something new arrives */
 document.addEventListener("click",function(e){
   var c=e.target.closest&&e.target.closest(".fc,nav a");if(!c)return;
   var h=(c.getAttribute("href")||"").toLowerCase(),now=new Date().toISOString();

@@ -1,5 +1,3 @@
-/* First visit: a small "turn on notifications" prompt. Shown once per device (and once more right after the first login if they
-   dismissed it while logged out). Loaded by auth.js on every page. Uses EMPush from push.js. */
 (function(){
 if(window.__emNP)return;window.__emNP=1;
 var KEY="em_np_v1";
@@ -13,7 +11,6 @@ function start(){
  if(st==="lo"&&!user())return;
  if(!window.EMPush){if(++tries<20)return setTimeout(start,500);return}
  if(document.getElementById("em-warn")||document.getElementById("em-ren")||document.getElementById("em-np"))return;
- /* already decided in the browser: nothing to ask */
  if(window.Notification&&Notification.permission==="denied"){sv(KEY,"1");return}
  EMPush.state().then(function(s){
   if(s==="on"){sv(KEY,"1");return}

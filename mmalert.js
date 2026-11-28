@@ -1,6 +1,3 @@
-/* Middleman alert: when someone has asked YOU to be their middleman (both traders confirmed),
-   a card stays on the right side of EVERY page until you accept, decline, it expires (10 min),
-   or you press X. Loaded by auth.js on every page. Needs supabase-setup-9/16 (notifications). */
 (function(){
 if(window.__emMMA)return;window.__emMMA=1;
 var A=null,UID=null,box=null,busy=false,off=false,POLL=6000,MMT=10*60*1000,KEY="em_mma_snooze",SNOOZE=2*60*1000,cards={};

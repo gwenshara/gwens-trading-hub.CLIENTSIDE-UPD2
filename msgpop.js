@@ -1,6 +1,3 @@
-/* New-message pop-up: while you are on the site, a small card appears at the bottom left with the
-   sender's picture, their name and the message, then goes away after a few seconds.
-   Loaded by auth.js on every page. Works for private, friends, trade, group and middleman chats. */
 (function(){
 if(window.__emPop)return;window.__emPop=1;
 var A=null,UID=null,cD=null,cG=null,busy=false,prof={},gname={},dnd=false,box=null,POLL=5000,SHOW=6000;
@@ -80,7 +77,6 @@ async function start(){
  if(!window.EMAuth||!EMAuth.configured||!EMAuth.user())return;A=EMAuth;UID=A.uid();if(!UID)return;
  await baseline();myStatus();
  setInterval(poll,POLL);setInterval(function(){if(!document.hidden)myStatus()},60000);
- /* coming back to the tab: whatever arrived while you were away was already sent as a push, so start fresh */
  document.addEventListener("visibilitychange",function(){if(!document.hidden){baseline();myStatus()}})}
 function init(){setTimeout(start,1200)}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();

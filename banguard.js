@@ -1,6 +1,3 @@
-/* Ban screen: if your account or your network is banned, a full-screen notice covers the page.
-   Every page also tells the server which IP a logged-in member uses, so staff can ban it.
-   Loaded by auth.js on every page. */
 (function(){
 if(window.__emBan)return;window.__emBan=1;
 var cfg=window.EM_SUPABASE,shown=false,timer=null;

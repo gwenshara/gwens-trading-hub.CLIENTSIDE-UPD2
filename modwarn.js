@@ -1,4 +1,3 @@
-/* Shows a moderator's warning to the person it was sent to. Loaded by auth.js on every page. */
 (function(){
 if(window.__emWarn)return;window.__emWarn=1;
 var busy=false;
@@ -34,7 +33,6 @@ function checkRename(){
  EMAuth.rest("profiles?id=eq."+encodeURIComponent(EMAuth.uid())+"&select=must_rename").then(function(r){if(r&&r[0]&&r[0].must_rename)rename()}).catch(function(){})}
 function check(){
  if(busy||!window.EMAuth||!EMAuth.configured||!EMAuth.user())return;busy=true;
- /* only MY warnings: admins and moderators can read everybody's, so the filter is needed */
  EMAuth.rest("mod_warnings?select=id,text&user_id=eq."+encodeURIComponent(EMAuth.uid())+"&seen_at=is.null&order=created_at.asc&limit=5")
   .then(function(r){if(r&&r.length)show(r);else checkRename()}).catch(function(){}).then(function(){busy=false})}
 function start(){setTimeout(check,800);document.addEventListener("visibilitychange",function(){if(!document.hidden)check()});setInterval(function(){if(!document.hidden)check()},60000)}

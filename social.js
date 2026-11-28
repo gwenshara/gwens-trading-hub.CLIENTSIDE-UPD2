@@ -1,4 +1,3 @@
-/* Friends + Follow. Needs supabase-setup-8.sql. Used by Profile, Members and Discussions. */
 (function(){
 const A=window.EMAuth;if(!A)return;
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -19,7 +18,6 @@ const S=window.EMSocial={rows:[],fol:new Set(),missing:false,loaded:false,
  async remove(row){await A.rest("friendships?id=eq."+encodeURIComponent(row.id),"DELETE",null,{Prefer:"return=minimal"})},
  async follow(id){await A.rest("follows","POST",{follower_id:A.uid(),followee_id:id},{Prefer:"return=minimal"})},
  async unfollow(id){await A.rest("follows?follower_id=eq."+A.uid()+"&followee_id=eq."+encodeURIComponent(id),"DELETE",null,{Prefer:"return=minimal"})},
- /* draws counts + buttons for one member into el. onChange() runs after every action. */
  async mount(el,id,name,onChange){
   if(!A.user()||!id){el.innerHTML="";return}
   const me=id===A.uid();

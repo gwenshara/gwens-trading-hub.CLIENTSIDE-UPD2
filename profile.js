@@ -4,7 +4,6 @@ const color=n=>{let h=0;for(const c of n.toLowerCase())h=(h*31+c.charCodeAt(0))%
 const day=t=>new Date(t).toLocaleDateString(undefined,{year:"numeric",month:"long",day:"numeric"});
 const want=new URLSearchParams(location.search).get("u");
 const msg=t=>{$("#pf").hidden=true;const m=$("#pf-msg");m.hidden=false;m.textContent=t};
-/* crop an image file to the middle and shrink it, so it fits in the database */
 function shrink(file,w,h){return new Promise((ok,no)=>{const r=new FileReader();r.onerror=()=>no(new Error("Couldn't read that file."));
  r.onload=()=>{const im=new Image();im.onerror=()=>no(new Error("That file isn't a picture I can open."));
   im.onload=()=>{const c=document.createElement("canvas");c.width=w;c.height=h;const x=c.getContext("2d"),s=Math.max(w/im.width,h/im.height),dw=im.width*s,dh=im.height*s;
@@ -51,11 +50,9 @@ $("#pf-ab").onclick=()=>$("#pf-fa").click();$("#pf-bb").onclick=()=>$("#pf-fb").
 $("#pf-fa").onchange=e=>pick(e.target,"avatar",256,256);$("#pf-fb").onchange=e=>pick(e.target,"banner",960,320);
 $("#pf-bx").onclick=()=>{$("#pf-bt").value=P.bio||"";$("#pf-be").hidden=false;$("#pf-bx").hidden=true;$("#pf-bio").hidden=true};
 $("#pf-bs").onclick=async()=>{if(await save({bio:$("#pf-bt").value.trim()})){$("#pf-be").hidden=true;$("#pf-bx").hidden=false;$("#pf-bio").hidden=false}};
-/* nickname */
 $("#pf-nx").onclick=()=>{$("#pf-nt").value=P.nickname||"";$("#pf-nb").hidden=false;$("#pf-nx").hidden=true;$("#pf-nt").focus()};
 $("#pf-nc").onclick=()=>{$("#pf-nb").hidden=true;$("#pf-nx").hidden=false};
 $("#pf-ns").onclick=async()=>{const v=$("#pf-nt").value.trim();if(await save({nickname:v||null},"Nickname saved!")){$("#pf-nb").hidden=true;$("#pf-nx").hidden=false}};
-/* discord: saved through a server function, then an admin confirms it */
 async function rpc(fn,args,ok){const s=$("#pf-st");s.style.color="";s.textContent="Saving…";
  try{await EMAuth.rest("rpc/"+fn,"POST",args);s.style.color="#3bb26b";s.textContent=ok;setTimeout(()=>{s.textContent=""},4000);return true}
  catch(e){s.style.color="#ff6b6b";s.textContent=/does not exist|schema cache/i.test(e.message)?"Run supabase-setup-7.sql in Supabase first.":e.message;return false}}
@@ -65,8 +62,7 @@ $("#pf-ds").onclick=async()=>{const v=$("#pf-dt").value.trim().replace(/^@/,"");
  if(await rpc("set_discord",{d:v},v?"Discord saved. Now ask @gwensharra to confirm it.":"Discord removed.")){P.discord=v||null;P.discord_verified=false;$("#pf-de").hidden=true;paintDc()}};
 $("#pf-dok").onclick=async()=>{if(await rpc("verify_discord",{target:P.username,ok:true},"Discord confirmed.")){P.discord_verified=true;paintDc()}};
 $("#pf-dno").onclick=async()=>{if(await rpc("verify_discord",{target:P.username,ok:false},"Confirmation removed.")){P.discord_verified=false;paintDc()}};
-/* roblox: a one-time code typed into the Roblox game links the account. No Roblox password is ever used. */
-const ROBLOX_GAME_URL="https://www.roblox.com/games/116396707306418/"; /* paste your game's link here, e.g. https://www.roblox.com/games/123456789/Your-Game */
+const ROBLOX_GAME_URL="https://www.roblox.com/games/116396707306418/";
 let rbTimer=null,rbEnd=0;
 function rbStop(){clearInterval(rbTimer);rbTimer=null}
 function paintRb(){const v=$("#pf-rv");if(!v)return;
@@ -89,7 +85,6 @@ $("#pf-rx").onclick=async()=>{const s=$("#pf-st");s.style.color="";s.textContent
  catch(e){s.style.color="#ff6b6b";s.textContent=/does not exist|schema cache/i.test(e.message)?"Run supabase-setup-23.sql in Supabase first.":e.message}};
 $("#pf-ru").onclick=async()=>{if(!confirm("Unlink this Roblox account?"))return;
  if(await rpc("roblox_unlink",mine?{}:{target:P.username},"Roblox unlinked.")){P.roblox_id=null;P.roblox_name=null;paintRb()}};
-/* bans: admins and moderators can ban a member's account and (optionally) their IP address */
 let BANS=null,_bnOpen=false,_bnList=false,_dlOpen=false;
 const BTNR='padding:8px 16px;border-radius:10px;font-weight:700;cursor:pointer;background:#e5484d;border-color:#e5484d;color:#fff',BTNA='padding:8px 16px;border-radius:10px;font-weight:700;cursor:pointer';
 const setupMsg=e=>/does not exist|schema cache|Could not find/i.test(e.message)?"Run supabase-setup-24.sql in Supabase first.":e.message;
@@ -128,7 +123,6 @@ async function paintBan(){
  if(q("#pf-dlgo"))q("#pf-dlgo").onclick=async()=>{if(q("#pf-dlt").value.trim().toLowerCase()!==P.username.toLowerCase()){say("Type their username exactly to confirm.");return}
   if(!confirm("Delete "+P.username+" permanently? This cannot be undone."))return;say("Deleting…",true);
   try{await EMAuth.rest("rpc/admin_delete_user","POST",{target:P.username});location.href="members.html"}catch(e){say(setupMsg(e))}}}
-/* delete my own account */
 function paintDel(){
  const box=$("#pf-dl");if(!box)return;
  if(!mine||!P||P.role==="admin"){box.hidden=true;return}
@@ -143,7 +137,6 @@ function paintDel(){
   catch(e){say(setupMsg(e))}}}
 msg("Loading…");load();
 
-/* online status + roles */
 const PR=window.EMPresence;
 function paintPres(){
  if(!PR)return;
@@ -168,7 +161,6 @@ function paintRoleMgr(){
  w.querySelectorAll("#pf-rle input").forEach(c=>c.onchange=async()=>{const r=[...w.querySelectorAll("#pf-rle input:checked")].map(i=>i.dataset.r);
   if(await rpc("set_roles",{target:P.username,r:r},"Roles updated.")){P.roles=r}paintPres()})}
 
-/* IP address of a member: only admins and moderators get this (the server checks it too) */
 let IPD=null,IPFOR="";
 async function paintIpBox(){
  if(mine||!P||!EMAuth.canMod||!EMAuth.canMod())return;
@@ -185,7 +177,6 @@ async function paintIpBox(){
   +row("Made from IP",d.signup_ip?esc(d.signup_ip):"-")
   +row("Same IP accounts",same||'<i style="opacity:.6">none</i>');
 }
-/* linked accounts: shown to everybody (names only, no addresses). The server leaves out admin accounts and gives nothing for admin / moderator profiles. */
 let ALTFOR="",ALTD=null;
 async function altGet(u){
  const C=window.EM_SUPABASE||{};let tok=null;try{tok=await EMAuth.token()}catch(e){}
@@ -202,7 +193,6 @@ async function paintAltPub(){
  const b=$("#pf-alt");
  if(ALTD===false){if(b)b.remove();return}
  paintAlt({same_ip_accounts:ALTD.accounts||[]})}
-/* "3 accounts linked": everyone sees at a glance if a member shares an IP with other accounts (small window with the list) */
 function paintAlt(d){
  const L=(d&&d.same_ip_accounts)||[];let b=$("#pf-alt");
  if(!b){b=document.createElement("button");b.id="pf-alt";b.type="button";$("#pf-sub").insertAdjacentElement("afterend",b)}
@@ -219,7 +209,6 @@ function paintAlt(d){
    +'</div>';
   o.addEventListener("click",e=>{if(e.target===o||e.target.closest("[data-x]"))o.remove()});
   document.body.appendChild(o)}}
-/* moderation: admins and moderators can reset parts of someone else's profile and send a warning */
 let _mdOpen=false,_mdTab="warn";
 function paintMod(){
  if(mine||!P||!EMAuth.canMod||!EMAuth.canMod())return;
@@ -255,7 +244,6 @@ function paintMod(){
  paintBan()}
 document.addEventListener("click",()=>{const m=$("#pf-stp");if(m)m.hidden=true});
 
-/* star reviews other members left on this person's trade ads */
 async function paintReviews(){const b=$("#pf-revb");if(!b)return;
  try{const L=await EMAuth.rest("ad_reviews?ad_owner=eq."+encodeURIComponent(P.id)+"&select=reviewer_name,stars,comment,created_at&order=created_at.desc&limit=100");
   if(!L.length){b.innerHTML='<p class="mt">No reviews yet.</p>';return}

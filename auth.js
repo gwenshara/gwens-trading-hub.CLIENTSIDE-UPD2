@@ -1,22 +1,17 @@
-/* default profile picture for people without one: a silhouette on a colour that is random per person but always the same for them */
 window.emDefAv=function(n){n=String(n||"?").toLowerCase();var h=7;for(var i=0;i<n.length;i++)h=(h*131+n.charCodeAt(i))%100003;var hue=(h*137)%360;
 var svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="hsl('+hue+',70%,82%)"/><circle cx="50" cy="38" r="19" fill="#1d1d1f"/><path d="M13 100c0-23 16-35 37-35s37 12 37 35z" fill="#1d1d1f"/></svg>';
 return "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg)};
 if(!window.__emTheme){try{var _t=document.createElement("script");_t.src="theme.js?v=1";document.head.appendChild(_t)}catch(e){}}
-/* EM Wiki accounts, stored on a real server (Supabase) so they work on every device and every visit.
-   Passwords are handled and hashed by Supabase Auth; this file never sees a stored password.
-   Set your project URL and public key in supabase-config.js (see SETUP.md). */
 (function(){
 const CFG=window.EM_SUPABASE||{};
 const ready=!!(CFG.url&&CFG.anonKey&&!/YOUR/i.test(CFG.url+CFG.anonKey));
 const ld=(k,d)=>{try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}};
 const sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 const LIMIT="You're not able to make more accounts.";
-const DOMAIN="@gwenvaluehub.com"; /* usernames are turned into a private login e-mail; nobody receives mail there */
+const DOMAIN="@gwenvaluehub.com";
 let S=ld("em_session",null);
-if(S&&!S.token){S=null;try{localStorage.removeItem("em_session")}catch(e){}} /* old browser-only sessions are not valid any more */
+if(S&&!S.token){S=null;try{localStorage.removeItem("em_session")}catch(e){}}
 const hdr=(tok)=>{const h={apikey:CFG.anonKey,"Content-Type":"application/json"};
- /* new-style sb_publishable_ keys are not JWTs: send them only as apikey; a signed-in person's token goes in Authorization */
  if(tok)h.Authorization="Bearer "+tok;else if(!/^sb_/.test(CFG.anonKey))h.Authorization="Bearer "+CFG.anonKey;return h};
 async function call(path,opt){
  if(!ready)throw new Error(!window.EM_SUPABASE?"supabase-config.js did not load. Upload it next to index.html in GitHub, then hard refresh (Ctrl+Shift+R).":"supabase-config.js still has the placeholder text. Put your real Project URL and anon key in it.");
@@ -32,14 +27,12 @@ function fromAuth(j){return{token:j.access_token,refresh:j.refresh_token,exp:Mat
 const API=window.EMAuth={
  configured:ready,
  user:()=>S&&S.u||null,isAdmin:()=>!!(S&&S.role==="admin"),canEdit:()=>!!(S&&(S.role==="admin"||(S.roles||[]).indexOf("value_handler")>-1)),canMod:()=>!!(S&&(S.role==="admin"||(S.roles||[]).indexOf("moderator")>-1)),isValueHandler:()=>!!(S&&(S.roles||[]).indexOf("value_handler")>-1),uid:()=>S&&S.uid||null,
- /* a valid access token, refreshed when it is about to expire; null when signed out */
  async token(){
   if(!S)return null;
   if(S.exp-60>Date.now()/1000)return S.token;
   try{const j=await call("/auth/v1/token?grant_type=refresh_token",{method:"POST",headers:hdr(),body:JSON.stringify({refresh_token:S.refresh})});
    save(Object.assign({},S,fromAuth(j)));return S.token}
   catch(e){if(e.status&&e.status<500){save(null);location.reload()}throw e}},
- /* call the database as the signed-in person */
  async rest(path,method,body,extra){
   const tok=await API.token();if(!tok)throw new Error("Log in first.");
   return call("/rest/v1/"+path,{method:method||"GET",headers:Object.assign(hdr(tok),extra||{}),body:body==null?undefined:JSON.stringify(body)})},
@@ -52,41 +45,35 @@ const API=window.EMAuth={
   u=u.trim();
   if(!/^[A-Za-z0-9_]{3,20}$/.test(u))throw new Error("Username: 3–20 letters, numbers or _.");
   if(pw.length<6)throw new Error("Password must be at least 6 characters.");
-  /* max 3 accounts per IP address: ask the server first (if the server has no such check yet, sign-up simply goes on) */
   try{const c=await call("/rest/v1/rpc/can_signup",{method:"POST",headers:hdr(),body:"{}"});if(c&&c.ok===false)throw new Error(LIMIT)}catch(e){if(e.message===LIMIT)throw e}
   let j;try{j=await call("/auth/v1/signup",{method:"POST",headers:hdr(),body:JSON.stringify({email:u.toLowerCase()+DOMAIN,password:pw,data:{username:u}})})}
   catch(e){if(/already|registered|exists/i.test(e.message)||e.status===422&&/already/i.test(e.message))throw new Error("That username is taken.");
    if(/Database error/i.test(e.message))throw new Error("That username is taken or not allowed.");throw e}
   if(!j.access_token)throw new Error("Sign-up worked but e-mail confirmation is still ON in Supabase. Turn it off (see SETUP.md).");
   const a=fromAuth(j);
-  /* the server remembers the IP of the new account; a 4th account on one IP is banned right away and never signed in */
   try{const c=await call("/rest/v1/rpc/claim_signup_ip",{method:"POST",headers:hdr(a.token),body:"{}"});
    if(c&&c.ok===false){fetch(CFG.url+"/auth/v1/logout",{method:"POST",headers:hdr(a.token)}).catch(()=>{});throw new Error(LIMIT)}}
   catch(e){if(e.message===LIMIT)throw e}
   const p=await loadProfile(a.uid,a.token);save(Object.assign({u:p.username,role:p.role,roles:p.roles||[]},a))},
- /* My List is stored per account; guests use the plain key. First sign-in copies the guest list so nothing is lost. */
  listKey(k){const u=API.user();if(!u)return k;const ak=k+":"+u.toLowerCase();
   try{if(localStorage.getItem(ak)===null&&localStorage.getItem(k)!==null)localStorage.setItem(ak,localStorage.getItem(k))}catch(e){}return ak},
  signOut(){const t=S&&S.token;save(null);if(t&&ready)fetch(CFG.url+"/auth/v1/logout",{method:"POST",headers:hdr(t)}).catch(()=>{})}
 };
-/* keep the role fresh (e.g. when you are made admin) without blocking the page */
 if(S&&ready)(async()=>{try{const tok=await API.token();if(!tok)return;const p=await loadProfile(S.uid,tok);
  if(p.username!==S.u||p.role!==S.role||JSON.stringify(p.roles||[])!==JSON.stringify(S.roles||[])){save(Object.assign({},S,{u:p.username,role:p.role,roles:p.roles||[]}));location.reload()}}catch(e){}})();
 
-/* Shared site data (catalog edits + added items). Everyone reads it, only the admin or a Value Handler writes it. */
 const D=window.EMData={
  _ver:ld("em_ver",{}),_subs:[],_last:null,
  enabled:()=>ready,
- /* fn(key,valueString) is called for every changed key; return false to postpone (e.g. unsaved local edits) */
  onChange(fn){D._subs.push(fn);setTimeout(D.sync,0)},
  async sync(){
-  if(!ready||!D._subs.length)return; /* nothing listening yet: wait, so no update is marked as received and lost */
+  if(!ready||!D._subs.length)return;
   try{
    const meta=await call("/rest/v1/site_state?select=key,updated_at",{headers:hdr()});
    const need=meta.filter(m=>D._ver[m.key]!==m.updated_at);
    if(!need.length){await D.seed(meta);return}
    const rows=await call("/rest/v1/site_state?select=key,value,updated_at&key=in.("+need.map(m=>m.key).join(",")+")",{headers:hdr()});
-   rows.sort((x,y)=>x.key==="custom"?-1:y.key==="custom"?1:0); /* added items first, then the edits on top */
+   rows.sort((x,y)=>x.key==="custom"?-1:y.key==="custom"?1:0);
    for(const r of rows){let ok=true;for(const f of D._subs){try{if(f(r.key,r.value)===false)ok=false}catch(e){}}
     if(ok)D._ver[r.key]=r.updated_at}
    sv("em_ver",D._ver);await D.seed(meta)
@@ -96,7 +83,6 @@ const D=window.EMData={
   const now=new Date().toISOString();
   await call("/rest/v1/site_state?on_conflict=key",{method:"POST",headers:Object.assign(hdr(tok),{Prefer:"resolution=merge-duplicates,return=minimal"}),body:JSON.stringify({key,value:str,updated_at:now,updated_by:API.user()})});
   D._ver[key]=now;sv("em_ver",D._ver)},
- /* showcase videos live in a Supabase Storage bucket called "showcase" (public to read, admin-only to write) */
  url:p=>CFG.url+"/storage/v1/object/public/showcase/"+p,
  async upload(path,file,onp){
   const tok=await API.token();if(!tok||!API.canEdit())throw new Error("Only the admin or a Value Handler can upload.");
@@ -112,7 +98,6 @@ const D=window.EMData={
  async remove(path){
   const tok=await API.token();if(!tok||!API.canEdit())return;
   await fetch(CFG.url+"/storage/v1/object/showcase/"+path,{method:"DELETE",headers:{apikey:CFG.anonKey,Authorization:"Bearer "+tok}})},
- /* first time the admin opens the live site: upload what is already saved in this browser so nothing is lost */
  async seed(meta){
   if(!API.isAdmin()||ld("em_seeded",false))return;
   try{const has=new Set(meta.map(m=>m.key)),g=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
@@ -126,7 +111,6 @@ const D=window.EMData={
 };
 if(ready){D.sync();setInterval(()=>{if(!document.hidden)D.sync()},20000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)D.sync()})}
 
-/* Update log. With the server on, entries are written by the admin and everyone can read them. */
 const cap=u=>(u||"Admin").charAt(0).toUpperCase()+(u||"Admin").slice(1);
 let logQ=Promise.resolve();
 window.EMLog={

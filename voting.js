@@ -1,9 +1,7 @@
-/* Value Voting: polls asking for a price / demand / stars change. Needs supabase-setup-5.sql. */
 (function(){
 const $=s=>document.querySelector(s),esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const ld=(k,d)=>{try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}};
 const CFG=window.EM_SUPABASE||{};
-/* ---- items (same data and live edits as the Trade page) ---- */
 ld("em_custom",[]).forEach(c=>{if(TD.items.some(i=>i.n===c.n))return;TD.items.push({n:c.n,t:c.t,p:c.p,r:!!c.r,u:!!c.u});if(c.img)TD.thumbs[c.n]={a:c.img};if(c.stars)TD.stars[c.n]=c.stars});
 Object.entries(ld("em_images",{})).forEach(([n,u])=>{if(u)TD.thumbs[n]={a:u}});
 const OVR=ld("ovr",{});
@@ -20,7 +18,6 @@ const curOf=(kind,n)=>{const i=by(n);if(!i)return"";return kind==="price"?String
 const showVal=(kind,v)=>kind==="price"?esc(v||"?"):kind==="stars"?(+v?starTxt(+v):"no stars"):(TL[v]||"No trend");
 const UP='<svg class="vt-ar" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20V5M5 12l7-7 7 7"/></svg>',DN='<svg class="vt-ar" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v15M5 12l7 7 7-7"/></svg>';
 const KIND={price:"Price",demand:"Demand",stars:"Stars"};
-/* ---- server ---- */
 const hdr=async()=>{const h={apikey:CFG.anonKey,"Content-Type":"application/json"};let t=null;try{t=await EMAuth.token()}catch(e){}
  if(t)h.Authorization="Bearer "+t;else if(!/^sb_/.test(CFG.anonKey||""))h.Authorization="Bearer "+CFG.anonKey;return h};
 async function api(path,method,body,extra){
@@ -47,7 +44,6 @@ function paint(){
  let L=P.filter(p=>(filt==="all"||p.status===filt)&&(!mine||p.user_id===UID)&&(!s||[p.item,p.username,p.note,KIND[p.kind],showVal(p.kind,p.proposed)].join(" ").toLowerCase().includes(s)));
  if(sort==="votes")L=L.slice().sort((x,y)=>{const a=tally(x.id),b=tally(y.id);return(b.a+b.d)-(a.a+a.d)});
  $("#vt-list").innerHTML=L.length?L.map(card).join(""):'<div class="vt-empty">'+(P.length?"No polls match.":"No polls yet. Be the first: press <b>Create a new poll</b>.")+'</div>'}
-/* ---- "See who voted" ---- */
 const dAv=n=>window.emDefAv?window.emDefAv(n):"";
 const voRow=x=>`<div class="vt-vr"><span class="vt-va"><img src="${esc(x.a&&/^(data:image\/|https:)/.test(x.a)?x.a:dAv(x.u))}" alt=""></span><span class="vt-vn">${esc(x.u)}${x.u===ME?" <em>(you)</em>":""}</span><small>${ago(Date.parse(x.t))}</small></div>`;
 function voBox(id){const L=VO[id];
@@ -93,11 +89,9 @@ $("#vt-list").addEventListener("click",async e=>{
    const r=await api("poll_comments","POST",{poll_id:id,user_id:UID,username:ME,text:t},{Prefer:"return=representation"});(C[id]=C[id]||[]).push(r[0]);paint()}
  }catch(err){note(b,"Couldn't do that: "+err.message)}});
 $("#vt-list").addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.closest(".vt-cf")){e.preventDefault();e.target.closest(".vt-cf").querySelector("[data-cs]").click()}});
-/* filters */
 document.querySelectorAll(".vt-f [data-f]").forEach(b=>b.onclick=()=>{filt=b.dataset.f;document.querySelectorAll(".vt-f [data-f]").forEach(x=>x.classList.toggle("on",x===b));paint()});
 $("#f-mine").onclick=()=>{if(!ME){alert("Log in (top left) first.");return}mine=!mine;$("#f-mine").classList.toggle("on",mine);paint()};
 $("#vt-q").oninput=e=>{q=e.target.value;paint()};$("#vt-sort").onchange=e=>{sort=e.target.value;paint()};
-/* ---- create poll ---- */
 let N={item:null,kind:"price",val:"",stars:0,dem:"",imgs:[]};
 const ov=$("#vt-ov");
 function openNew(){if(!ME){alert(EMAuth.configured?"Log in (top left) to create a poll.":"The accounts server isn't set up yet, see SETUP.md.");return}
@@ -128,7 +122,6 @@ ov.addEventListener("click",e=>{
  else if(b.dataset.ri){N.imgs.splice(+b.dataset.ri,1);drawImgs()}
  else if(b.id==="n-go")submit(b)});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!ov.hidden)closeNew()});
-/* ---- pictures on a poll: shrunk in the browser so they fit in the database ---- */
 function shrinkImg(file,max){return new Promise((ok,no)=>{const r=new FileReader();r.onerror=()=>no(new Error("Couldn't read that file."));
  r.onload=()=>{const im=new Image();im.onerror=()=>no(new Error("That file isn't a picture I can open."));
   im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height)),w=Math.round(im.width*k),h=Math.round(im.height*k),c=document.createElement("canvas");c.width=w;c.height=h;c.getContext("2d").drawImage(im,0,0,w,h);
@@ -158,7 +151,6 @@ async function submit(btn){
  btn.disabled=false}
 $("#vt-new").onclick=openNew;
 if(!ME)$("#vt-tip").textContent=EMAuth.configured?"Log in (top left) to create polls, vote and comment. You can read everything without an account.":"The accounts server isn't set up yet, see SETUP.md.";
-/* admin edits arrive from the server: store them and reload once, like the other pages */
 if(window.EMData&&EMData.enabled())EMData.onChange((k,v)=>{try{if(k==="overrides"){localStorage.setItem("ovr",v);localStorage.setItem("ovr_saved",v)}else if(k==="custom")localStorage.setItem("em_custom",v);else if(k==="images")localStorage.setItem("em_images",v)}catch(e){}
  try{const x=+sessionStorage.getItem("em_rl")||0;if(Date.now()-x>8000){sessionStorage.setItem("em_rl",Date.now());setTimeout(()=>location.reload(),50)}}catch(e){}});
 load();

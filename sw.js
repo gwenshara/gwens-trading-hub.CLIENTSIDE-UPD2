@@ -1,5 +1,3 @@
-/* EM Wiki service worker: shows push notifications when the site is not in front of you.
-   It caches nothing, so it can never serve an old copy of the site. */
 self.addEventListener("install", function () { self.skipWaiting(); });
 self.addEventListener("activate", function (e) { e.waitUntil(self.clients.claim()); });
 
@@ -9,11 +7,8 @@ self.addEventListener("push", function (e) {
   e.waitUntil((async function () {
     var wins = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
     var test = d.kind === "test";
-    /* you are looking at the site right now: the page already shows it, so stay quiet */
     if (!test && wins.some(function (c) { return c.visibilityState === "visible" && c.focused; })) return;
-    /* a tab is open in the background: ask it to play the custom sound */
     wins.forEach(function (c) { try { c.postMessage({ type: "em-sound" }); } catch (_) {} });
-    /* messages: use the sender's profile picture; if they have none (or it cannot load), keep the normal icon */
     var icon = "icon-192.png";
     if (d.icon) {
       try {
@@ -48,7 +43,6 @@ self.addEventListener("notificationclick", function (e) {
   })());
 });
 
-/* the browser replaced this device's push address: the next page load saves the new one */
 self.addEventListener("pushsubscriptionchange", function () {
   self.clients.matchAll({ includeUncontrolled: true }).then(function (cl) {
     cl.forEach(function (c) { c.postMessage({ type: "em-resub" }); });

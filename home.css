@@ -1,4 +1,3 @@
-/* Home page */
 :root{--hb:var(--b3,#262629);--hl:var(--bl,#3a3a42)}
 .hm{max-width:1000px;margin:0 auto;padding:30px 16px 50px}
 .hm-hero{text-align:center;padding:26px 0 8px}
@@ -37,7 +36,6 @@
 @media(max-width:420px){.hm{padding:20px 12px 40px}.hm-g{gap:10px}.hm-c{padding:14px 12px}.hm-c>span:last-child{font-size:12px}}
 @media(prefers-reduced-motion:reduce){.hm-c{transition:none}}
 
-/* guide */
 .hm-guide{max-width:760px;margin:56px auto 0;padding-top:32px;border-top:1px solid var(--hl)}
 .hm-guide h2.hm-gt{margin:0 0 6px;font:800 clamp(20px,3.6vw,28px)/1.25 Montserrat,sans-serif;color:var(--text,#f1f1f4);text-transform:none}
 .hm-guide .hm-gs{margin:0 0 8px;color:var(--mute,#a0a0ab);font:600 14px/1.5 Montserrat,sans-serif}
@@ -48,7 +46,6 @@
 .hm-guide strong{font-weight:800;color:var(--accent,#7aa7ff)}
 .hm-guide ul{margin:6px 0 10px;padding-left:22px}
 
-/* sticky note */
 .hm{position:relative}
 .hm-pad{container-type:inline-size;position:relative;width:290px;max-width:82%;margin:30px auto 0;transform:rotate(-3deg);filter:drop-shadow(0 8px 10px rgba(0,0,0,.45));pointer-events:none}
 .hm-pad img{display:block;width:100%;height:auto}
@@ -56,7 +53,6 @@
 @media(min-width:1100px){.hm-pad{position:absolute;right:-40px;top:26px;margin:0;width:200px;max-width:none;transform:rotate(4deg)}}
 @media(min-width:1600px){.hm-pad{right:auto;left:calc(100% + 22px);top:60px;width:280px}}
 
-/* window with your list, wishlist, new items and a random item */
 .hw{max-width:860px;margin:22px auto 0;padding:16px 18px 18px;border-radius:16px;border:1px solid var(--hl);background:var(--hb)}
 .hw-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;margin-bottom:12px}.hw-h b{font:800 16px Montserrat,sans-serif;color:var(--text,#f1f1f4)}.hw-h span{font:600 12px Montserrat,sans-serif;color:var(--mute,#a0a0ab)}
 .hw-c{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
@@ -76,7 +72,6 @@
 .hw-rd{display:flex;gap:16px;align-items:center;flex-wrap:wrap;padding:2px 4px 10px}.hw-ri{display:flex;flex-direction:column;gap:6px;min-width:0}.hw-ri b{font:800 17px Montserrat,sans-serif;color:var(--text,#f1f1f4)}.hw-ri span{font:600 12px Montserrat,sans-serif;color:var(--mute,#a0a0ab)}.hw-ri div{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
 .hw-bt{padding:8px 14px;border-radius:10px;border:0;background:var(--accent,#7aa7ff);color:#0b1020;font:800 12px Montserrat,sans-serif;cursor:pointer}.hw-bt.sec{background:transparent;border:1px solid var(--hl);color:var(--text,#f1f1f4)}
 @media(prefers-reduced-motion:reduce){.hw-t{transition:none}}
-/* wiki updates */
 .hw-uf{display:flex;gap:10px;align-items:flex-start;margin:0 0 12px;padding:10px;border:1px dashed var(--hl);border-radius:12px}
 .hw-ud{flex:none;padding:6px 10px;border-radius:8px;background:var(--accent,#7aa7ff);color:#0b1020;font:800 12px Montserrat,sans-serif;white-space:nowrap}
 .hw-uf textarea,.hw-ue{flex:1;min-width:0;width:100%;box-sizing:border-box;min-height:38px;resize:vertical;padding:8px 10px;border-radius:8px;border:1px solid var(--hl);background:rgba(0,0,0,.25);color:var(--text,#f1f1f4);font:600 16px Montserrat,sans-serif}

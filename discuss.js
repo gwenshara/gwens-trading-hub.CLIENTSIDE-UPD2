@@ -1,5 +1,3 @@
-/* Discussions: private 1-to-1 messages with pictures and item cards, plus friends.
-   Needs supabase-setup-6.sql; pictures, items and friends need supabase-setup-8.sql. */
 (function(){
 const $=s=>document.querySelector(s),esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const ME=EMAuth.user(),UID=EMAuth.uid(),root=$("#dm");
@@ -11,7 +9,6 @@ function fit(){const t=root.getBoundingClientRect().top+window.scrollY;root.styl
 addEventListener("resize",fit);setTimeout(fit,0);fit();
 if(!ME){root.className="";root.style.height="auto";root.innerHTML='<div class="dm-empty" style="padding:70px 20px"><div>'+ICON+'<h3>Private messages</h3>'+(EMAuth.configured?"Log in (top left) to chat with other members.":"The accounts server isn't set up yet, see SETUP.md.")+'</div></div>';return}
 
-/* ---------- item data (same sources as the Trade page) ---------- */
 const HAS_ITEMS=typeof TD!=="undefined"&&!!TD.items;
 const INFO=window.ITEMINFO||{};
 const TD0=HAS_ITEMS?{items:TD.items.slice(),thumbs:Object.assign({},TD.thumbs),stars:Object.assign({},TD.stars),TR:TD.TR||{}}:null;
@@ -26,7 +23,6 @@ function rebuild(){if(!HAS_ITEMS)return;
    stars:o.s!==undefined?o.s:(st[i.n]||0),trend:o.d!==undefined?(o.d==="none"?null:o.d):(TD0.TR[i.n]||null)}});
  BYN={};ITEMS.forEach(i=>BYN[i.n]=i)}
 rebuild();
-/* the admin's saved edits, kept in memory only (never written to this browser's catalog data) */
 if(HAS_ITEMS&&window.EMData&&EMData.enabled())EMData.onChange((k,v)=>{try{const j=JSON.parse(v);if(k==="overrides")LIVE.ovr=j;else if(k==="custom")LIVE.custom=j;else if(k==="images")LIVE.images=j;rebuild();try{if(cur)paintChat(false)}catch(e2){}}catch(e){}return false});
 const TL={up:"Increasing",down:"Receding",flat:"Stabilizing",fluct:"Fluctuating",infl:"Inflated"};
 const TYPE={g:"Gear",p:"Pet",t:"Title",e:"Effect",o:"Death"};
@@ -41,7 +37,6 @@ const chipTxt=c=>{const k=c[0],v=c[1];return k==="star"?v+" Stars":k==="rbx"?v+"
 function itemInfo(i){const f=Object.assign({},INFO[i.n]||{}),o=i.o||{};
  if(o.cp!==undefined)f.copies=o.cp;if(o.cr!==undefined)f.credit=o.cr;if(o.ln!==undefined)f.lines=o.ln;return f}
 
-/* ---------- people ---------- */
 const color=n=>{let h=0;for(const c of n)h=(h*31+c.charCodeAt(0))%360;return"hsl("+h+",55%,45%)"};
 const prof={};
 const av=(id,n)=>{const p=prof[id];return'<span class="dm-av" style="background:'+color(n)+'">'+'<img src="'+(p&&p.avatar?esc(p.avatar):emDefAv(n))+'" alt="">'+"</span>"};
@@ -63,7 +58,6 @@ const GCOLS="id,group_id,sender_id,sender_name,kind,text,created_at,edited_at,in
 const errEl=()=>$(cur&&cur.grp?"#gp-err":"#dm-err")||{},stp=()=>$(cur&&cur.grp?"#gp-stp":"#dm-stp");
 const IMG={},PICREQ={};
 const RK="dm_read:"+UID,reads=ld(RK,{});
-/* removing a conversation only hides it from YOUR list; it comes back if a new message arrives */
 const HDK="dm_hidden:"+UID,HID=ld(HDK,{});
 (function(){const s=document.createElement("style");s.textContent=".dm-c{position:relative}.dm-rm{position:absolute;top:4px;right:5px;width:15px;height:15px;border-radius:50%;font:700 8px/15px Montserrat,sans-serif;text-align:center;color:var(--mute,#999);background:#00000040;opacity:0;cursor:pointer;transition:opacity .12s}.dm-c:hover .dm-rm{opacity:.85}.dm-rm:hover{opacity:1;color:#fff;background:#e5484d}@media(hover:none){.dm-rm{opacity:.5}}";document.head.appendChild(s)})();
 const markRead=id=>{reads[id]=new Date().toISOString();sv(RK,reads)};
@@ -160,7 +154,6 @@ function mmTail(x,nm,both,mine,other){
   if(x.mat&&Date.now()-Date.parse(x.mat)>MMT)return'<div class="mm-x">'+esc(nm)+' didn\'t accept in time</div>';
   return'<div class="mm-d">Both confirmed. '+esc(nm)+' was notified'+(x.mat?" and has 10 minutes to accept\u2026":".")+"</div>"}
  return mine?'<div class="mm-w">Waiting for '+esc(other)+" to confirm\u2026</div>":'<button class="mm-b" data-mm type="button">Click to confirm</button>'}
-/* ---------- reactions ---------- */
 const rxName=id=>id===UID?"You":(pname(id)||((GMEM[cur&&cur.id]||[]).find(m=>m.user_id===id)||{}).username||"Member");
 function rxHtml(x){const m=RX[x.id];if(!m)return"";const o=RXK.filter(k=>m[k]&&m[k].length);if(!o.length)return"";
  return'<span class="rxs">'+o.map(k=>'<button type="button" class="rxc'+(m[k].includes(UID)?" me":"")+'" data-rx="'+k+'" title="'+esc(m[k].map(rxName).join(", "))+'">'+RXE[k]+" <b>"+m[k].length+"</b></button>").join("")+"</span>"}
@@ -215,7 +208,6 @@ function paintChat(stick){
  const lo=[...MSGS].reverse().find(m=>m.sender_id===UID),SEENID=lo&&lo.read_at?lo.id:null;let h="",d="";MSGS.forEach(x=>{const k=day(x.created_at);if(k!==d){d=k;h+='<div class="dm-day">'+k+"</div>"}h+=msgHtml(x)+(x.id===SEENID?'<div class="dm-seen">Seen '+fmtT(x.read_at)+"</div>":"")});
  if(!MSGS.length)h='<div class="dm-none" style="margin:auto">No messages yet. Say hi</div>';
  box.innerHTML=h;addNote(box);if(stick||near||box.querySelector(".dm-sys"))box.scrollTop=box.scrollHeight;loadPics();loadAds();paintAdb()}
-/* pictures are fetched one by one, so the message list stays light */
 async function loadPics(){
  const grp=!!(cur&&cur.grp),need=(grp?(GM[cur.id]||[]):MSGS).filter(x=>x.kind==="image"&&!IMG[x.id]&&!PICREQ[x.id]);
  for(const x of need){PICREQ[x.id]=1;
@@ -259,8 +251,6 @@ async function open(id,name,ch,pre){ch=ch==="trade"?"trade":"personal";
  catch(e){const b=$("#dm-err");if(b)b.textContent=setup(e)?"Run supabase-setup-6.sql in Supabase first.":e.message}
  const i=$("#dm-in");if(i){if(pre&&!i.value&&!MSGS.length)i.value=pre;if(innerWidth>820)i.focus()}
  loadRx().then(c=>{if(c&&cur&&!cur.grp&&cur.id===id)paintChat(false)})}
-/* one place that writes a message */
-/* ---- anti-spam: 1 second between messages, and a "Don't spam!" notice in the chat when someone sends too fast ---- */
 const SPAM_TXT="Don't spam! Each message is precious, so please make sure you don't abuse the message feature.";
 let SEND_T=[],SPAM_UNTIL=0,NOTE_UNTIL=0;
 function spamErr(m){const e=new Error(m);e.spam=true;return e}
@@ -298,7 +288,6 @@ async function sendWishlist(kind){if(!cur)return;errEl().textContent="";const in
   if(parts.length>MAXP)errEl().textContent="Sent the first "+MAXP+" messages of your "+(inv?"inventory":"wishlist")+". The rest was too long to send."}
  catch(e){errEl().textContent="Couldn\'t send: "+e.message+(sent?" ("+sent+" of "+send.length+" parts were sent.)":"")}}
 async function sendSticker(v){if(!cur)return;errEl().textContent="";try{if(cur.grp)await postG({kind:"text",text:"[["+"st:"+v+"]]"});else{await sendAdMark();await post(NEW8?{kind:"text",text:"[["+"st:"+v+"]]"}:{text:"[["+"st:"+v+"]]"})}}catch(e){errEl().textContent="Couldn\'t send: "+e.message}}
-/* tell the other person their messages were seen */
 let pingBusy=false;
 async function seenPing(){if(!NEW11||!cur||document.hidden||pingBusy)return;const un=MSGS.filter(m=>m.sender_id!==UID&&!m.read_at);if(!un.length)return;pingBusy=true;
  try{await EMAuth.rest("rpc/dm_mark_read","POST",{p_other:cur.id,p_channel:cur.ch});const t=new Date().toISOString();un.forEach(m=>m.read_at=t);ALL.forEach(m=>{if(m.sender_id===cur.id&&chOf(m)===cur.ch&&!m.read_at)m.read_at=t});build();paintList()}
@@ -325,14 +314,12 @@ function paintPend(){const p=$(cur&&cur.grp?"#gp-pend":"#dm-pend");if(!p)return;
  if(replyTo)h+='<div class="dm-rp"><span>Replying to <b>'+esc(replyTo.name||"message")+'</b>: '+esc(replyTo.text)+'</span><button type="button" data-unreply aria-label="Cancel reply">\u2715</button></div>';
  if(pendImg)h+='<img src="'+esc(pendImg)+'" alt="Picture to send"><span>Picture ready. Add a message if you want, then press Send.</span><button type="button" data-unpic aria-label="Remove picture">\u2715</button>';
  p.hidden=false;p.innerHTML=h}
-/* replies: the quoted message is saved inside the new message (payload rn / rt / ri), so no SQL is needed */
 function snip(x){if(x.kind==="image")return"Picture";if(x.kind==="item")return x.iname||"Item";if(x.kind==="mm")return"Middleman request";if(stOf(x))return"Sticker";if(wlOf(x))return"Wishlist";if(adOf(x))return"Trade ad";return String(x.text||"").replace(/\s+/g," ").trim().slice(0,80)}
 const rq=()=>replyTo?{rn:String(replyTo.name||"").slice(0,40),rt:String(replyTo.text||"").slice(0,80),ri:replyTo.id}:{};
 const rf=()=>replyTo?{payload:rq()}:{};
 function setReply(x){replyTo={id:x.id,name:x.sender_name||"",text:snip(x)};paintPend();const i=$(cur&&cur.grp?"#gp-in":"#dm-in");if(i)i.focus()}
 function qHtml(x){if(!x.rn&&!x.rt)return"";return'<div class="dm-q" data-q="'+esc(x.ri||"")+'"><b>'+esc(x.rn||"")+'</b><span>'+esc(x.rt||"")+'</span></div>'}
 function jumpQ(id){const el=id&&document.querySelector('.dm-m[data-id="'+String(id).replace(/[^0-9a-fA-F-]/g,"")+'"]');if(!el)return;el.scrollIntoView({block:"center",behavior:"smooth"});el.classList.remove("flash");void el.offsetWidth;el.classList.add("flash")}
-/* shrink a picture so it fits in the database (max 900 px, under about 400 KB) */
 function shrinkImg(file){return new Promise((ok,no)=>{const fr=new FileReader();fr.onerror=()=>no(new Error("Couldn't read that file."));
  fr.onload=()=>{const im=new Image();im.onerror=()=>no(new Error("That file isn't a picture I can open."));
   im.onload=()=>{let max=900,u="";
@@ -341,7 +328,6 @@ function shrinkImg(file){return new Promise((ok,no)=>{const fr=new FileReader();
     for(const q of[.82,.68,.55]){u=c.toDataURL("image/webp",q);if(u.indexOf("data:image/webp")!==0)u=c.toDataURL("image/jpeg",q);if(u.length<=400000)return ok(u)}
     max=Math.round(max*.75)}
    no(new Error("That picture is too big to send."))};im.src=fr.result};fr.readAsDataURL(file)})}
-/* ---------- overlays: item picker, item card, picture viewer ---------- */
 let ov=null;
 function closeOv(){if(ov){ov.remove();ov=null}}
 function openOv(html,cls){closeOv();ov=document.createElement("div");ov.className="dm-ov "+(cls||"");ov.innerHTML=html;document.body.appendChild(ov);
@@ -366,7 +352,6 @@ function openCard(n){const i=BYN[n];
   ${pills.length?'<div class="dm-ln">'+pills.map(p=>"<span>"+p+"</span>").join("")+"</div>":'<p class="dm-no">No extra info for this item yet.</p>'}
   ${meta.length?'<p class="dm-mt">'+meta.join("<br>")+"</p>":""}${f.credit?'<p class="dm-cr">Credit: '+esc(f.credit)+"</p>":""}</div>`,"card")}
 function openPic(src){openOv('<img class="dm-big" src="'+esc(src)+'" alt="Picture">',"pic")}
-/* ---------- middleman picker, message options, edit, delete ---------- */
 async function openMM(){
  const o=openOv('<div class="dm-box mmbox"><div class="dm-bh"><b>Request a middleman</b><button class="dm-cl" data-ovx type="button" aria-label="Close">\u2715</button></div><p class="mm-p">Pick an official middleman. A request is sent in this chat, and <b>both of you</b> have to click it to confirm. Then the middleman is notified and can accept.</p><div class="mm-g" id="mm-g"><div class="dm-none" style="grid-column:1/-1">Loading\u2026</div></div></div>');
  o.addEventListener("click",e=>{const b=e.target.closest("[data-pickmm]");if(b&&!b.disabled){mmForm(o,b.dataset.pickmm);return}
@@ -418,7 +403,6 @@ async function saveEdit(){
 document.addEventListener("click",e=>{if(pop&&!e.target.closest(".dm-pop")&&!e.target.closest("[data-mo]"))closePop()});
 addEventListener("resize",closePop);
 
-/* ---------- group chats (requester + trader + middleman) ---------- */
 async function loadGroups(){if(!grpOk)return;
  try{const[gs,gm,ms]=await Promise.all([EMAuth.rest("groups?select=id,name,created_at,kind,owner_id,trade,image&order=created_at.desc&limit=100").catch(()=>EMAuth.rest("groups?select=id,name,created_at,kind,owner_id&order=created_at.desc&limit=100")).catch(()=>EMAuth.rest("groups?select=id,name,created_at&order=created_at.desc&limit=100")),EMAuth.rest("group_members?select=group_id,user_id,username,last_read&limit=600"),(async()=>{try{return await EMAuth.rest("group_msgs?select="+(GNEW?GCOLS:GOLD)+GQ)}catch(e){if(GNEW&&/edited_at|payload/i.test(e.message)){GNEW=false;return await EMAuth.rest("group_msgs?select="+GOLD+GQ)}throw e}})()]);
   GL=gs;GMEM={};gm.forEach(x=>(GMEM[x.group_id]=GMEM[x.group_id]||[]).push(x));GM={};ms.reverse().forEach(x=>(GM[x.group_id]=GM[x.group_id]||[]).push(x))}
@@ -429,7 +413,6 @@ const sigG=id=>{const L=GM[id]||[];return L.length+":"+(L.length?L[L.length-1].i
 function gRead(){if(!cur||!cur.grp||document.hidden)return;const L=GM[cur.id]||[],last=L[L.length-1],me=(GMEM[cur.id]||[]).find(x=>x.user_id===UID);
  if(!last||!me||Date.parse(me.last_read)>=Date.parse(last.created_at))return;me.last_read=last.created_at;buildG();paintList();
  EMAuth.rest("rpc/group_mark_read","POST",{p_group:cur.id}).catch(()=>{})}
-/* in a group, every message from someone else gets that person's profile picture beside the bubble */
 function gHtml(x){const h=gHtml0(x);if(x.kind==="sys"||x.sender_id===UID||h.indexOf("ed-box")>-1)return h;
  const a=av(x.sender_id,x.sender_name||"?").replace('class="dm-av"','class="dm-av gpf"');return h.replace(/^(<div[^>]*>)/,"$1"+a)}
 function gHtml0(x){const out=x.sender_id===UID;
@@ -512,7 +495,6 @@ function openNewG(){const sel=new Map();let res=[],tmr;
    try{const g=await EMAuth.rest("rpc/group_create","POST",{p_name:nm,p_members:[...sel.keys()]});closeOv();await loadGroups();buildG();paintList();openGroup(typeof g==="string"?g:(g&&g[0])||"")}
    catch(err){b.disabled=false;er.textContent=setup(err)||/function|schema cache/i.test(err.message)?"Run supabase-setup-14.sql in Supabase first.":err.message}}});
  if(innerWidth>820)$o("#ng-n").focus()}
-/* ---------- group name when accepting, group name + picture ---------- */
 function askGName(def){return new Promise(res=>{
  const o=openOv('<div class="dm-box sm gset"><div class="dm-bh"><b>Accept the request</b><button class="dm-cl" data-ovx type="button" aria-label="Close">\u2715</button></div><label class="mm-lb">Group name<input id="gn-n" class="gs-in" maxlength="40" value="'+esc(def)+'" placeholder="Group name"></label><div class="mm-fe" id="gn-e"></div><div class="mm-fb"><button type="button" class="sec" data-ovx>Cancel</button><button type="button" id="gn-go">Accept &amp; create group</button></div></div>');
  let done=false;const fin=v=>{if(done)return;done=true;if(ov===o)closeOv();res(v)};
@@ -533,7 +515,6 @@ function openGSet(){const g=GL.find(x=>x.id===(cur&&cur.id));if(!g)return;let im
   try{await EMAuth.rest("rpc/group_update","POST",{p_group:g.id,p_name:nm,p_image:img});g.name=nm;if(img==="none")g.image=null;else if(img)g.image=img;
    if(cur&&cur.id===g.id)cur.name=nm;closeOv();buildG();paintList();const r=$("#dm-r");if(r)r.dataset.id="";paintGroup(false)}
   catch(err){b.disabled=false;q("#gs-e").textContent=setup(err)||/function|schema cache/i.test(err.message)?"Run supabase-setup-31.sql in Supabase first.":err.message}}}
-/* ---------- events ---------- */
 $("#dm-list").addEventListener("click",async e=>{
  if(e.target.closest("[data-newg]")){openNewG();return}
  const na=e.target.closest("[data-nacc]");
@@ -618,7 +599,6 @@ setInterval(()=>{if(!document.hidden)tick(false)},4000);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)tick(false)});
 })();
 
-/* ---------- chat colour: pick a colour for your own bubbles, per chat or for all chats (kept on this device) ---------- */
 (function(){
 const K="em_chat_color",BG=["#0f0f12","#1b2433","#2a1b3d","#3d1b2a","#1b3d2a","#3d2f1b","#e9eef7","#f7e9ee","#e9f7ee","#fff6dc"],SW=["#7aa7ff","#8b4dff","#ff5d9e","#e5484d","#ff9a3c","#f5c518","#2fb86a","#19b6a8","#3a3a44","#e8e8ee"],DEF="#7aa7ff";
 const rd=()=>{try{const o=JSON.parse(localStorage.getItem(EMAuth.listKey(K))||"{}");return o&&typeof o==="object"&&!Array.isArray(o)?o:{}}catch(e){return{}}};
@@ -662,7 +642,6 @@ addEventListener("resize",closePal);
 const r0=R();if(r0){new MutationObserver(()=>{addBtn();apply()}).observe(r0,{childList:true,attributes:true,attributeFilter:["data-id"]});addBtn();apply()}
 })();
 
-/* ===== Full-screen toggle (the diagonal arrow button) + phone sizing ===== */
 (function(){
  var KEY="em_dm_full";
  function ld(){try{localStorage.removeItem(KEY)}catch(e){}return false}
@@ -672,7 +651,6 @@ const r0=R();if(r0){new MutationObserver(()=>{addBtn();apply()}).observe(r0,{chi
  function navh(){var n=document.querySelector(".emnav");if(n)document.documentElement.style.setProperty("--navh",Math.ceil(n.getBoundingClientRect().height)+"px")}
  document.addEventListener("click",function(e){var b=e.target.closest(".dm-fs");if(!b)return;var on=!document.body.classList.contains("dm-full");sv(on);apply(on)});
  document.addEventListener("keydown",function(e){if(e.key==="Escape"&&document.body.classList.contains("dm-full")&&!document.querySelector("#mm-ex,.dm-pop,.dm-menu")){sv(false);apply(false)}});
- /* the chat header is drawn again every time a chat opens: put the button back */
  function addBtn(){var h=document.querySelector("#dm-r .dm-rh");if(h&&!h.querySelector(".dm-fs")){var b=document.createElement("button");b.type="button";b.className="dm-fs";b.innerHTML=SVG;h.appendChild(b);apply(document.body.classList.contains("dm-full"))}}
  var r=document.getElementById("dm");if(r)new MutationObserver(addBtn).observe(r,{childList:true,subtree:true});
  window.addEventListener("resize",navh);window.addEventListener("orientationchange",navh);

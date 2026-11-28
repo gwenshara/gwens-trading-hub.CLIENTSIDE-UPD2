@@ -12,7 +12,6 @@ const names=L=>(L||[]).map(e=>esc(e.n)+(e.q>1?" ×"+e.q:"")).join(", ")||"–";
 (function(){const s=document.createElement("style");s.textContent=".mb-cat{grid-column:1/-1;margin:22px 0 4px;display:flex;align-items:center;gap:10px;font:800 13px Montserrat,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}.mb-cat:first-child{margin-top:4px}.mb-cat i{font-style:normal;width:10px;height:10px;border-radius:50%;background:var(--rc,#8a8a93)}.mb-cat b{font-weight:700;opacity:.7}.mb-t.bn{opacity:.5}.mb-hb{padding:3px 10px;border-radius:999px;border:1px solid var(--bl,#333);background:transparent;color:var(--text);font:700 11px Montserrat,sans-serif;cursor:pointer;text-transform:none;letter-spacing:0}.mb-cat:after{content:'';flex:1;height:1px;background:var(--bl,#333)}";document.head.appendChild(s)})();
 const tile=m=>'<button class="mb-t'+(m.banned?" bn":"")+'" data-u="'+esc(m.username)+'">'+av(m.username,m.avatar,m)+'<span class="nm">'+esc(m.nick||m.username)+'</span></button>';
 function groups(L){
- /* a member is listed once, under the first category that applies: Admin, then the roles in order, then Members */
  const keys=PR&&PR.ROLES?Object.keys(PR.ROLES):[],G=[{n:"Admin",c:"#ff4d4d",L:[]}].concat(keys.map(k=>({n:PR.ROLES[k].n,c:PR.ROLES[k].c,k,L:[]}))),rest={n:"Members",c:"#8a8a93",L:[]};
  const bans=[];L.forEach(m=>{if(m.banned){bans.push(m);return}if(m.role==="admin"){G[0].L.push(m);return}
   const g=G.find(g=>g.k&&(m.roles||[]).includes(g.k));(g||rest).L.push(m)});
@@ -55,8 +54,6 @@ async function load(){
  catch(e){note.textContent="";grid.innerHTML='<div class="mb-empty">Couldn\'t load the members: '+esc(e.message)+'</div>'}}
 grid.innerHTML='<div class="mb-empty">Loading…</div>';load();
 
-/* STAFF (admins + moderators): every account with the IP it was made from, and a multi-select ban.
-   Banning only bans the accounts, so the slots of that IP (max 3 accounts) are free again. */
 (function(){
  if(!window.EMAuth||!EMAuth.configured||!EMAuth.user||!EMAuth.user()||!EMAuth.canMod||!EMAuth.canMod())return;
  const h=document.querySelector(".mb-h");if(!h)return;

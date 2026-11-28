@@ -1,4 +1,3 @@
-/* Push notifications for EM Wiki. Loaded by auth.js on every page. */
 (function () {
 if (window.EMPush) return;
 var CFG = window.EM_SUPABASE || {}, A = window.EMAuth;
@@ -25,7 +24,6 @@ function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&
 var regP = null;
 function register() { if (!regP) regP = navigator.serviceWorker.register("sw.js").then(function () { return navigator.serviceWorker.ready; }); return regP; }
 
-/* custom sound: only plays while the site is open in some tab (browsers cannot set a sound for closed-site notifications) */
 var lastSnd = 0;
 function ding() {
   if (ld("em_push_snd") === "0") return;
@@ -45,7 +43,6 @@ async function subscribe() {
   return { sub: sub, prefs: await save(sub) };
 }
 
-/* turns the browser's cryptic push errors into steps a person can follow */
 function friendly(x) {
   var m = (x && x.message) ? String(x.message) : "Something went wrong.";
   if (/push service|registration failed|AbortError/i.test(m)) {
@@ -86,7 +83,6 @@ var API = window.EMPush = {
   ding: ding
 };
 
-/* ---------- settings panel ---------- */
 var css = document.createElement("style");
 css.textContent =
 ".pn-mo{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9000;display:flex;align-items:center;justify-content:center;padding:16px}.pn-mo[hidden]{display:none}" +
@@ -103,7 +99,6 @@ css.textContent =
 ".pn-toast{position:fixed;right:16px;bottom:16px;z-index:8900;background:var(--b2,#232327);color:var(--text,#fff);border:1px solid var(--bl,#3a3a42);border-radius:14px;padding:12px 14px;width:min(320px,calc(100% - 32px));box-shadow:0 8px 30px rgba(0,0,0,.35);font:600 13px Montserrat,Inter,system-ui,sans-serif}.pn-toast p{margin:0 0 10px;line-height:1.4}.pn-toast div{display:flex;gap:8px}";
 document.head.appendChild(css);
 
-/* moderators and admins: who has notifications on */
 var whoEl = null;
 function openWho() {
   if (!whoEl) {
@@ -187,7 +182,6 @@ async function paint(err) {
   });
 }
 
-/* "Notifications" entry in the account menu (the menu is redrawn by auth.js, so keep re-adding it) */
 function addMenu() {
   var m = document.querySelector(".em-auth .em-menu");
   if (!m || m.querySelector("#em-pn")) return;
@@ -196,7 +190,6 @@ function addMenu() {
   var vp = m.querySelector("#em-vp"); if (vp && vp.nextSibling) m.insertBefore(b, vp.nextSibling); else m.appendChild(b);
 }
 
-/* one gentle question, once, for people who have not decided */
 function askOnce() {
   if (!supported || Notification.permission !== "default") return;
   var t = +ld("em_push_ask") || 0; if (Date.now() - t < 14 * 864e5) return;
@@ -207,7 +200,6 @@ function askOnce() {
   el.querySelector("[data-y]").onclick = function () { el.remove(); openPanel(); };
 }
 
-/* ---------- the guide: pick your device, read a few basic steps and fixes ---------- */
 var GUIDE = {
   windows: { t: "Windows PC", steps: [
     "Log in, open <b>\u2699 Settings</b>, press <b>Turn on</b>, then <b>Allow</b> when the browser asks.",
@@ -276,7 +268,6 @@ function openGuide() {
   home();
 }
 
-/* The "Get notified?" box now lives in Settings (catalog Settings menu and the gear on the other pages) */
 function hookGuide(el) { var g = el.querySelector("[data-g]"); if (g) g.onclick = function () { var host = el.closest(".stp,.em-setp"); if (host) host.hidden = true; openGuide(); }; }
 function hookWho(el) { var w = el.querySelector("[data-w]"); if (w) w.onclick = function () { var host = el.closest(".stp,.em-setp"); if (host) host.hidden = true; openWho(); }; }
 var WHOBTN = '<button class="alt" type="button" data-w>Who has notifications on</button>';
@@ -313,7 +304,6 @@ function start() {
     if (d.type === "em-sound") ding();
     if (d.type === "em-resub" && ld("em_push_on") === "1") subscribe().catch(function () {});
   });
-  /* keep this device's address fresh once per visit (also fixes a changed address) */
   if (Notification.permission === "granted" && ld("em_push_on") === "1" && !sessionStorage.getItem("em_push_sync")) {
     try { sessionStorage.setItem("em_push_sync", "1"); } catch (e) {}
     subscribe().catch(function () {});

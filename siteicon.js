@@ -1,5 +1,3 @@
-/* Site icon (Normal / Winter). The admin picks it in Settings; the choice is stored in Supabase and every visitor gets it.
-   Winter changes: the logo (new face + light-blue letters), the browser tab icon, and (through the Cloudflare worker) the link preview. */
 (function () {
   if (window.__emSiteIcon) return; window.__emSiteIcon = 1;
   var CFG = window.EM_SUPABASE || {}, K = "em_site_icon", V = "?v=1";
@@ -43,14 +41,12 @@
     swapIcons(cur === "winter"); swapLogo(cur === "winter"); snow(cur === "winter"); paint();
   }
 
-  /* first paint: use the last known choice right away, swap the logo as soon as it exists */
   if (cur === "winter") {
     swapIcons(true);
     var mo = new MutationObserver(function () { if (document.querySelector(".logo-wk")) { swapLogo(true); mo.disconnect(); } });
     mo.observe(document.documentElement, { childList: true, subtree: true });
   }
 
-  /* ask the server what everyone should see */
   function headers() { var h = { apikey: CFG.anonKey }; if (!/^sb_/.test(CFG.anonKey || "")) h.Authorization = "Bearer " + CFG.anonKey; return h; }
   function pull() {
     if (!CFG.url || !CFG.anonKey) return;
@@ -64,8 +60,6 @@
   setInterval(function () { if (!document.hidden) pull(); }, 60000);
 
 
-  /* Winter snow: falls over the top part of the page (header, and the icon row on the Catalog).
-     Small snow stays behind the Catalog icons; the bigger snowflakes sometimes fall over them and sometimes behind. */
   var snowOn = false, cv = null, cx = null, raf = 0, dots = [], flakes = [], fimg = null, nextSpawn = 0, SH = 0, SW = 0, dpr = 1, rects = [], lastT = 0, lastM = 0;
   function headerBottom() {
     var y = 0, sy = window.pageYOffset || 0;
@@ -125,7 +119,6 @@
   }
   document.addEventListener("visibilitychange", function () { if (snowOn && !document.hidden && !raf) { lastT = 0; raf = requestAnimationFrame(frame); } });
 
-  /* admin-only choice inside Settings (both the catalog menu and the other pages' menu) */
   function admin() { try { return !!(window.EMAuth && EMAuth.isAdmin && EMAuth.isAdmin()); } catch (e) { return false; } }
   function css() {
     if (document.getElementById("em-sico-css")) return;

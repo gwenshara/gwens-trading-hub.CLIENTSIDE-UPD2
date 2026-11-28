@@ -1,10 +1,3 @@
-/* Cloudflare Worker: makes Discord show a preview image of a shared list.
-   Paste this whole file in Cloudflare > Workers & Pages > your worker > Edit code, then Deploy.
-   ONE route is enough now (Settings > Domains & Routes > Add > Route):
-     gwenvaluehub.com/*
-   (you can delete the old routes gwenvaluehub.com/list* and gwenvaluehub.com/list-img/*, this one covers them)
-   It does two things: list previews for Discord, and the site icon (Normal / Winter) in the link preview and tab icon.
-   Nothing secret is in here: the Supabase address and the public (anon) key are the same ones your site already shows. */
 const SB_URL = "https://fopalskmdgkxnnxzmgfc.supabase.co";
 const SB_KEY = "sb_publishable_ExIZoF8wG6njXVeERTw4yQ_azZQ5aED";
 const SITE = "https://gwenvaluehub.com";
@@ -22,7 +15,6 @@ const cleanCode = (c) => String(c || "").toLowerCase().replace(/[^a-z0-9]/g, "")
 const spc = (n) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, "\u202f");
 
 
-// the site icon chosen by the admin (Normal / Winter), read from Supabase and cached for a few seconds
 async function getIcon() {
   try {
     const r = await fetch(SB_URL + "/rest/v1/site_settings?key=eq.site_icon&select=value,updated_at", {
@@ -40,7 +32,6 @@ export default {
   async fetch(request) {
     const url = new URL(request.url);
 
-    // 1) the preview picture: /list-img/<code>.jpg
     if (url.pathname.startsWith("/list-img/")) {
       const code = cleanCode(url.pathname.split("/").pop().replace(/\.jpe?g$/i, ""));
       const data = code ? await rpc("get_list_image", { p_code: code }) : null;
@@ -52,7 +43,6 @@ export default {
       return new Response(bytes, { headers: { "Content-Type": "image/jpeg", "Cache-Control": "public, max-age=60" } });
     }
 
-    // 1b) the link-preview picture of the site: Normal or Winter
     if (url.pathname === "/og-image.png") {
       const ic = await getIcon();
       if (ic.icon === "winter") {
@@ -62,7 +52,6 @@ export default {
       return fetch(request);
     }
 
-    // 2) every page: add this person's list preview (list page) and the Winter icon tags (when the admin chose Winter)
     const page = await fetch(request);
     if (request.method !== "GET" || !(page.headers.get("content-type") || "").includes("text/html")) return page;
 
@@ -77,13 +66,11 @@ export default {
     let rw = new HTMLRewriter();
 
     if (winter) {
-      // winter tab icons (the same ones the page script switches to)
       rw = rw.on('link[rel="icon"]', { element(e) {
         const z = e.getAttribute("sizes") || "";
         e.setAttribute("href", (z === "16x16" ? "/favicon-winter-16.png" : z === "32x32" ? "/favicon-winter-32.png" : "/favicon-winter.ico") + "?v=1");
       } }).on('link[rel="apple-touch-icon"]', { element(e) { e.setAttribute("href", "/apple-touch-icon-winter.png?v=1"); } });
       if (!hasList) {
-        // winter link preview; the changing ?v makes Discord fetch the picture again after a switch
         const img = SITE + "/og-image.png?v=w" + ic.v;
         rw = rw.on('meta[property="og:image"]', set(img)).on('meta[name="twitter:image"]', set(img));
       }
@@ -107,7 +94,6 @@ export default {
         .on('meta[property="og:url"]', set(SITE + "/list?c=" + code));
     }
 
-    // never let the rewritten page (and so the preview tags) be cached, so a change shows up right away
     const res = new Response(rw.transform(page).body, page);
     res.headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
     return res;

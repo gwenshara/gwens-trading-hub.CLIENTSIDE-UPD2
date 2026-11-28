@@ -1,4 +1,3 @@
-/* ===== Value Voting ===== */
 .vt{max-width:1180px;margin:0 auto;padding:26px 16px 70px;display:grid;grid-template-columns:270px 1fr;gap:22px;align-items:start}
 .vt-side{position:sticky;top:12px;display:flex;flex-direction:column;gap:14px}
 .vt-new{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:18px 16px;border:0;border-radius:16px;font:800 17px Montserrat,sans-serif;color:#fff;background:#7aa7ff;box-shadow:0 6px 20px #7aa7ff55;cursor:pointer;transition:transform .15s,filter .15s}
@@ -59,7 +58,6 @@
 .vt-cf button{font-weight:700;background:#7aa7ff;border:0;color:#fff}
 .vt-msg{font:600 13px Montserrat,sans-serif;color:#ff6b6b;min-height:18px;margin-top:6px}
 .vt-msg.ok{color:#5cff5c}
-/* modal */
 .vt-ov{position:fixed;inset:0;background:#000a;z-index:60;display:grid;place-items:center;padding:14px;overflow:auto}
 .vt-ov[hidden]{display:none}
 .vt-md{width:100%;max-width:560px;background:var(--b3,#26262a);border:2px solid #4f74c4;border-radius:20px;padding:22px;position:relative;max-height:94vh;overflow:auto}
@@ -90,7 +88,6 @@
 .vt-sub .go:disabled{opacity:.55}
 @media(max-width:860px){.vt{grid-template-columns:1fr}.vt-side{position:static}.vt-bar{flex-wrap:wrap}.vt-bar select{padding:12px}}
 
-/* arrows instead of thumbs */
 .vt-ar{width:1.05em;height:1.05em;vertical-align:-.15em;margin-right:5px;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
 .vt-act .va .vt-ar,.vt-rn .a .vt-ar{color:#4cd964}.vt-act .vd .vt-ar,.vt-rn .d .vt-ar{color:#ff4d4d}
 .vt-rn .d .vt-ar{margin:0 0 0 5px}
@@ -106,7 +103,6 @@
 .vt-lb{position:fixed;inset:0;z-index:300;background:#000d;display:flex;align-items:center;justify-content:center;padding:20px;cursor:zoom-out}
 .vt-lb[hidden]{display:none}.vt-lb img{max-width:100%;max-height:100%;border-radius:10px}
 
-/* See who voted */
 .vt-vo{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;padding-top:12px;border-top:1px solid var(--bl,#3a3a42)}
 .vt-vc{min-width:0;background:#0000002e;border-radius:12px;padding:10px 12px;border:1px solid transparent;max-height:280px;overflow:auto}
 .vt-vc.a{border-color:#4cd96444}.vt-vc.d{border-color:#ff6b6b44}
